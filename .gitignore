@@ -10,3 +10,4 @@ data/dukascopy_*.csv.gz
 settings.json
 *.log
 .DS_Store
+data/*.pkl

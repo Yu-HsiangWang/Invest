@@ -64,6 +64,15 @@
       </details>
     </article>
 
+    <section class="panel lots-panel" aria-labelledby="lots-h">
+      <div class="panel-head"><h2 id="lots-h">一次可以下幾手？</h2><span id="lots-bal" class="pill"></span></div>
+      <table class="lots">
+        <thead><tr><th>手數</th><th>價格動 $1</th><th>碰停損虧</th><th>保證金</th><th>反向多少被強平</th></tr></thead>
+        <tbody id="lots"></tbody>
+      </table>
+      <p id="lots-note" class="hint"></p>
+    </section>
+
     <section class="panel checks-panel" aria-labelledby="checks-h">
       <h2 id="checks-h">為什麼？條件檢查</h2>
       <div class="side-tabs" role="tablist">
@@ -123,14 +132,18 @@
 </main>
 
 <footer class="foot">
-  <p>訊號僅供參考，不構成投資建議；過去績效不保證未來。請務必設定停損，單筆風險建議不超過帳戶 1%。行情：Dukascopy / Swissquote 公開報價；新聞：FXStreet、investingLive、Google News、Yahoo Finance；經濟日曆：ForexFactory。圖表：<a href="https://www.tradingview.com/" target="_blank" rel="noopener">TradingView Lightweight Charts</a>。</p>
+  <p>訊號僅供參考，不構成投資建議；過去績效不保證未來。請務必設定停損，單筆風險建議 1–2%（黃金 0.01 手 = 1 盎司，價格動 $1 盈虧 $1）。行情：Dukascopy / Swissquote 公開報價；新聞：FXStreet、investingLive、Google News、Yahoo Finance；經濟日曆：ForexFactory。圖表：<a href="https://www.tradingview.com/" target="_blank" rel="noopener">TradingView Lightweight Charts</a>。</p>
 </footer>
 
 <aside id="settings" class="drawer" hidden aria-label="設定">
   <form id="settings-form">
     <div class="drawer-head"><h2>設定</h2><button type="button" class="btn ghost small" id="settings-close">關閉</button></div>
-    <fieldset><legend>資金</legend>
+    <fieldset><legend>資金與下單</legend>
       <label>帳戶資金（美元）<input name="account_balance" type="number" step="1" min="0"></label>
+      <label>單筆最多幾手 <input name="max_lots" type="number" step="0.01" min="0.01"></label>
+      <label>槓桿（倍）<input name="leverage" type="number" step="1" min="1"><small>槓桿只決定要押多少保證金，不會改變每 $1 波動的盈虧。</small></label>
+      <label class="check"><input name="day_mode" type="checkbox"> 當日平倉模式</label>
+      <small>美東 16:45 收盤前檢查：黃金獲利未達 +0.25R、白銀還在虧損就平倉，其餘留著過夜；黃金 12:00、白銀 13:45 之後不開新倉。</small>
     </fieldset>
     <div id="inst-settings"></div>
     <fieldset><legend>顯示</legend>

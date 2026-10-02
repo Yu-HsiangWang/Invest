@@ -167,8 +167,8 @@
   }
 
   // ------------------------------------------------------------ ticket
-  function field(k, v, extra = "", copy = false) {
-    return `<div class="field"><span class="k">${k}</span><span class="v${copy ? " copy" : ""}" ${copy ? `data-copy="${esc(String(v)).replace(/,/g, "")}" title="點一下複製"` : ""}>${v}${extra ? `<small>${extra}</small>` : ""}</span></div>`;
+  function field(k, v, extra = "", copy = false, cls = "") {
+    return `<div class="field${cls ? " " + cls : ""}"><span class="k">${k}</span><span class="v${copy ? " copy" : ""}" ${copy ? `data-copy="${esc(String(v)).replace(/,/g, "")}" title="點一下複製"` : ""}>${v}${extra ? `<small>${extra}</small>` : ""}</span></div>`;
   }
   function setStamp(text, cls, key) {
     const st = $("#stamp");
@@ -179,6 +179,29 @@
     lastStampKey = key;
   }
   const biasWord = (b) => b > 0 ? "偏多" : b < 0 ? "偏空" : "盤整";
+  function lotsInfo(sz) {
+    if (!sz || sz.lots === undefined) return ["—", ""];
+    if (sz.skip) return ["建議跳過", sz.loss_per_unit ? `最小 ${fmt(sz.min_lot, 2)} 手碰停損就虧 $${fmt(sz.loss_per_unit, 0)}（本金 ${fmt(sz.min_lot_risk_pct, 1)}%），超過設定風險 2 倍` : ""];
+    let ex = `碰停損約虧 $${fmt(sz.risk_usd, 0)}（本金 ${fmt(sz.risk_pct_actual, 1)}%）・保證金 $${fmt(sz.margin, 0)}`;
+    if (sz.over_budget) ex += `；最小手數已略高於你設定的 ${fmt(sz.risk_pct, 1)}%`;
+    if (!sz.confirmed) ex += `；以 1 手 = ${fmt(sz.oz_per_lot, 0)} 盎司計算`;
+    return [`${fmt(sz.lots, 2)} 手`, ex];
+  }
+  const notYet = (k) => (k > 0 ? `獲利未達 ${sgn(k, 2)}R` : "還在虧損");
+  function exitPlanText(s, sz) {
+    const day = s.day || {};
+    let t = (sz && sz.scale_out ? "其餘部位一起平" : "全部一起平") + "：碰到停損或移動停損";
+    if (day.on) t += `，或美東 ${day.eod_time} 檢查時${notYet(day.keep_r)}`;
+    return t;
+  }
+  function eodField(s, d) {
+    const e = s.eod && s.eod.system;
+    if (!e) return "";
+    const soon = s.eod.minutes <= 600 ? `（還有 ${s.eod.minutes} 分鐘）` : "";
+    if (e.keep) return field(`美東 ${s.eod.time_ny} 收盤前檢查${soon}`, "可以留過夜", e.locked ? "停損已過成本價，最壞大約保本" : `目前 ${sgn(e.R_now, 2)}R，已達 ${sgn(e.keep_r, 2)}R`, false, "wide");
+    return field(`美東 ${s.eod.time_ny} 收盤前檢查${soon}`, `<span class="warn-c">屆時${notYet(e.keep_r)}就平倉</span>`,
+      `目前 ${sgn(e.R_now, 2)}R；${d > 0 ? "漲到" : "跌到"} ${fmt(e.target_price)} 才可以留過夜`, false, "wide");
+  }
 
   function renderTicket(s) {
     const F = $("#ticket-fields"), N = $("#ticket-note"), H = $("#verdict"), Sub = $("#verdict-sub");
@@ -190,9 +213,7 @@
       Sub.textContent = err ? "網路恢復後會自動繼續，不需要重開程式。" : "正在下載並計算資料（第一次約需 1 分鐘）";
       F.innerHTML = ""; N.innerHTML = ""; return;
     }
-    const lotsTxt = `${fmt(sz.too_small ? sz.min_lot : sz.lots, 2)} 手`;
-    let lotsExtra = sz.too_small ? `最小手數的風險約 $${fmt(sz.min_lot_risk, 0)}，高於你設定的 $${fmt(sz.risk_usd, 0)}` : `本筆風險約 $${fmt(sz.risk_usd, 0)}（${fmt(sz.risk_pct, 1)}%）`;
-    if (!sz.confirmed) lotsExtra += `；以 1 手 = ${fmt(sz.oz_per_lot, 0)} 盎司計算，請到設定確認`;
+    const [lotsTxt, lotsExtra] = lotsInfo(sz);
     const notes = [];
     if (s.calendar && s.calendar.next_high && s.calendar.next_high.minutes <= 180)
       notes.push(`<p class="warn">📅 ${s.calendar.next_high.minutes} 分鐘後公布 ${esc(s.calendar.next_high.title)}（高影響）</p>`);
@@ -209,8 +230,12 @@
         + field("停損價（務必設定）", fmt(ns.stop), "", true)
         + field("建議手數", lotsTxt, lotsExtra)
         + field("最晚進場價", fmt(ns.max_chase), d > 0 ? "高於此價就不要追" : "低於此價就不要追", true)
-        + field("停利", "不設固定停利", "用移動停損出場");
-      notes.push(`<p>在 Mitrade：${d > 0 ? "買入" : "賣出"} ${lotsTxt}，停損設 <b>${fmt(ns.stop)}</b>。之後每 1–2 小時回來看「目前停損」，只往有利方向移動。</p>`);
+        + (sz.scale_out ? field("分批停利", `${fmt(sz.scale_out.lots, 2)} 手 @ ${fmt(sz.scale_out.price)}`, "+2R 先平約 1/3，其餘用移動停損", true)
+                        : field("停利", "不設固定停利", "用移動停損出場"));
+      if (sz.skip) notes.push(`<p class="warn">以你目前的本金，這筆連最小手數的風險都太高，建議跳過。</p>`);
+      else if (sz.scale_out) notes.push(`<p>在 Mitrade 分兩張單：${fmt(sz.scale_out.lots, 2)} 手停利設 <b>${fmt(sz.scale_out.price)}</b>、另外 ${fmt(sz.lots - sz.scale_out.lots, 2)} 手不設停利；兩張停損都設 <b>${fmt(ns.stop)}</b>。</p>`);
+      else notes.push(`<p>在 Mitrade：${d > 0 ? "買入" : "賣出"} ${lotsTxt}，停損設 <b>${fmt(ns.stop)}</b>，不設停利。之後每 1–2 小時回來看「目前停損」，只往有利方向移動。</p>`);
+      notes.push(`<p>出場：${exitPlanText(s, sz)}。</p>`);
     } else if (st === "long" || st === "short") {
       const a = s.active, d = a.dir;
       setStamp(d > 0 ? "持多" : "持空", d > 0 ? "up" : "down", "pos" + a.entry_time);
@@ -221,8 +246,11 @@
         + field("浮動盈虧", `<span class="${a.R_now > 0 ? (d > 0 ? "up-c" : "down-c") : ""}">${sgn(a.R_now, 2)} R</span>`, a.mark ? `現價 ${fmt(a.mark)}` : "")
         + field("最佳曾到", `${sgn(a.best_R, 2)} R`)
         + field("初始停損", fmt(a.init_stop))
-        + field("1R =", `$${fmt(a.risk)}`, "每盎司價格距離");
+        + field("1R =", `$${fmt(a.risk)}`, "每盎司價格距離")
+        + eodField(s, d);
       notes.push(`<p>把 Mitrade 的停損改成 <b>${fmt(a.stop)}</b>。停損只會往有利方向移動，碰到就出場——不要把停損拉遠。</p>`);
+      const e = s.eod && s.eod.system;
+      if (e && !e.keep && s.eod.minutes <= 60) notes.push(`<p class="warn">⏰ ${s.eod.minutes} 分鐘後（美東 ${s.eod.time_ny}）收盤前檢查：目前 ${sgn(e.R_now, 2)}R，屆時${notYet(e.keep_r)}就請平倉。</p>`);
     } else if (closed) {
       setStamp("休市", "neutral", "closed");
       H.textContent = "市場休市中";
@@ -241,8 +269,11 @@
       } else {
         setStamp("觀望", "neutral", "wait");
         H.textContent = "現在不要進場";
-        const failing = setup ? setup.checks.filter((c) => !c.ok && !["break", "close"].includes(c.key)).map((c) => c.label) : [];
-        Sub.textContent = bias === 0 ? "日線沒有明確方向，系統不交易盤整。" : `日線${biasWord(bias)}，但「${failing[0] || "條件"}」還沒成立。`;
+        const failing = setup ? setup.checks.filter((c) => !c.ok && !["break", "close"].includes(c.key)) : [];
+        const day = s.day || {};
+        if (bias !== 0 && failing.length && failing[0].key === "timing")
+          Sub.textContent = day.on ? `美東 ${day.cutoff} 之後到收盤不開新倉（當日平倉模式；週五午後也不開）。` : "週五午後不開新倉。";
+        else Sub.textContent = bias === 0 ? "日線沒有明確方向，系統不交易盤整。" : `日線${biasWord(bias)}，但「${failing[0] ? failing[0].label : "條件"}」還沒成立。`;
       }
       F.innerHTML = field("日線方向", `<span class="${dirCls(bias)}">${biasWord(bias)}</span>`)
         + field(sideKey === "short" ? "跌破價（24小時低點）" : "突破價（24小時高點）", setup ? fmt(setup.trigger) : "—", setup ? `距最新收盤 ${fmt(Math.abs(setup.distance))}` : "")
@@ -255,8 +286,11 @@
     if (nh && s.active && ((s.active.dir > 0 && nh.score < -0.35) || (s.active.dir < 0 && nh.score > 0.35)))
       notes.push(`<p class="warn">⚠ 近 12 小時新聞情緒${nh.label}，與持倉方向相反，留意波動。</p>`);
     if (s.my_position) {
-      const m = s.my_position;
-      $("#mypos-view").innerHTML = `<p>你的${m.dir > 0 ? "多" : "空"}單 @ ${fmt(m.entry)}：建議停損 <b>${fmt(m.stop)}</b>，目前 ${sgn(m.R_now, 2)} R${m.pnl_usd != null ? `（約 ${sgn(m.pnl_usd, 0)} 美元）` : ""}</p>`;
+      const m = s.my_position, e = s.eod && s.eod.mine, bal = (s.sizing && s.sizing.balance) || 0;
+      let h = `<p>你的${m.dir > 0 ? "多" : "空"}單${m.lots ? ` ${fmt(m.lots, 2)} 手` : ""} @ ${fmt(m.entry)}：建議停損 <b>${fmt(m.stop)}</b>，目前 ${sgn(m.R_now, 2)} R${m.pnl_usd != null && m.lots ? `（約 ${sgn(m.pnl_usd, 0)} 美元）` : ""}</p>`;
+      if (m.lots) h += m.risk_now_usd > 0 ? `<p>打到停損約虧 $${fmt(m.risk_now_usd, 0)}${bal ? `（本金 ${fmt(100 * m.risk_now_usd / bal, 1)}%）` : ""}</p>` : `<p>停損已鎖住約 $${fmt(m.locked_usd, 0)} 獲利</p>`;
+      if (e) h += `<p class="${e.keep ? "" : "warn"}">美東 ${s.eod.time_ny} 檢查：${e.keep ? "可以留過夜" : `屆時${notYet(e.keep_r)}就平倉（要${m.dir > 0 ? "漲" : "跌"}到 ${fmt(e.target_price)} 以上才留）`}</p>`;
+      $("#mypos-view").innerHTML = h;
     } else { $("#mypos-view").innerHTML = ""; }
     N.innerHTML = notes.join("");
   }
@@ -268,6 +302,19 @@
     if (s.active) side = s.active.dir > 0 ? "long" : "short";
     $$(".side-tabs .tab").forEach((b) => b.setAttribute("aria-selected", String(b.dataset.side === side)));
     $("#checks").innerHTML = s.setup[side].checks.map((c) => `<li class="${c.ok ? "ok" : "no"}"><span class="ic">${c.ok ? "✓" : "·"}</span><span class="lbl">${esc(c.label)}</span>${c.detail ? `<span class="det">${esc(c.detail)}</span>` : ""}</li>`).join("");
+  }
+  function renderLots(s) {
+    const rows = s.lots_table || [], sz = s.sizing || {};
+    if (!rows.length) { $("#lots").innerHTML = ""; $("#lots-note").textContent = ""; $("#lots-bal").textContent = ""; return; }
+    $("#lots-bal").textContent = `本金 $${fmt(sz.balance, 0)}・${fmt(sz.leverage, 0)} 倍`;
+    const rec = sz.skip ? null : sz.lots, pd = DEC > 2 ? 3 : 1;
+    $("#lots").innerHTML = rows.filter((r) => r.lots <= Math.max(sz.max_lots || 0.3, 0.01) + 1e-9).map((r) => {
+      const isRec = rec !== null && Math.abs(r.lots - rec) < 1e-9;
+      const cls = [isRec ? "rec" : "", r.loss_pct > 10 ? "danger" : r.loss_pct > 3 ? "risky" : ""].join(" ").trim();
+      const liq = !r.can_open ? "保證金不夠" : (r.liq_move <= sz.stop_dist ? `<b>$${fmt(r.liq_move, pd)}</b> ⚠` : `$${fmt(r.liq_move, pd)}`);
+      return `<tr class="${cls}"><td>${fmt(r.lots, 2)}${isRec ? ' <span class="tagrec">建議</span>' : ""}</td><td>$${fmt(r.per_dollar, r.per_dollar < 10 ? 2 : 0)}</td><td>$${fmt(r.loss_usd, 0)}<small>${fmt(r.loss_pct, 1)}%</small></td><td>$${fmt(r.margin, 0)}</td><td>${liq}</td></tr>`;
+    }).join("");
+    $("#lots-note").innerHTML = `以現在的停損距離 $${fmt(sz.stop_dist)}（2 × 1小時ATR）計算。建議手數 = 本金 × ${fmt(sz.risk_pct, 1)}% ÷ 每 0.01 手碰停損的虧損，無條件捨去。黃字＝一次停損超過本金 3%，紅字＝超過 10%。⚠ 代表還沒碰到停損就會先被強平（保證金水平 50%）。`;
   }
   function renderMTF(s) {
     if (!s.mtf) { $("#mtf").innerHTML = ""; return; }
@@ -331,8 +378,25 @@
       const rows = (b.periods || []).map((p, i) => row(p.label.replace(/^[^\d]*\s+(?=\d)/, ""), subs[i] || "", p)).join("");
       const rv = d.recent_validation;
       const recent = rv && rv.summary && rv.summary.n ? row(`${rv.window[0].slice(0, 7).replace("-", "/")}–${rv.window[1].slice(0, 7).replace("-", "/")}`, sym === "XAUUSD" ? "全新資料，從未用於設計" : "最近 18 個月", rv.summary) : "";
-      el.innerHTML = `${svg}<p class="cap">${esc(b.caption || "")}</p><table><thead><tr><th>期間</th><th>筆數</th><th>勝率</th><th>平均</th><th>最大回撤</th></tr></thead><tbody>${rows}${recent}</tbody></table><p class="cap">R = 每筆的初始風險。平均 +0.3R 代表每冒 100 美元風險，長期平均每筆約賺 30 美元（已扣點差與滑價）。勝率只有三到四成：多數單小賠出場，靠少數大波段賺回來，連輸 5–10 筆是正常的。</p>`;
+      let cmp = "";
+      const md = b.modes;
+      if (md && md.day && md.hold) {
+        const a = md.day.all, h = md.hold.all;
+        cmp = `<p class="cap">同期比較——當日平倉模式：平均 ${sgn(a.avgR, 2)}R、最大回撤 ${fmt(a.maxDD_R, 1)}R、${fmt(md.day.overnight_pct, 0)}% 的單留過夜；原策略（可一直抱著）：${sgn(h.avgR, 2)}R、${fmt(h.maxDD_R, 1)}R、${fmt(md.hold.overnight_pct, 0)}%。</p>`;
+      }
+      el.innerHTML = `${svg}<p class="cap">${esc(b.caption || "")}</p><table><thead><tr><th>期間</th><th>筆數</th><th>勝率</th><th>平均</th><th>最大回撤</th></tr></thead><tbody>${rows}${recent}</tbody></table>${cmp}<p class="cap">R = 每筆的初始風險。平均 +0.3R 代表每冒 100 美元風險，長期平均每筆約賺 30 美元（已扣點差、滑價與隔夜費）。勝率只有三到四成：多數單小賠出場，靠少數大波段賺回來，連輸 5–10 筆是正常的。</p>${moneyTable(d.money)}`;
     } catch { el.innerHTML = `<p class="cap">回測結果載入失敗。</p>`; }
+  }
+
+  function moneyTable(mo) {
+    if (!mo || !mo.rows || !mo.rows.length) return "";
+    const bal = (S && S.settings && Number(S.settings.account_balance)) || 2000;
+    const bals = [...new Set(mo.rows.map((r) => r.balance))];
+    const pick = bals.reduce((a, x) => (Math.abs(x - bal) < Math.abs(a - bal) ? x : a), bals[0]);
+    const pct = (x) => `${x > 0 ? "+" : ""}${fmt(x, 0)}%`;
+    const recRule = (mo.recommended || {})[String(pick)];
+    const rows = mo.rows.filter((r) => r.balance === pick).map((r) => `<tr class="${r.rule === recRule ? "rec" : ""}${r.p_dd50 >= 10 ? " danger" : r.p_dd30 >= 10 ? " risky" : ""}"><td>${esc(r.label)}</td><td>${pct(r.med_ret)}</td><td>${pct(r.p5_ret)}</td><td>${fmt(r.p_dd30, 0)}%</td><td>${fmt(r.p_dd50, 0)}%</td></tr>`).join("");
+    return `<h3 class="bt-h3">本金 $${fmt(pick, 0)}：每筆下幾手，一年後會怎樣？</h3><table class="money"><thead><tr><th>每筆手數</th><th>一般</th><th>運氣差</th><th>跌三成</th><th>腰斬</th></tr></thead><tbody>${rows}</tbody></table><p class="cap">${esc(mo.caption || "")}</p>`;
   }
 
   // ------------------------------------------------------------ alerts
@@ -414,7 +478,7 @@
     try {
       const s = await api(`/api/state?sym=${sym}`);
       S = s;
-      renderTabs(s); renderHeader(s); renderTicket(s); renderChecks(s); renderMTF(s); renderInter(s);
+      renderTabs(s); renderHeader(s); renderTicket(s); renderLots(s); renderChecks(s); renderMTF(s); renderInter(s);
       renderCalendar(s); renderNews(s); renderHistory(s); handleAlerts(s);
       if (!settingsBuilt && s.settings) fillSettings(s.settings);
       if (s.bar_time && s.bar_time !== lastBarTime) { lastBarTime = s.bar_time; loadCandles(); }

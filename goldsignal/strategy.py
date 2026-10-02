@@ -9,6 +9,7 @@ Evaluated on every completed 15-minute bar. A LONG signal needs ALL of:
   5. Breakout            : 15m close is the FIRST close above the highest high of the previous 24 hours
   6. Strong close        : the breakout bar closes in the top 30 % of its own range
   7. Timing              : Mon-Fri, not after 12:00 New York on Friday, no high-impact news blackout
+                           (day mode: also no new entries from `day_cutoff_ny` until the 17:00 break)
 
 SHORT is the mirror image. Trade management (identical in live mode and backtest):
 
@@ -17,6 +18,9 @@ SHORT is the mirror image. Trade management (identical in live mode and backtest
   * trailing   : best price since entry -/+ 5.0 x ATR14(1h), only ever tightened, updated every 15m close
   * no fixed target - trends are allowed to run; the trailing stop takes you out
   * cooldown   : 1 hour after an exit before a new signal may be taken
+  * day mode   : at 16:45 New York (before the 17:00 rollover) the trade is closed unless it is
+                 at least `eod_keep_r` R in profit; winners keep their trailing stop overnight
+                 (see goldsignal/plans.py and docs/RESEARCH.md section 8)
 
 Only one position at a time and direction is gated by the daily trend, so the
 engine cannot flip long/short from one bar to the next.
@@ -31,6 +35,7 @@ import pandas as pd
 from . import indicators as ind
 from .backtest import ExitRules, simulate
 from .bars import align_htf, resample
+from .plans import Clock, Plan, simulate_plan
 
 M15 = pd.Timedelta(minutes=15)
 H1 = pd.Timedelta(hours=1)
@@ -50,6 +55,20 @@ class StrategyParams:
     friday_cutoff_ny: float = 12.0
     use_h4: bool = True
     use_h1: bool = True
+    # 當日平倉模式 (None = off): entry cutoff (NY hour) and the 16:45 NY keep-overnight threshold in R
+    day_cutoff_ny: float | None = None
+    eod_keep_r: float | None = None
+    eod_time_ny: float = 16.75
+
+    @property
+    def day_mode(self) -> bool:
+        return self.eod_keep_r is not None
+
+    def plan(self, swap: bool = True) -> Plan:
+        """The trade-management plan the live engine and the backtests share."""
+        return Plan(name="day" if self.day_mode else "hold", eod="close_losers" if self.day_mode else "hold",
+                    eod_k=float(self.eod_keep_r or 0.0), eod_time=self.eod_time_ny, trail_mult=self.trail_atr_h1,
+                    stop_mult=self.stop_atr_h1, cooldown=self.cooldown_bars, swap=swap)
 
     def exit_rules(self) -> ExitRules:
         return ExitRules(tp_r=0.0, trail_mult=self.trail_atr_h1, cooldown=self.cooldown_bars)
@@ -143,6 +162,8 @@ def rule_table(m15: pd.DataFrame, f: pd.DataFrame, params: StrategyParams | None
     prev_c = c.shift(1)
     t = pd.DataFrame(index=m15.index)
     t["timing_ok"] = (f["ny_dow"] <= 4) & ~((f["ny_dow"] == 4) & (f["ny_close_h"] > p.friday_cutoff_ny))
+    if p.day_cutoff_ny is not None:  # day mode: no new trades late in the NY afternoon
+        t["timing_ok"] &= ~((f["ny_close_h"] >= p.day_cutoff_ny) & (f["ny_close_h"] < 17.0))
     t["news_ok"] = True if blackout is None else ~pd.Series(blackout, index=m15.index)
     t["adx_ok"] = ~(f["h1_adx"] > p.adx_max)
     for side, sgn in (("long", 1), ("short", -1)):
@@ -174,9 +195,11 @@ def signals_from_rules(t: pd.DataFrame) -> np.ndarray:
 
 def run(m15: pd.DataFrame, f: pd.DataFrame | None = None, params: StrategyParams | None = None,
         spread: np.ndarray | float = 0.0, slip: np.ndarray | float = 0.0,
-        blackout: np.ndarray | None = None) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+        blackout: np.ndarray | None = None, swap: bool = False) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     """Run the engine over the bars. Returns (trades, features, rule_table).
-    The last trade may be still open (reason == 'end' and exit_i == last bar)."""
+    The last trade may be still open (reason == 'end' and exit_i == last bar).
+    `swap=True` charges the broker's overnight financing; day mode and swaps use the
+    plan simulator (identical results to the fast simulator for the plain strategy)."""
     p = params or StrategyParams()
     if f is None:
         f = compute_features(m15, params=p)
@@ -189,5 +212,10 @@ def run(m15: pd.DataFrame, f: pd.DataFrame | None = None, params: StrategyParams
     n = len(m15)
     sp = np.full(n, float(spread)) if np.isscalar(spread) else np.asarray(spread, float)
     sl = np.full(n, float(slip)) if np.isscalar(slip) else np.asarray(slip, float)
-    trades = simulate(m15, sig, stop_l, stop_s, p.exit_rules(), sp, sl, atr=atr1)
+    if p.day_mode or swap:
+        trades = simulate_plan(m15, sig, atr1, p.plan(swap=swap), sp, sl, Clock.build(m15.index))
+        if trades.empty:
+            trades = simulate(m15, sig, stop_l, stop_s, p.exit_rules(), sp, sl, atr=atr1)
+    else:
+        trades = simulate(m15, sig, stop_l, stop_s, p.exit_rules(), sp, sl, atr=atr1)
     return trades, f, t

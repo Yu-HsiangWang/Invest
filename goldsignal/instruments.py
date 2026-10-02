@@ -1,8 +1,8 @@
-"""Tradable instruments. Both metals use exactly the same rules (StrategyParams
-defaults); only costs, display precision and contract defaults differ."""
+"""Tradable instruments. Both metals use exactly the same entry rules (StrategyParams
+defaults); costs, display precision, contract defaults and the day-mode settings differ."""
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 
 from .strategy import StrategyParams
 
@@ -24,18 +24,29 @@ class Instrument:
     intermarket: dict = field(default_factory=dict)
     note: str = ""
     params: StrategyParams = field(default_factory=StrategyParams)
+    # 當日平倉模式 (docs/RESEARCH.md section 8): last NY hour for new entries, and the profit (in R)
+    # a trade needs at the 16:45 NY check to be kept overnight
+    day_cutoff_ny: float = 12.0
+    eod_keep_r: float = 0.25
+
+    def strategy_params(self, day_mode: bool) -> StrategyParams:
+        if not day_mode:
+            return self.params
+        return replace(self.params, day_cutoff_ny=self.day_cutoff_ny, eod_keep_r=self.eod_keep_r)
 
 
 INSTRUMENTS: dict[str, Instrument] = {
     "XAUUSD": Instrument(
         key="XAUUSD", code="XAU-USD", name="黃金", symbol="XAU/USD", seal="金", metal="gold", decimals=2,
-        spread_pct=0.00012, slip_pct=0.00005, default_oz_per_lot=100.0, default_risk_pct=1.0, swissquote="XAU/USD",
+        spread_pct=0.00012, slip_pct=0.00005, default_oz_per_lot=100.0, default_risk_pct=2.0, swissquote="XAU/USD",
         intermarket={"DOLLAR.IDX-USD": "美元指數 DXY", "XAG-USD": "白銀 XAG", "USA500.IDX-USD": "標普500", "USTBOND.TR-USD": "美國長債"},
+        day_cutoff_ny=12.0, eod_keep_r=0.25,
     ),
     "XAGUSD": Instrument(
         key="XAGUSD", code="XAG-USD", name="白銀", symbol="XAG/USD", seal="銀", metal="silver", decimals=3,
-        spread_pct=0.0006, slip_pct=0.0001, default_oz_per_lot=5000.0, default_risk_pct=0.5, swissquote="XAG/USD",
+        spread_pct=0.0006, slip_pct=0.0001, default_oz_per_lot=5000.0, default_risk_pct=1.0, swissquote="XAG/USD",
         intermarket={"DOLLAR.IDX-USD": "美元指數 DXY", "XAU-USD": "黃金 XAU", "COPPER.CMD-USD": "銅", "USA500.IDX-USD": "標普500"},
-        note="白銀點差約為黃金的 4 倍、波動更劇烈，勝率約三成；建議每筆風險減半（約 0.5%）。",
+        note="白銀 0.01 手 = 50 盎司，價格動 $1 就賺賠 $50；點差約黃金的 4 倍、勝率約三成。本金 $5,000 以下建議先只做黃金。",
+        day_cutoff_ny=13.75, eod_keep_r=0.0,
     ),
 }

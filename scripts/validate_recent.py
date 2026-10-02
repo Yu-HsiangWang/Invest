@@ -1,11 +1,14 @@
-"""Download fresh XAU/USD data from Dukascopy and re-run the exact live strategy on it.
+"""Download fresh data from Dukascopy and re-run the exact live strategy on it.
 
 Usage:
     python scripts/validate_recent.py --symbol XAUUSD --start 2025-04-01
     python scripts/validate_recent.py --symbol XAGUSD --start 2025-04-01
+    python scripts/validate_recent.py --symbol XAUUSD --hold     # original rules only (no day mode)
 
-Outputs a summary in the terminal, results/<SYMBOL>_recent_validation.json and the
-15m bars at data/dukascopy_<SYMBOL>_15m.csv.gz (also used by the replay mode).
+Both trade-management modes are evaluated (當日平倉模式 = the app default, and the original
+rules); Mitrade's overnight financing is charged. Outputs a summary in the terminal,
+results/<SYMBOL>_recent_validation.json and the 15m bars at data/dukascopy_<SYMBOL>_15m.csv.gz
+(also used by the replay mode).
 """
 from __future__ import annotations
 
@@ -15,7 +18,6 @@ import sys
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 
-import numpy as np
 import pandas as pd
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -34,6 +36,7 @@ def main():
     ap.add_argument("--end", default=None)
     ap.add_argument("--warmup-days", type=int, default=200)
     ap.add_argument("--out", default=None)
+    ap.add_argument("--hold", action="store_true", help="report the original rules as the main result")
     args = ap.parse_args()
     inst = INSTRUMENTS[args.symbol]
     out_path = args.out or str(ROOT / "results" / f"{inst.key}_recent_validation.json")
@@ -57,14 +60,24 @@ def main():
     print(f"15m bars: {len(m15)}  ({m15.index[0]} .. {m15.index[-1]})  saved -> {out_csv}")
 
     px = m15["open"].to_numpy(float)
-    trades, f, t = S.run(m15, params=inst.params, spread=px * inst.spread_pct, slip=px * inst.slip_pct)
-    tr = trades[(trades["entry_time"] >= pd.Timestamp(start, tz="UTC"))
-                & (trades["entry_time"] < pd.Timestamp(end, tz="UTC") + pd.Timedelta(days=1))]
-    closed = tr[tr["reason"] != "end"]
+    f = S.compute_features(m15)
     years = max((end - start).days / 365.25, 1e-9)
+    runs = {}
+    for mode, day in (("day", True), ("hold", False)):
+        trades, _, _ = S.run(m15, f, inst.strategy_params(day), spread=px * inst.spread_pct, slip=px * inst.slip_pct, swap=True)
+        runs[mode] = trades[(trades["entry_time"] >= pd.Timestamp(start, tz="UTC"))
+                            & (trades["entry_time"] < pd.Timestamp(end, tz="UTC") + pd.Timedelta(days=1))]
+    main_mode = "hold" if args.hold else "day"
+    tr = runs[main_mode]
+    closed = tr[tr["reason"] != "end"]
+    other = runs["day" if args.hold else "hold"]
     summary = metrics(closed, years)
-    print("\n=== Out-of-sample result (closed trades) ===")
+    if not closed.empty:
+        summary["avg_hours"] = round(float(closed["bars"].mean() / 4), 1)
+    print(f"\n=== Out-of-sample result, {'original rules' if args.hold else 'day mode'} (closed trades) ===")
     print(json.dumps(summary, ensure_ascii=False, indent=2))
+    other_summary = metrics(other[other["reason"] != "end"], years)
+    print(f"other mode: {json.dumps(other_summary, ensure_ascii=False)}")
     if not closed.empty:
         print(by_year(closed).to_string())
         monthly = closed.groupby(closed["entry_time"].dt.strftime("%Y-%m"))["R"].agg(["size", "sum"]).round(2)
@@ -74,13 +87,18 @@ def main():
         "window": [start.isoformat(), end.isoformat()],
         "symbol": inst.key,
         "data_source": "Dukascopy",
-        "params": inst.params.to_dict(),
-        "costs": {"spread_pct": inst.spread_pct, "slip_pct_per_fill": inst.slip_pct},
+        "mode": main_mode,
+        "params": inst.strategy_params(not args.hold).to_dict(),
+        "costs": {"spread_pct": inst.spread_pct, "slip_pct_per_fill": inst.slip_pct, "swap": "Mitrade 0.0168%/0.014% per night"},
         "summary": summary,
+        ("summary_day" if args.hold else "summary_hold"): other_summary,
+        "long": metrics(closed[closed["dir"] > 0]),
+        "short": metrics(closed[closed["dir"] < 0]),
         "trades": [
-            {k: (v.isoformat() if isinstance(v, pd.Timestamp) else (float(v) if isinstance(v, (np.floating, float)) else (int(v) if isinstance(v, (np.integer,)) else v)))
-             for k, v in row.items()}
-            for row in tr[["entry_time", "exit_time", "dir", "entry", "exit", "init_stop", "R", "reason"]].to_dict("records")
+            {"entry_time_utc": r["entry_time"].strftime("%Y-%m-%d %H:%M"), "dir": int(r["dir"]),
+             "entry": round(float(r["entry"]), inst.decimals), "exit": round(float(r["exit"]), inst.decimals),
+             "R": round(float(r["R"]), 2), "exit_reason": r["reason"]}
+            for _, r in tr.iterrows()
         ],
     }
     Path(out_path).parent.mkdir(parents=True, exist_ok=True)

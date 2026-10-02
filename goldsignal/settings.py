@@ -15,7 +15,10 @@ def _default_instruments() -> dict:
 
 @dataclass
 class Settings:
-    account_balance: float = 1000.0      # USD
+    account_balance: float = 2000.0      # USD
+    day_mode: bool = True                # 當日平倉模式: 16:45 NY check + no late entries
+    max_lots: float = 0.3                # cap on one position (lots)
+    leverage: float = 100.0              # broker leverage (only affects margin)
     color_convention: str = "tw"         # "tw" = 紅漲綠跌 (Taiwan), "intl" = 綠漲紅跌
     sound: bool = True
     desktop_notify: bool = True

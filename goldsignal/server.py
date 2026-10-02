@@ -44,7 +44,7 @@ def create_app(hub: Hub) -> FastAPI:
     @app.get("/api/backtest")
     def backtest(sym: str = Query("XAUUSD", pattern=SYM)):
         out = {}
-        for kind in ("backtest_summary", "recent_validation"):
+        for kind in ("backtest_summary", "recent_validation", "money"):
             p = ROOT / "results" / f"{sym}_{kind}.json"
             if p.exists():
                 out[kind] = json.loads(p.read_text(encoding="utf-8"))

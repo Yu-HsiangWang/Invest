@@ -24,6 +24,7 @@ from .bars import resample
 from .datafeed import Dukascopy, SwissquoteQuote, to_m15
 from .instruments import INSTRUMENTS, Instrument
 from .news import NewsMonitor
+from .plans import eod_decision, lots_table, size_position
 from .settings import Settings
 
 log = logging.getLogger("goldsignal.engine")
@@ -56,6 +57,17 @@ def _trend_val(close, e20, e50) -> int:
     except TypeError:
         pass
     return 0
+
+
+REASON_WORD = {"stop": "停損", "trail": "移動停損", "eod": "收盤前平倉", "target": "分批止盈", "end": "-"}
+
+
+def _hm(h: float | None) -> str | None:
+    """12.0 -> '12:00', 16.75 -> '16:45' (New York clock)."""
+    if h is None:
+        return None
+    m = int(round(float(h) * 60))
+    return f"{m // 60:02d}:{m % 60:02d}"
 
 
 def market_status(now: datetime) -> dict:
@@ -207,7 +219,6 @@ class Engine:
                  replay_start: str | None = None, replay_speed: float = 2.0):
         self.hub = hub
         self.inst = inst
-        self.params = inst.params
         self.src = ReplaySource(replay_csv, inst, replay_start, replay_speed) if replay_csv else LiveSource(hub.cache, inst)
         self.lock = threading.RLock()
         self.core: dict = {}
@@ -225,6 +236,11 @@ class Engine:
     @property
     def settings(self) -> Settings:
         return self.hub.settings
+
+    @property
+    def params(self) -> S.StrategyParams:
+        """Strategy parameters, including the day-mode rules when 當日平倉模式 is on."""
+        return self.inst.strategy_params(bool(self.settings.day_mode))
 
     @property
     def iset(self) -> dict:
@@ -310,7 +326,7 @@ class Engine:
         feat = S.compute_features(m15, h1_hist if not h1_hist.empty else None, p)
         px = m15["open"].to_numpy(float)
         blackout = self._blackout(m15.index)
-        trades, feat, rules = S.run(m15, feat, p, px * inst.spread_pct, px * inst.slip_pct, blackout)
+        trades, feat, rules = S.run(m15, feat, p, px * inst.spread_pct, px * inst.slip_pct, blackout, swap=True)
         prev = self.core
         core = self._build_core(m15, feat, rules, trades, blackout)
         with self.lock:
@@ -355,6 +371,11 @@ class Engine:
             state = "signal_long" if dr > 0 else "signal_short"
 
         fmt = f"{{:.{d}f}}"
+        if p.day_mode:
+            timing_label = f"交易時段允許（美東 {_hm(p.day_cutoff_ny)} 後到收盤不開新倉）"
+            timing_detail = "當日平倉模式：留時間給 16:45 收盤前檢查；週五 12:00 後也不進場"
+        else:
+            timing_label, timing_detail = "交易時段允許（週五午後不進場）", ""
 
         def checks(side: str) -> list[dict]:
             sgn = 1 if side == "long" else -1
@@ -375,7 +396,7 @@ class Engine:
                  "detail": f"最新收盤 {fmt.format(last['close'])}，需{'高於' if side == 'long' else '低於'} {fmt.format(fl['chan_hi' if side == 'long' else 'chan_lo'])}"},
                 {"key": "close", "label": f"突破K棒收在強勢位置（≥ {p.close_pos_min * 100:.0f}%）", "ok": bool(tl[f"{side}_close"]),
                  "detail": f"收盤位置 {100 * (fl['cpos_long'] if side == 'long' else fl['cpos_short']):.0f}%"},
-                {"key": "timing", "label": "交易時段允許（週五午後不進場）", "ok": bool(tl["timing_ok"]), "detail": ""},
+                {"key": "timing", "label": timing_label, "ok": bool(tl["timing_ok"]), "detail": timing_detail},
                 {"key": "news", "label": "無重大數據公布前後禁區", "ok": bool(tl["news_ok"]), "detail": ""},
             ]
             return out
@@ -406,7 +427,7 @@ class Engine:
                 hist.append({"dir": int(r["dir"]), "entry_time": _iso(r["entry_time"]),
                              "exit_time": None if is_open else _iso(r["exit_time"] + pd.Timedelta(minutes=15)),
                              "entry": _f(r["entry"], d), "exit": None if is_open else _f(r["exit"], d), "R": None if is_open else _f(r["R"]),
-                             "reason": "持倉中" if is_open else {"stop": "停損", "trail": "移動停損", "end": "-"}.get(r["reason"], r["reason"])})
+                             "reason": "持倉中" if is_open else REASON_WORD.get(r["reason"], r["reason"])})
         return {
             "bar_time": _iso(m15.index[-1]), "bar_close_time": _iso(bar_close_time),
             "state": state, "active": active, "new_signal": new_signal, "cooldown_until": cooldown_until,
@@ -414,6 +435,8 @@ class Engine:
             "atr_h1": _f(atr1, d + 1), "last_close": _f(last["close"], d),
             "blackout_now": bool(blackout[-1]) if len(blackout) else False,
             "params": p.to_dict(),
+            "day": {"on": p.day_mode, "cutoff": _hm(p.day_cutoff_ny) if p.day_mode else None,
+                    "eod_time": _hm(p.eod_time_ny), "keep_r": p.eod_keep_r},
         }
 
     # ------------------------------------------------------------ alerts
@@ -433,8 +456,14 @@ class Engine:
         if pa and not ca:
             last = core["history"][0] if core.get("history") else None
             r = last["R"] if last else None
-            self._alert("exit", f"🏁 {name}系統出場", f"{'多單' if pa['dir'] > 0 else '空單'}已觸及停損/移動停損出場"
-                        + (f"，結果 {r:+.2f}R" if r is not None else ""), "exit")
+            res = f"，結果 {r:+.2f}R" if r is not None else ""
+            if last and last.get("reason") == REASON_WORD["eod"]:
+                keep = core.get("day", {}).get("keep_r") or 0
+                why = f"獲利未達 {keep:+.2f}R" if keep > 0 else "還在虧損"
+                self._alert("exit", f"⏰ {name}收盤前平倉", f"16:45 檢查時{'多單' if pa['dir'] > 0 else '空單'}{why}，"
+                            f"系統平倉{res}。請在 17:00 前到 Mitrade 平倉。", "exit")
+            else:
+                self._alert("exit", f"🏁 {name}系統出場", f"{'多單' if pa['dir'] > 0 else '空單'}已觸及停損/移動停損出場{res}", "exit")
         if pa and ca and pa.get("stop") and ca.get("stop") and abs(ca["stop"] - pa["stop"]) >= 0.25 * (core.get("atr_h1") or 1):
             self._alert("stop_move", f"↕ {name}移動停損更新", f"新停損 {ca['stop']}（原 {pa['stop']}）", "info")
 
@@ -450,6 +479,7 @@ class Engine:
             if hit and key not in self._sent:
                 self._sent.add(key)
                 self._alert("stop_hit", f"⛔ {self.inst.name}觸及停損", f"即時價已觸及停損 {a['stop']}，系統視為出場。", "exit")
+        self._eod_heads_up()
         if isinstance(self.src, ReplaySource):
             return
         now = datetime.now(timezone.utc)
@@ -461,6 +491,68 @@ class Engine:
                     self._sent.add(key)
                     extra = f"你的{self.inst.name}有持倉，可考慮確認停損或先減碼。" if a else "公布前後 30 分鐘不會產生新訊號。"
                     self._alert("event", f"📅 {int(mins)} 分鐘後：{ev['title']}", extra, "warn")
+
+    def _eod_heads_up(self):
+        """Day mode: one reminder per day between 16:25 and 16:45 New York if a position is open."""
+        p = self.params
+        if not p.day_mode:
+            return
+        ny = pd.Timestamp(self.now()).tz_convert(NY)
+        mins = ny.hour * 60 + ny.minute
+        if ny.dayofweek >= 5 or not (16 * 60 + 25 <= mins < 16 * 60 + 45):
+            return
+        key = ("eod", ny.date().isoformat())
+        if key in self._sent:
+            return
+        view = self._eod_view(self.price())
+        parts = []
+        for who, label in (("system", "系統"), ("mine", "你的")):
+            v = view.get(who)
+            if not v:
+                continue
+            word = "多單" if v["dir"] > 0 else "空單"
+            if v["keep"]:
+                parts.append(f"{label}{word}目前 {v['R_now']:+.2f}R：可以留過夜，停損 {v['stop']}。")
+            else:
+                need = f"仍未到 {v['keep_r']:+.2f}R（{v['target_price']}）" if v["keep_r"] > 0 else f"還在虧損（沒回到 {v['target_price']}）"
+                parts.append(f"{label}{word}目前 {v['R_now']:+.2f}R：16:45 若{need}就平倉。")
+        if parts:
+            self._sent.add(key)
+            self._alert("eod", f"⏰ {self.inst.name} 16:45 收盤前檢查", " ".join(parts), "warn")
+
+    def _eod_view(self, price: dict | None) -> dict:
+        """Day mode: what the 16:45 New York check says about the open position(s)."""
+        p, d = self.params, self.inst.decimals
+        if not p.day_mode:
+            return {}
+        now_ny = pd.Timestamp(self.now()).tz_convert(NY)
+        check = now_ny.normalize() + pd.Timedelta(hours=16, minutes=45)
+        if now_ny >= check + pd.Timedelta(minutes=15):
+            check += pd.Timedelta(days=1)
+        while check.dayofweek >= 5:
+            check += pd.Timedelta(days=1)
+        out = {"time_ny": _hm(p.eod_time_ny), "check_time": _iso(check), "keep_r": p.eod_keep_r,
+               "minutes": int((check - now_ny).total_seconds() // 60)}
+        off = self.iset["price_offset"]
+        a = self.core.get("active")
+        if a and price and a.get("risk"):
+            mark = (price["bid"] if a["dir"] > 0 else price["ask"]) - off
+            v = eod_decision(a["dir"], a["entry"], a["risk"], mark, p.eod_keep_r)
+            locked = (a["dir"] > 0 and a["stop"] >= a["entry"]) or (a["dir"] < 0 and a["stop"] <= a["entry"])
+            v.update(dir=a["dir"], keep=v["keep"] or locked, locked=locked, stop=_f(a["stop"] + off, d),
+                     target_price=_f(v["target_price"] + off, d))
+            out["system"] = v
+        mp = self.settings.my_positions.get(self.inst.key) or {}
+        if mp.get("entry") and mp.get("dir") and not self.m15.empty and price:
+            m = self._my_position(mp, price)
+            if m.get("risk"):
+                dr = m["dir"]
+                mark = (price["bid"] if dr > 0 else price["ask"])
+                v = eod_decision(dr, m["entry"], m["risk"], mark, p.eod_keep_r)
+                locked = (dr > 0 and m["stop"] >= m["entry"]) or (dr < 0 and m["stop"] <= m["entry"])
+                v.update(dir=dr, keep=v["keep"] or locked, locked=locked, stop=m["stop"], target_price=_f(v["target_price"], d))
+                out["mine"] = v
+        return out
 
     # ------------------------------------------------------------ views
     def now(self) -> datetime:
@@ -509,15 +601,23 @@ class Engine:
             out["active"] = dict(a, R_now=_f((mark - a["entry"]) / a["risk"] * a["dir"]), mark=_f(mark + iset["price_offset"], d))
         atr1 = core.get("atr_h1")
         if atr1:
-            stop_dist = self.params.stop_atr_h1 * atr1 + (price["spread"] if price and price.get("spread") else 0)
-            risk_usd = s.account_balance * iset["risk_pct"] / 100
-            oz = iset["oz_per_lot"]
-            lots = risk_usd / (stop_dist * oz) if stop_dist > 0 and oz > 0 else 0
-            min_lot = iset["min_lot"] or 0.01
-            lots_floor = math.floor(lots / min_lot + 1e-9) * min_lot
-            out["sizing"] = {"stop_dist": _f(stop_dist, d), "risk_usd": _f(risk_usd), "lots": _f(lots_floor, 2), "lots_raw": _f(lots, 3),
-                             "too_small": lots < min_lot, "min_lot": min_lot, "min_lot_risk": _f(min_lot * oz * stop_dist),
-                             "oz_per_lot": oz, "risk_pct": iset["risk_pct"], "confirmed": iset.get("confirmed", False)}
+            spread = float(price["spread"]) if price and price.get("spread") else 0.0
+            ns = core.get("new_signal")
+            stop_dist = abs(ns["ref_price"] - ns["stop"]) if ns else self.params.stop_atr_h1 * atr1
+            px = price["bid"] if price else (core.get("last_close") or 0) + iset["price_offset"]
+            oz, min_lot = iset["oz_per_lot"], iset["min_lot"] or 0.01
+            sz = size_position(s.account_balance, iset["risk_pct"], stop_dist, px, oz, min_lot, s.max_lots, s.leverage, spread)
+            sz.update(stop_dist=_f(stop_dist + spread, d), risk_pct=iset["risk_pct"], oz_per_lot=oz, min_lot=min_lot,
+                      confirmed=iset.get("confirmed", False), balance=s.account_balance, max_lots=s.max_lots, leverage=s.leverage)
+            n2 = sum(1 for x in sz.get("legs", []) if x > 0)
+            if n2 and ns:
+                sz["scale_out"] = {"lots": round(n2 * min_lot, 2), "r": 2.0,
+                                   "price": _f(ns["ref_price"] + ns["dir"] * 2.0 * stop_dist + iset["price_offset"], d)}
+            out["sizing"] = sz
+            out["lots_table"] = lots_table(s.account_balance, stop_dist, px, oz, spread, s.leverage)
+        eod = self._eod_view(price)
+        if eod:
+            out["eod"] = eod
         mp = s.my_positions.get(inst.key) or {}
         if mp.get("entry") and mp.get("dir") and not self.m15.empty and atr1:
             out["my_position"] = self._my_position(mp, price)
@@ -548,9 +648,12 @@ class Engine:
         mark = ((price["bid"] if dr > 0 else price["ask"]) - off) if price else None
         pnl = (mark - entry) * dr if mark is not None else None
         lots = float(mp.get("lots") or 0)
-        return {"dir": dr, "entry": _f(entry + off, d), "stop": _f(stop + off, d),
+        oz = lots * self.iset["oz_per_lot"]
+        return {"dir": dr, "entry": _f(entry + off, d), "stop": _f(stop + off, d), "risk": _f(init_risk, d + 1),
                 "R_now": _f(pnl / init_risk) if pnl is not None and init_risk > 0 else None,
-                "pnl_usd": _f(pnl * lots * self.iset["oz_per_lot"]) if pnl is not None else None, "lots": lots, "time": mp.get("time")}
+                "pnl_usd": _f(pnl * oz) if pnl is not None else None, "lots": lots, "time": mp.get("time"),
+                "risk_now_usd": _f(max(0.0, dr * (entry - stop)) * oz),
+                "locked_usd": _f(max(0.0, dr * (stop - entry)) * oz)}
 
     def _calendar_view(self, now: datetime) -> dict:
         evs = []
@@ -703,7 +806,7 @@ class Hub:
                  "kind": kind, "title": title, "body": body, "level": level}
             self.alerts.append(a)
         s = self.settings
-        if kind in ("signal", "exit", "stop_hit", "test"):
+        if kind in ("signal", "exit", "stop_hit", "eod", "test"):
             text = f"{title}\n{body}"
             if s.telegram_bot_token and s.telegram_chat_id:
                 threading.Thread(target=self._post, args=(f"https://api.telegram.org/bot{s.telegram_bot_token}/sendMessage",
@@ -729,6 +832,8 @@ class Hub:
     def update_settings(self, data: dict) -> dict:
         self.settings.update(data)
         self.settings.save(self.settings_path)
+        for e in self.engines.values():  # e.g. day mode toggled: recompute on the next tick
+            e._last_bar = None
         return self.settings.public()
 
     def set_my_position(self, sym: str, data: dict | None) -> None:
