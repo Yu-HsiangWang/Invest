@@ -36,7 +36,7 @@ def create_app(hub: Hub) -> FastAPI:
         return JSONResponse(hub.state(sym))
 
     @app.get("/api/candles")
-    def candles(sym: str = Query("XAUUSD", pattern=SYM), tf: str = Query("15m", pattern="^(15m|1h|4h|1D)$"),
+    def candles(sym: str = Query("XAUUSD", pattern=SYM), tf: str = Query("15m", pattern="^(5m|15m|1h|4h|1D)$"),
                 limit: int = Query(600, ge=50, le=3000)):
         e = hub.engines.get(sym)
         return JSONResponse(e.candles(tf, limit) if e else {"bars": []})

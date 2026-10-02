@@ -18,6 +18,11 @@
   --up-soft: #fbe5e3;
   --down-soft: #dff2e9;
   --neutral: #6b7280;
+  --sig-long: #15803d;   /* system long arrows: always green (user request) */
+  --sig-short: #c62828;  /* system short arrows: always red */
+  --lvl-r: #c2410c;      /* resistance */
+  --lvl-s: #1d6fa5;      /* support */
+  --fib: #7c3aed;
   --focus: #2457c5;
   --font-ui: "IBM Plex Sans", "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", system-ui, sans-serif;
   --font-seal: "Noto Serif TC", "PMingLiU", "Songti TC", serif;
@@ -31,6 +36,7 @@
     --bg: #12161b; --panel: #1a1f26; --ink: #e5e8ec; --muted: #9aa4b0; --rule: #2c333d; --rule-soft: #242a32;
     --gold: #d6aa4c; --gold-soft: #3a3020; --red: #ef5b50; --green: #2fb67c; --amber: #e0a03a;
     --up-soft: #3b2220; --down-soft: #17352a; --neutral: #8b95a1; --focus: #7aa2ff; color-scheme: dark;
+    --sig-long: #22a55a; --sig-short: #ef4f4f; --lvl-r: #f0883e; --lvl-s: #4ea8de; --fib: #a78bfa;
   }
   :root:not([data-theme="light"])[data-conv="intl"] { --up-soft: #17352a; --down-soft: #3b2220; }
 }
@@ -38,6 +44,7 @@
   --bg: #12161b; --panel: #1a1f26; --ink: #e5e8ec; --muted: #9aa4b0; --rule: #2c333d; --rule-soft: #242a32;
   --gold: #d6aa4c; --gold-soft: #3a3020; --red: #ef5b50; --green: #2fb67c; --amber: #e0a03a;
   --up-soft: #3b2220; --down-soft: #17352a; --neutral: #8b95a1; --focus: #7aa2ff; color-scheme: dark;
+    --sig-long: #22a55a; --sig-short: #ef4f4f; --lvl-r: #f0883e; --lvl-s: #4ea8de; --fib: #a78bfa;
 }
 
 * { box-sizing: border-box; }
@@ -203,6 +210,27 @@ table.mtf { width: 100%; border-collapse: collapse; font-size: 13.5px; }
 .backtest tr.risky td, table.lots tr.risky td { color: var(--amber); }
 .backtest tr.danger td, table.lots tr.danger td { color: var(--red); }
 
+/* ---------- chart tools & situation ---------- */
+.tools { display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: center; font-size: 12.5px; color: var(--muted); margin: 0 0 6px; }
+.tool { display: inline-flex; align-items: center; gap: 5px; cursor: pointer; }
+.tool input { margin: 0; }
+.sw { width: 14px; height: 0; border-top: 2px dashed; display: inline-block; }
+.sw.sr { border-color: var(--lvl-r); } .sw.fib { border-color: var(--fib); } .sw.tri { border-top-style: solid; border-color: var(--gold); }
+.tool-key { margin-left: auto; }
+.k-long { color: var(--sig-long); } .k-short { color: var(--sig-short); } .k-pat { color: var(--gold); }
+.situation { padding: 14px 16px; }
+.sit-head { display: grid; grid-template-columns: auto 1fr; gap: 4px 14px; align-items: center; }
+.sit-badge { grid-row: 1 / 3; display: grid; place-items: center; min-width: 76px; padding: 8px 10px; border-radius: var(--r); font-weight: 700; font-size: 17px; color: #fff; background: var(--neutral); }
+.sit-badge.long { background: var(--sig-long); } .sit-badge.short { background: var(--sig-short); }
+.sit-badge.ready-long { background: transparent; color: var(--sig-long); box-shadow: inset 0 0 0 2px var(--sig-long); }
+.sit-badge.ready-short { background: transparent; color: var(--sig-short); box-shadow: inset 0 0 0 2px var(--sig-short); }
+.sit-title { font-size: 17px; font-weight: 700; }
+.sit-text { color: var(--ink); font-size: 14px; }
+.sit-lines { list-style: none; margin: 12px 0 0; padding: 0; display: grid; gap: 8px; }
+.sit-lines li { display: grid; grid-template-columns: 74px 1fr; gap: 10px; font-size: 14px; padding-top: 8px; border-top: 1px solid var(--rule-soft); }
+.sit-lines .tl { font-size: 12px; color: var(--muted); padding-top: 2px; }
+.visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
 /* ---------- lots ---------- */
 table.lots { width: 100%; border-collapse: collapse; font-size: 13px; }
 .lots th { text-align: right; font-weight: 500; color: var(--muted); font-size: 11.5px; padding: 4px 3px; border-bottom: 1px solid var(--rule); white-space: nowrap; }
@@ -239,6 +267,8 @@ table.lots { width: 100%; border-collapse: collapse; font-size: 13px; }
   .info-col { grid-column: 1 / -1; grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media (max-width: 860px) {
+  .tool-key { margin-left: 0; width: 100%; }
+  .sit-lines li { grid-template-columns: minmax(0, 1fr); gap: 2px; }
   .topbar { gap: 10px 16px; padding: 10px 16px; }
   .px { font-size: 24px; }
   .meta { gap: 12px; }

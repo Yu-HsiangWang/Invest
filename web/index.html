@@ -88,6 +88,7 @@
     <div class="panel chart-panel">
       <div class="chart-head">
         <div class="tf-tabs" role="tablist">
+          <button class="tab" data-tf="5m" aria-selected="false">5分</button>
           <button class="tab" data-tf="15m" aria-selected="true">15分</button>
           <button class="tab" data-tf="1h" aria-selected="false">1小時</button>
           <button class="tab" data-tf="4h" aria-selected="false">4小時</button>
@@ -95,8 +96,20 @@
         </div>
         <div class="legend"><span class="lg ema20">EMA20</span><span class="lg ema50">EMA50</span><span class="lg chan">24小時高低點</span></div>
       </div>
+      <div class="tools" role="group" aria-label="圖上工具">
+        <label class="tool"><input type="checkbox" data-tool="sr" checked><span class="sw sr"></span>支撐壓力</label>
+        <label class="tool"><input type="checkbox" data-tool="fib" checked><span class="sw fib"></span>費波納奇</label>
+        <label class="tool"><input type="checkbox" data-tool="tri" checked><span class="sw tri"></span>三角形</label>
+        <span class="tool-key"><b class="k-long">▲</b> 系統做多　<b class="k-short">▼</b> 系統做空　<b class="k-pat">●</b> 形態突破</span>
+      </div>
       <div id="chart" class="chart"></div>
     </div>
+    <section class="panel situation" aria-labelledby="sit-h">
+      <h2 id="sit-h" class="visually-hidden">現在的情況</h2>
+      <div id="sit-head" class="sit-head"></div>
+      <ul id="sit-lines" class="sit-lines"></ul>
+      <p id="sit-note" class="hint"></p>
+    </section>
     <div class="context">
       <section class="panel" aria-labelledby="mtf-h">
         <h2 id="mtf-h">多週期趨勢</h2>

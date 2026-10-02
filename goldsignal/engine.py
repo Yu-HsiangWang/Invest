@@ -18,6 +18,7 @@ import numpy as np
 import pandas as pd
 import requests
 
+from . import chartlab
 from . import indicators as ind
 from . import strategy as S
 from .bars import resample
@@ -696,14 +697,19 @@ class Engine:
             return {"bars": []}
         d = self.inst.decimals
         h1_hist = getattr(self.src, "h1_hist", pd.DataFrame())
+        live_m1 = self.src.m1 if isinstance(self.src, LiveSource) and not self.src.m1.empty else None
         partial = None
-        if isinstance(self.src, LiveSource) and not self.src.m1.empty:
-            tail = self.src.m1[self.src.m1.index >= m15.index[-1] + pd.Timedelta(minutes=15)]
+        if live_m1 is not None:
+            tail = live_m1[live_m1.index >= m15.index[-1] + pd.Timedelta(minutes=15)]
             if not tail.empty:
                 partial = tail
         recent = m15 if partial is None else pd.concat([m15, resample(partial, "15min")])
         recent = recent[~recent.index.duplicated(keep="last")].sort_index()
-        if tf == "15m":
+        if tf == "5m":
+            if live_m1 is None:
+                return {"tf": tf, "decimals": d, "bars": [], "note": "回放模式只有 15 分 K 以上的資料，5 分 K 只在即時模式顯示。"}
+            bars = resample(live_m1[live_m1.index >= live_m1.index[-1] - pd.Timedelta(days=6)], "5min")
+        elif tf == "15m":
             bars = recent
         else:
             base_h1 = resample(recent, "1h")
@@ -726,6 +732,7 @@ class Engine:
             ch = feat[["chan_hi", "chan_lo"]].reindex(bars.index)
             out["chan_hi"] = [{"time": int(ts), "value": _f(v + off, d)} for ts, v in zip(t, ch["chan_hi"]) if not math.isnan(v)]
             out["chan_lo"] = [{"time": int(ts), "value": _f(v + off, d)} for ts, v in zip(t, ch["chan_lo"]) if not math.isnan(v)]
+        # ---- system trades: green arrow = long, red arrow = short
         marks = []
         t0 = int(bars.index[0].timestamp())
         if not trades.empty:
@@ -733,23 +740,62 @@ class Engine:
                 et = int(_floor_to_bar(pd.Timestamp(r["entry_time"]), bars.index).timestamp())
                 if et >= t0:
                     marks.append({"time": et, "position": "belowBar" if r["dir"] > 0 else "aboveBar",
-                                  "shape": "arrowUp" if r["dir"] > 0 else "arrowDown",
-                                  "text": ("多 " if r["dir"] > 0 else "空 ") + f"{r['entry'] + off:.{d}f}"})
+                                  "shape": "arrowUp" if r["dir"] > 0 else "arrowDown", "kind": "long" if r["dir"] > 0 else "short",
+                                  "text": ("做多 " if r["dir"] > 0 else "做空 ") + f"{r['entry'] + off:.{d}f}"})
                 is_open = r["reason"] == "end" and int(r["exit_i"]) == len(m15) - 1
                 if not is_open:
                     xt = int(_floor_to_bar(pd.Timestamp(r["exit_time"]), bars.index).timestamp())
                     if xt >= t0:
                         marks.append({"time": xt, "position": "aboveBar" if r["dir"] > 0 else "belowBar",
-                                      "shape": "circle", "text": f"出 {r['R']:+.1f}R"})
+                                      "shape": "circle", "kind": "exit", "text": f"出場 {r['R']:+.1f}R"})
+        ns = core.get("new_signal") if core else None
+        if ns:
+            marks.append({"time": t[-1], "position": "belowBar" if ns["dir"] > 0 else "aboveBar",
+                          "shape": "arrowUp" if ns["dir"] > 0 else "arrowDown", "kind": "long" if ns["dir"] > 0 else "short",
+                          "text": "現在做多" if ns["dir"] > 0 else "現在做空"})
+        # ---- reference tools
+        price = self.price()
+        mark_px = (price["bid"] - off) if price else float(bars["close"].iloc[-1])
+        an = chartlab.analyze(bars, tf, mark_px)
+        fmtp = lambda x: f"{x + off:,.{d}f}"  # noqa: E731
+        ov = {"levels": [], "fib": None, "triangle": None}
+        if an:
+            ov["levels"] = [{"price": _f(x["price"] + off, d), "kind": x["kind"],
+                             "title": ("壓力 " if x["kind"] == "resistance" else "支撐 ") + x["label"]} for x in an["levels"]]
+            fb = an.get("fib")
+            if fb:
+                ov["fib"] = {"t0": t[fb["start_i"]], "t1": t[-1], "dir": fb["dir"],
+                             "levels": [{"ratio": x["ratio"], "price": _f(x["price"] + off, d)} for x in fb["levels"]]}
+            tri = an.get("triangle")
+            if tri:
+                ov["triangle"] = {"name": tri["name"], "breakout": tri["breakout"],
+                                  "upper": [{"time": t[i], "value": _f(v + off, d)} for i, v in tri["upper"]],
+                                  "lower": [{"time": t[i], "value": _f(v + off, d)} for i, v in tri["lower"]]}
+                if tri["breakout"]:
+                    up_ = tri["breakout"] == "up"
+                    marks.append({"time": t[tri["break_i"]], "position": "belowBar" if up_ else "aboveBar", "shape": "circle",
+                                  "kind": "pattern", "text": "突破三角形" if up_ else "跌破三角形"})
+        out["overlays"] = ov
         out["markers"] = sorted(marks, key=lambda m: m["time"])
         a = core.get("active") if core else None
         if a:
             out["lines"] = [{"price": _f(a["entry"] + off, d), "title": "進場", "kind": "entry"},
                             {"price": _f(a["stop"] + off, d), "title": "停損", "kind": "stop", "dir": a["dir"]}]
-        elif core and core.get("new_signal"):
-            ns = core["new_signal"]
+        elif ns:
             out["lines"] = [{"price": _f(ns["ref_price"] + off, d), "title": "訊號價", "kind": "entry"},
                             {"price": _f(ns["stop"] + off, d), "title": "停損", "kind": "stop", "dir": ns["dir"]}]
+        elif core and not core.get("cooldown_until"):
+            bias = core.get("bias", 0)
+            side = "long" if bias > 0 else "short" if bias < 0 else None
+            st = (core.get("setup") or {}).get(side) if side else None
+            if st and st.get("ready") and st.get("trigger") is not None:
+                out["lines"] = [{"price": _f(st["trigger"] + off, d), "title": "站上做多" if bias > 0 else "跌破做空",
+                                 "kind": "trigger", "dir": bias}]
+        mp = self.settings.my_positions.get(self.inst.key) or {}
+        pos_dir = int(a["dir"]) if a else int(mp.get("dir") or 0)
+        stop = a["stop"] if a else None
+        tf_label = {"5m": "5 分 K", "15m": "15 分 K", "1h": "1 小時 K", "4h": "4 小時 K", "1D": "日 K"}.get(tf, tf)
+        out["analysis"] = chartlab.describe(an, core, fmtp, tf_label, self.inst.name, pos_dir, stop)
         return out
 
 

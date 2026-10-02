@@ -39,7 +39,8 @@
   const post = (path, body) => api(path, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
 
   // ------------------------------------------------------------ chart
-  let chart, sCandle, sE20, sE50, sHi, sLo, priceLines = [];
+  let chart, sCandle, sE20, sE50, sHi, sLo, priceLines = [], ovSeries = [], ovLines = [], lastCandles = null;
+  const tools = store.get("tools", { sr: true, fib: true, tri: true });
   const shift = (t) => t - new Date(t * 1000).getTimezoneOffset() * 60; // show local time on the axis
 
   function chartColors() {
@@ -77,24 +78,73 @@
   async function loadCandles() {
     try {
       const want = `${sym}|${tf}`;
-      const d = await api(`/api/candles?sym=${sym}&tf=${tf}&limit=${tf === "15m" ? 700 : 500}`);
-      if (want !== `${sym}|${tf}` || !d.bars || !d.bars.length) return;
+      const d = await api(`/api/candles?sym=${sym}&tf=${tf}&limit=${tf === "15m" || tf === "5m" ? 700 : 500}`);
+      if (want !== `${sym}|${tf}`) return;
+      if (!d.bars || !d.bars.length) {
+        if (d.note) { [sCandle, sE20, sE50, sHi, sLo].forEach((x) => x.setData([])); clearOverlays(); renderSituation({ headline: { kind: "wait", title: "沒有資料", text: d.note }, lines: [] }); }
+        return;
+      }
+      lastCandles = d;
       if (d.decimals !== undefined && d.decimals !== DEC) { DEC = d.decimals; applyChartColors(); }
       const m = (arr) => (arr || []).map((p) => ({ time: shift(p.time), value: p.value }));
       sCandle.setData(d.bars.map((b) => ({ ...b, time: shift(b.time) })));
       sE20.setData(m(d.ema20)); sE50.setData(m(d.ema50));
       sHi.setData(tf === "15m" ? m(d.chan_hi) : []); sLo.setData(tf === "15m" ? m(d.chan_lo) : []);
       const c = chartColors();
-      sCandle.setMarkers((d.markers || []).map((x) => ({ ...x, time: shift(x.time), color: x.shape === "circle" ? c.neutral : (x.position === "belowBar" ? c.up : c.down) })));
+      const mcol = { long: css("--sig-long"), short: css("--sig-short"), exit: c.neutral, pattern: c.gold };
+      sCandle.setMarkers((d.markers || []).filter((x) => x.kind !== "pattern" || tools.tri)
+        .map((x) => ({ ...x, time: shift(x.time), color: mcol[x.kind] || c.neutral })));
       priceLines.forEach((pl) => sCandle.removePriceLine(pl));
       priceLines = (d.lines || []).map((l) => sCandle.createPriceLine({ price: l.price, lineWidth: 2, lineStyle: 2, axisLabelVisible: true, title: l.title,
-        color: l.kind === "stop" ? (l.dir > 0 ? c.down : c.up) : c.gold }));
+        color: l.kind === "stop" ? (l.dir > 0 ? c.down : c.up) : l.kind === "trigger" ? (l.dir > 0 ? css("--sig-long") : css("--sig-short")) : c.gold }));
+      drawOverlays(d);
+      renderSituation(d.analysis);
       const key = `${sym}|${tf}`;
       if (!chartFitted[key]) {
         chart.timeScale().setVisibleLogicalRange({ from: d.bars.length - (tf === "15m" ? 220 : 160), to: d.bars.length + 5 });
         chartFitted[key] = true;
       }
     } catch (e) { /* keep last chart */ }
+  }
+  function clearOverlays() {
+    ovSeries.forEach((x) => chart.removeSeries(x)); ovSeries = [];
+    ovLines.forEach((x) => sCandle.removePriceLine(x)); ovLines = [];
+  }
+  function drawOverlays(d) {
+    clearOverlays();
+    const ov = d.overlays || {};
+    if (tools.sr) (ov.levels || []).forEach((l) => ovLines.push(sCandle.createPriceLine({ price: l.price, lineWidth: 1, lineStyle: 1, axisLabelVisible: true,
+      title: l.title, color: l.kind === "resistance" ? css("--lvl-r") : css("--lvl-s") })));
+    const seg = (pts, color, width, style, title) => {
+      const s2 = chart.addLineSeries({ color, lineWidth: width, lineStyle: style, priceLineVisible: false, lastValueVisible: !!title, title: title || "", crosshairMarkerVisible: false });
+      s2.setData(pts.map((p) => ({ time: shift(p.time), value: p.value })));
+      ovSeries.push(s2);
+    };
+    if (tools.fib && ov.fib && ov.fib.t1 > ov.fib.t0) {
+      ov.fib.levels.forEach((l) => {
+        const key = [0.382, 0.5, 0.618].includes(l.ratio);
+        seg([{ time: ov.fib.t0, value: l.price }, { time: ov.fib.t1, value: l.price }], css("--fib"), key ? 1 : 1, key ? 2 : 3,
+          key || l.ratio === 0.786 ? `${(l.ratio * 100).toFixed(1)}%` : "");
+      });
+    }
+    if (tools.tri && ov.triangle) {
+      const tr = ov.triangle;
+      if (tr.upper[1].time > tr.upper[0].time) seg(tr.upper, css("--gold"), 2, 0, "");
+      if (tr.lower[1].time > tr.lower[0].time) seg(tr.lower, css("--gold"), 2, 0, "");
+    }
+  }
+  const TOOL_LABEL = { sr: "支撐壓力", fib: "費波納奇", tri: "三角形" };
+  function renderSituation(a) {
+    const head = $("#sit-head"), ul = $("#sit-lines");
+    if (!a || !a.headline) { head.innerHTML = ""; ul.innerHTML = ""; $("#sit-note").textContent = ""; return; }
+    const h = a.headline;
+    const cls = h.kind === "signal" || h.kind === "hold" ? (h.dir > 0 ? "long" : "short") : h.kind === "ready" ? (h.dir > 0 ? "ready-long" : "ready-short") : "";
+    const badge = h.dir > 0 ? "▲ 做多" : h.dir < 0 ? "▼ 做空" : "— 觀望";
+    head.innerHTML = `<span class="sit-badge ${cls}">${h.kind === "ready" ? (h.dir > 0 ? "▲ 等多" : "▼ 等空") : badge}</span><span class="sit-title">${esc(h.title)}</span><span class="sit-text">${esc(h.text)}</span>`;
+    const lines = (a.lines || []).filter((x) => tools[x.tool] !== false);
+    ul.innerHTML = lines.map((x) => `<li><span class="tl">${TOOL_LABEL[x.tool] || ""}</span><span>${esc(x.text)}</span></li>`).join("")
+      || `<li><span class="tl">參考工具</span><span>這個週期目前沒有明顯的支撐壓力、費波納奇或三角形可以參考。</span></li>`;
+    $("#sit-note").textContent = a.note || "";
   }
   function setTf(next) {
     tf = next; store.set("tf", tf);
@@ -492,6 +542,10 @@
 
   function bind() {
     $$(".tf-tabs .tab").forEach((b) => b.addEventListener("click", () => setTf(b.dataset.tf)));
+    $$(".tools input").forEach((inp) => {
+      inp.checked = tools[inp.dataset.tool] !== false;
+      inp.addEventListener("change", () => { tools[inp.dataset.tool] = inp.checked; store.set("tools", tools); if (lastCandles) { drawOverlays(lastCandles); renderSituation(lastCandles.analysis); loadCandles(); } });
+    });
     $$(".side-tabs .tab").forEach((b) => b.addEventListener("click", () => { side = b.dataset.side; if (S) renderChecks(S); }));
     $("#btn-settings").addEventListener("click", () => { const d = $("#settings"); d.hidden = !d.hidden; $("#btn-settings").setAttribute("aria-expanded", String(!d.hidden)); if (!d.hidden && S) fillSettings(S.settings); });
     $("#settings-close").addEventListener("click", () => { $("#settings").hidden = true; $("#btn-settings").setAttribute("aria-expanded", "false"); });
@@ -522,5 +576,5 @@
 
   initChart(); bind(); setTf(tf); refresh().then(renderBacktest);
   setInterval(refresh, 3000);
-  setInterval(() => { if (tf === "15m" || S?.mode === "replay") loadCandles(); }, 20000);
+  setInterval(loadCandles, 15000);
 })();
