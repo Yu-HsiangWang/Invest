@@ -1037,5 +1037,9 @@ def _headline(core: dict, fmt, name: str) -> dict:
         d = 1 if side == "long" else -1
         return {"dir": d, "kind": "ready", "title": f"偏{'多' if d > 0 else '空'}，等{'突破' if d > 0 else '跌破'}",
                 "text": f"大方向一致向{'上' if d > 0 else '下'}；15 分 K 收盤{'站上' if d > 0 else '跌破'} {fmt(setup['trigger'])} 才{'做多' if d > 0 else '做空'}，在那之前先不要進場。"}
+    if setup and setup.get("missing") == ["squeeze"]:
+        return {"dir": 0, "kind": "wait", "title": "觀望（波動還沒收斂）",
+                "text": f"日線偏{'多' if bias > 0 else '空'}、趨勢條件都到齊，但最近 4 小時 15 分 K 的布林通道沒有收窄過；"
+                        "回測顯示這種「波動已經放大後才追的突破」平均幾乎不賺，所以系統先不進場。"}
     reason = "日線沒有明確方向（盤整）" if bias == 0 else f"日線偏{'多' if bias > 0 else '空'}，但其他條件還沒到齊"
     return {"dir": 0, "kind": "wait", "title": "觀望", "text": f"{reason}，現在不要進場。"}

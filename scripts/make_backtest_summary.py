@@ -7,9 +7,11 @@ data/raw/XAU_15m_data.csv, then run:
 
     python scripts/make_backtest_summary.py
 
-Both trade-management modes are reported, with Mitrade's overnight financing charged:
-  day  = 當日平倉模式 (default in the app): no entries 12:00-17:00 NY, 16:45 NY check
-  hold = the original rules (positions may run for days)
+Three variants are reported, with Mitrade's overnight financing charged:
+  day          = the app default: 當日平倉模式 (no entries 12:00-17:00 NY, 16:45 NY check)
+                 + 布林收窄濾網 (only breakouts out of a 15m Bollinger squeeze, docs/RESEARCH.md section 10)
+  day_nofilter = the same without the 布林收窄濾網 (the rules before the chart-tool back-test)
+  hold         = the original trade management (positions may run for days), same entries
 """
 from __future__ import annotations
 
@@ -55,12 +57,13 @@ def main():
     f = S.compute_features(df)
     res = {}
     trades = {}
-    for mode, day in (("day", True), ("hold", False)):
-        p = INST.strategy_params(day)
+    for mode, day, sq, label in (("day", True, None, "當日平倉模式＋布林收窄濾網"), ("day_nofilter", True, False, "當日平倉模式（不加濾網）"),
+                                 ("hold", False, None, "原策略（可留倉過夜）")):
+        p = INST.strategy_params(day, squeeze=sq)
         tr, _, _ = S.run(df, f, p, spread=px * SPREAD_PCT, slip=px * SLIP_PCT, swap=True)
         tr = tr[(tr["reason"] != "end") & (tr["entry_time"] >= pd.Timestamp("2005-01-01", tz="UTC"))]
         trades[mode] = tr
-        res[mode] = summarize(tr, "當日平倉模式" if day else "原策略（可留倉過夜）")
+        res[mode] = summarize(tr, label)
     tr = trades["day"]
     allm = res["day"]["all"]
     months = (tr["entry_time"].iloc[-1] - tr["entry_time"].iloc[0]).days / 30.4
@@ -68,7 +71,7 @@ def main():
     eq["cum"] = eq["R"].cumsum()
     step = max(1, len(eq) // 300)
     out = {
-        "caption": f"當日平倉模式 2005–2025/3 共 {allm['n']} 筆（約每月 {allm['n'] / months:.1f} 筆），累積 {allm['totR']:+.0f}R；"
+        "caption": f"當日平倉模式＋布林收窄濾網 2005–2025/3 共 {allm['n']} 筆（約每月 {allm['n'] / months:.1f} 筆），累積 {allm['totR']:+.0f}R；"
                    f"已扣點差 0.012%、每次成交滑價 0.005% 與 Mitrade 隔夜費。",
         "params": INST.strategy_params(True).to_dict(),
         "costs": {"spread_pct": SPREAD_PCT, "slip_pct_per_fill": SLIP_PCT, "swap_long_pct_night": 0.0168, "swap_short_pct_night": 0.014},
@@ -85,6 +88,7 @@ def main():
     path.parent.mkdir(exist_ok=True)
     path.write_text(json.dumps(out, ensure_ascii=False, indent=1, default=lambda o: o.item() if hasattr(o, "item") else str(o)))
     print(json.dumps({k: out[k] for k in ("caption", "all", "periods")}, ensure_ascii=False, indent=1))
+    print("day_nofilter:", json.dumps(res["day_nofilter"]["all"], ensure_ascii=False))
     print("hold:", json.dumps(res["hold"]["all"], ensure_ascii=False))
 
 

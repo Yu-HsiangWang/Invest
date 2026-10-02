@@ -10,7 +10,7 @@ from .instruments import INSTRUMENTS
 
 def _default_instruments() -> dict:
     return {k: {"oz_per_lot": ins.default_oz_per_lot, "price_offset": 0.0, "risk_pct": ins.default_risk_pct,
-                "min_lot": 0.01, "confirmed": False} for k, ins in INSTRUMENTS.items()}
+                "min_lot": 0.01, "confirmed": False, "squeeze_filter": ins.squeeze_default} for k, ins in INSTRUMENTS.items()}
 
 
 @dataclass
@@ -29,7 +29,7 @@ class Settings:
     blackout_after_min: int = 30
     fomc_after_min: int = 60
     show_medium_impact: bool = False
-    # per instrument: oz_per_lot, price_offset, risk_pct, min_lot, confirmed
+    # per instrument: oz_per_lot, price_offset, risk_pct, min_lot, confirmed, squeeze_filter (布林收窄濾網)
     instruments: dict = field(default_factory=_default_instruments)
     # optional real positions, per instrument: {"dir": 1/-1, "entry": float, "time": iso, "lots": float}
     my_positions: dict = field(default_factory=dict)
@@ -81,7 +81,7 @@ class Settings:
                     tgt = self.instruments.setdefault(key, {})
                     for kk, vv in vals.items():
                         try:
-                            if kk == "confirmed":
+                            if kk in ("confirmed", "squeeze_filter"):
                                 tgt[kk] = bool(vv)
                             elif kk in ("oz_per_lot", "price_offset", "risk_pct", "min_lot"):
                                 tgt[kk] = float(vv)

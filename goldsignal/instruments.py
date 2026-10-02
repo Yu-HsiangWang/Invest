@@ -1,10 +1,11 @@
-"""Tradable instruments. Both metals use exactly the same entry rules (StrategyParams
-defaults); costs, display precision, contract defaults and the day-mode settings differ."""
+"""Tradable instruments. Both metals use the same entry rules (StrategyParams defaults) except
+the 布林收窄濾網, which only gold uses; costs, display precision, contract defaults and the
+day-mode settings differ."""
 from __future__ import annotations
 
 from dataclasses import dataclass, field, replace
 
-from .strategy import StrategyParams
+from .strategy import SQUEEZE_BARS, StrategyParams
 
 
 @dataclass(frozen=True)
@@ -28,11 +29,17 @@ class Instrument:
     # a trade needs at the 16:45 NY check to be kept overnight
     day_cutoff_ny: float = 12.0
     eod_keep_r: float = 0.25
+    # 布林收窄濾網 (docs/RESEARCH.md section 10) on by default? Gold yes (same total profit with a much
+    # smaller drawdown 2005-2026); silver's results were mixed, so it keeps the plain rules.
+    squeeze_default: bool = False
 
-    def strategy_params(self, day_mode: bool) -> StrategyParams:
+    def strategy_params(self, day_mode: bool, squeeze: bool | None = None) -> StrategyParams:
+        """The rules the app trades. squeeze=None -> the instrument default; True/False forces the filter."""
+        on = self.squeeze_default if squeeze is None else bool(squeeze)
+        p = replace(self.params, squeeze_bars=SQUEEZE_BARS if on else 0)
         if not day_mode:
-            return self.params
-        return replace(self.params, day_cutoff_ny=self.day_cutoff_ny, eod_keep_r=self.eod_keep_r)
+            return p
+        return replace(p, day_cutoff_ny=self.day_cutoff_ny, eod_keep_r=self.eod_keep_r)
 
 
 INSTRUMENTS: dict[str, Instrument] = {
@@ -40,7 +47,7 @@ INSTRUMENTS: dict[str, Instrument] = {
         key="XAUUSD", code="XAU-USD", name="黃金", symbol="XAU/USD", seal="金", metal="gold", decimals=2,
         spread_pct=0.00012, slip_pct=0.00005, default_oz_per_lot=100.0, default_risk_pct=2.0, swissquote="XAU/USD",
         intermarket={"DOLLAR.IDX-USD": "美元指數 DXY", "XAG-USD": "白銀 XAG", "USA500.IDX-USD": "標普500", "USTBOND.TR-USD": "美國長債"},
-        day_cutoff_ny=12.0, eod_keep_r=0.25,
+        day_cutoff_ny=12.0, eod_keep_r=0.25, squeeze_default=True,
     ),
     "XAGUSD": Instrument(
         key="XAGUSD", code="XAG-USD", name="白銀", symbol="XAG/USD", seal="銀", metal="silver", decimals=3,

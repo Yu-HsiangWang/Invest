@@ -41,6 +41,7 @@ M15 = pd.Timedelta(minutes=15)
 H1 = pd.Timedelta(hours=1)
 H4 = pd.Timedelta(hours=4)
 D1 = pd.Timedelta(days=1)
+SQUEEZE_BARS = 16   # 布林收窄濾網 look-back when it is on (16 x 15m = 4 hours)
 
 
 @dataclass
@@ -59,6 +60,11 @@ class StrategyParams:
     day_cutoff_ny: float | None = None
     eod_keep_r: float | None = None
     eod_time_ny: float = 16.75
+    # 布林收窄濾網 (0 = off): only take a breakout that comes out of a volatility squeeze - the 15m
+    # Bollinger band width (20, 2) was in the lowest `squeeze_pct` of its last 200 bars at least once
+    # in the `squeeze_bars` bars before the signal bar (docs/RESEARCH.md section 10)
+    squeeze_bars: int = 0
+    squeeze_pct: float = 0.3
 
     @property
     def day_mode(self) -> bool:
@@ -147,6 +153,9 @@ def compute_features(m15: pd.DataFrame, h1_hist: pd.DataFrame | None = None,
     f["m15_rsi"] = ind.rsi(m15["close"], 14)
     f["m15_ema20"] = ind.ema(m15["close"], 20)
     f["m15_ema50"] = ind.ema(m15["close"], 50)
+    bb = ind.bollinger(m15["close"], 20, 2.0)
+    bw = (bb["upper"] - bb["lower"]) / bb["mid"]
+    f["m15_bw_pct"] = bw.rolling(200, min_periods=50).rank(pct=True)   # 0 = narrowest of the last 200 bars
 
     ny = m15.index.tz_convert("America/New_York")
     f["ny_close_h"] = ((ny.hour + ny.minute / 60.0 + 0.25) % 24).astype(float)
@@ -184,9 +193,18 @@ def rule_table(m15: pd.DataFrame, f: pd.DataFrame, params: StrategyParams | None
     sh1 = t["short_h1"] if p.use_h1 else True
     t["long_setup"] = common & t["long_d1"] & lh4 & lh1 & t["long_ext"]
     t["short_setup"] = common & t["short_d1"] & sh4 & sh1 & t["short_ext"]
-    t["long_signal"] = t["long_setup"] & t["long_break"] & t["long_close"]
-    t["short_signal"] = t["short_setup"] & t["short_break"] & t["short_close"]
+    t["squeeze_ok"] = squeeze_recent(f, p, include_last=False) if p.squeeze_bars > 0 else True
+    t["long_signal"] = t["long_setup"] & t["long_break"] & t["long_close"] & t["squeeze_ok"]
+    t["short_signal"] = t["short_setup"] & t["short_break"] & t["short_close"] & t["squeeze_ok"]
     return t.fillna(False)
+
+
+def squeeze_recent(f: pd.DataFrame, p: StrategyParams, include_last: bool = False) -> pd.Series:
+    """布林收窄濾網: was the 15m band width in its lowest `squeeze_pct` within the `squeeze_bars` bars
+    before each bar (include_last=True: the window ends at the bar itself, i.e. 'would a breakout on
+    the NEXT bar qualify')."""
+    bw = f["m15_bw_pct"] if include_last else f["m15_bw_pct"].shift(1)
+    return (bw.rolling(max(int(p.squeeze_bars), 1), min_periods=1).min() <= p.squeeze_pct).fillna(False)
 
 
 def signals_from_rules(t: pd.DataFrame) -> np.ndarray:

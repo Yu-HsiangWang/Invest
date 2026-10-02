@@ -240,8 +240,10 @@ class Engine:
 
     @property
     def params(self) -> S.StrategyParams:
-        """Strategy parameters, including the day-mode rules when 當日平倉模式 is on."""
-        return self.inst.strategy_params(bool(self.settings.day_mode))
+        """Strategy parameters, including the day-mode rules when 當日平倉模式 is on and the
+        布林收窄濾網 when it is ticked for this instrument (gold: on by default)."""
+        sq = self.iset.get("squeeze_filter", self.inst.squeeze_default)
+        return self.inst.strategy_params(bool(self.settings.day_mode), squeeze=bool(sq))
 
     @property
     def iset(self) -> dict:
@@ -372,6 +374,14 @@ class Engine:
             state = "signal_long" if dr > 0 else "signal_short"
 
         fmt = f"{{:.{d}f}}"
+        sq_ok, sq_detail = True, ""
+        if p.squeeze_bars > 0:   # 布林收窄濾網: while waiting, the window that the NEXT bar will use
+            bwp = f["m15_bw_pct"]
+            win = bwp.iloc[-p.squeeze_bars - 1:-1] if new_signal else bwp.iloc[-p.squeeze_bars:]
+            lo_pct = float(win.min()) if win.notna().any() else float("nan")
+            sq_ok = bool(lo_pct <= p.squeeze_pct)
+            sq_detail = (f"近 {p.squeeze_bars // 4} 小時布林帶寬最窄時，排在近 200 根的 {lo_pct * 100:.0f}%（需 ≤ {p.squeeze_pct * 100:.0f}%）"
+                         if np.isfinite(lo_pct) else "資料不足")
         if p.day_mode:
             timing_label = f"交易時段允許（美東 {_hm(p.day_cutoff_ny)} 後到收盤不開新倉）"
             timing_detail = "當日平倉模式：留時間給 16:45 收盤前檢查；週五 12:00 後也不進場"
@@ -400,6 +410,9 @@ class Engine:
                 {"key": "timing", "label": timing_label, "ok": bool(tl["timing_ok"]), "detail": timing_detail},
                 {"key": "news", "label": "無重大數據公布前後禁區", "ok": bool(tl["news_ok"]), "detail": ""},
             ]
+            if p.squeeze_bars > 0:
+                out.append({"key": "squeeze", "label": f"突破前 {p.squeeze_bars // 4} 小時內波動有收斂過（布林通道收窄）",
+                            "ok": sq_ok, "detail": sq_detail})
             return out
 
         nb = p.breakout_hours * 4
@@ -409,7 +422,8 @@ class Engine:
         for side in ("long", "short"):
             ck = checks(side)
             trend_ok = all(c["ok"] for c in ck if c["key"] not in ("break", "close"))
-            setup[side] = {"checks": ck, "ready": trend_ok, "trigger": _f(hi_n if side == "long" else lo_n, d),
+            missing = [c["key"] for c in ck if not c["ok"] and c["key"] not in ("break", "close")]
+            setup[side] = {"checks": ck, "ready": trend_ok, "missing": missing, "trigger": _f(hi_n if side == "long" else lo_n, d),
                            "distance": _f((hi_n - float(last["close"])) if side == "long" else (float(last["close"]) - lo_n), d)}
 
         mtf = []

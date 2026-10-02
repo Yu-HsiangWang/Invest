@@ -68,7 +68,7 @@ def periods_for(source: str) -> dict:
 
 def variants(sym: str) -> list[tuple[str, S.StrategyParams, Plan]]:
     inst = INSTRUMENTS[sym]
-    base = inst.params
+    base = inst.strategy_params(False)      # the app's entry rules (gold: with the 布林收窄濾網)
     day = inst.strategy_params(True)
     noon = replace(base, day_cutoff_ny=12.0)
     keep = inst.eod_keep_r

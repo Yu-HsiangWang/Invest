@@ -369,7 +369,7 @@ def select(res: pd.DataFrame) -> pd.DataFrame:
 def system_setup(df15: pd.DataFrame, symbol: str = "XAUUSD") -> dict:
     """The live system (day mode) exactly as scripts/make_backtest_summary.py runs it."""
     inst = INSTRUMENTS[symbol]
-    p = inst.strategy_params(True)
+    p = inst.strategy_params(True, squeeze=False)      # the system BEFORE any tool filter
     f = S.compute_features(df15)
     t = S.rule_table(df15, f, p, None)
     sig = S.signals_from_rules(t)
