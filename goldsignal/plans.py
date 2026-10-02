@@ -105,8 +105,13 @@ class Clock:
 
 
 def simulate_plan(df: pd.DataFrame, sig: np.ndarray, atr: np.ndarray, plan: Plan,
-                  spread: np.ndarray, slip: np.ndarray, clock: Clock | None = None) -> pd.DataFrame:
-    """Simulate `plan` on the signal array. Returns one row per trade with per-leg results."""
+                  spread: np.ndarray, slip: np.ndarray, clock: Clock | None = None,
+                  exit_sig: np.ndarray | None = None, target_px: np.ndarray | None = None) -> pd.DataFrame:
+    """Simulate `plan` on the signal array. Returns one row per trade with per-leg results.
+
+    Research hooks (both optional, used by research/tool_backtest.py):
+    exit_sig   per bar: -1 = close longs at this bar's close, +1 = close shorts (a chart-tool exit)
+    target_px  per signal bar: a price target for the whole position (NaN = none)"""
     o = df["open"].to_numpy(float)
     h = df["high"].to_numpy(float)
     lo = df["low"].to_numpy(float)
@@ -144,6 +149,8 @@ def simulate_plan(df: pd.DataFrame, sig: np.ndarray, atr: np.ndarray, plan: Plan
             continue
         init_stop = stop
         tp_px = np.where(legs > 0, entry + d * legs * risk, np.nan)
+        if target_px is not None and np.isfinite(target_px[i]) and d * (target_px[i] - entry) > 0:
+            tp_px = np.full(m, float(target_px[i]))
         leg_open = np.ones(m, dtype=bool)
         leg_exit = np.full(m, np.nan)
         leg_j = np.full(m, -1, dtype=np.int64)
@@ -173,7 +180,7 @@ def simulate_plan(df: pd.DataFrame, sig: np.ndarray, atr: np.ndarray, plan: Plan
                     leg_exit[k], leg_j[k], leg_reason[k] = px, j, reason
                 leg_open[:] = False
                 break
-            for k in np.flatnonzero(leg_open & (legs > 0)):
+            for k in np.flatnonzero(leg_open & np.isfinite(tp_px)):
                 if (d > 0 and h[j] >= tp_px[k]) or (d < 0 and lo[j] + sp <= tp_px[k]):
                     leg_exit[k], leg_j[k], leg_reason[k] = tp_px[k], j, "target"
                     leg_open[k] = False
@@ -197,6 +204,13 @@ def simulate_plan(df: pd.DataFrame, sig: np.ndarray, atr: np.ndarray, plan: Plan
                 ts = best - d * plan.trail_mult * atr[j]
                 if (d > 0 and ts > stop) or (d < 0 and ts < stop):
                     stop = ts
+            if exit_sig is not None and exit_sig[j] == -d:
+                px = c[j] - slip[j] if d > 0 else c[j] + sp + slip[j]
+                for k in np.flatnonzero(leg_open):
+                    leg_exit[k], leg_j[k], leg_reason[k] = px, j, "tool"
+                leg_open[:] = False
+                reason = "tool"
+                break
             if is_eod[j]:
                 locked = (d > 0 and stop >= entry) or (d < 0 and stop <= entry)
                 friday = clock.sess_dow[j] == 4
