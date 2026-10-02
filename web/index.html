@@ -96,17 +96,18 @@
         </div>
         <div class="legend"><span class="lg ema20">EMA20</span><span class="lg ema50">EMA50</span><span class="lg chan">24小時高低點</span></div>
       </div>
-      <div class="tools" role="group" aria-label="圖上工具">
-        <label class="tool"><input type="checkbox" data-tool="sr" checked><span class="sw sr"></span>支撐壓力</label>
-        <label class="tool"><input type="checkbox" data-tool="fib" checked><span class="sw fib"></span>費波納奇</label>
-        <label class="tool"><input type="checkbox" data-tool="tri" checked><span class="sw tri"></span>三角形</label>
-        <span class="tool-key"><b class="k-long">▲</b> 系統做多　<b class="k-short">▼</b> 系統做空　<b class="k-pat">●</b> 形態突破</span>
+      <div class="tools-bar">
+        <label class="auto-switch"><input type="checkbox" id="auto-tools" checked> <b>★ 自動顯示適合現在行情的工具</b></label>
+        <span class="tool-key"><b class="k-long">▲</b> 系統做多　<b class="k-short">▼</b> 系統做空</span>
       </div>
+      <div id="tools" class="tools" role="group" aria-label="看圖工具（可勾選）"></div>
       <div id="chart" class="chart"></div>
+      <div id="panes" class="panes"></div>
     </div>
     <section class="panel situation" aria-labelledby="sit-h">
       <h2 id="sit-h" class="visually-hidden">現在的情況</h2>
       <div id="sit-head" class="sit-head"></div>
+      <p id="sit-regime" class="sit-regime"></p>
       <ul id="sit-lines" class="sit-lines"></ul>
       <p id="sit-note" class="hint"></p>
     </section>

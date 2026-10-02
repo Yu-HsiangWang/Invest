@@ -129,3 +129,71 @@ def swing_low(df: pd.DataFrame, n: int) -> pd.Series:
 
 def swing_high(df: pd.DataFrame, n: int) -> pd.Series:
     return df["high"].rolling(n, min_periods=n).max()
+
+
+def stoch_kd(df: pd.DataFrame, n: int = 9) -> pd.DataFrame:
+    """KD (Taiwan-style stochastic, 9,3,3): RSV over n bars, K and D smoothed by 1/3."""
+    lo = df["low"].rolling(n, min_periods=n).min()
+    hi = df["high"].rolling(n, min_periods=n).max()
+    rsv = (100.0 * (df["close"] - lo) / (hi - lo).replace(0.0, np.nan)).to_numpy()
+    k = np.full(len(df), np.nan)
+    d = np.full(len(df), np.nan)
+    pk = pd_ = 50.0
+    for i, r in enumerate(rsv):
+        if np.isnan(r):
+            continue
+        pk = pk * 2.0 / 3.0 + r / 3.0
+        pd_ = pd_ * 2.0 / 3.0 + pk / 3.0
+        k[i], d[i] = pk, pd_
+    return pd.DataFrame({"k": k, "d": d}, index=df.index)
+
+
+def parabolic_sar(df: pd.DataFrame, step: float = 0.02, max_step: float = 0.2) -> pd.DataFrame:
+    """Wilder's Parabolic SAR. direction = +1 (SAR below price, uptrend) / -1."""
+    h, l = df["high"].to_numpy(float), df["low"].to_numpy(float)
+    m = len(df)
+    sar = np.full(m, np.nan)
+    direction = np.zeros(m)
+    if m < 3:
+        return pd.DataFrame({"sar": sar, "direction": direction}, index=df.index)
+    up = h[1] >= h[0]
+    ep = h[1] if up else l[1]
+    s = l[0] if up else h[0]
+    af = step
+    for i in range(1, m):
+        s = s + af * (ep - s)
+        if up:
+            s = min(s, l[i - 1], l[i - 2] if i >= 2 else l[i - 1])
+            if l[i] < s:
+                up, s, ep, af = False, ep, l[i], step
+            elif h[i] > ep:
+                ep, af = h[i], min(af + step, max_step)
+        else:
+            s = max(s, h[i - 1], h[i - 2] if i >= 2 else h[i - 1])
+            if h[i] > s:
+                up, s, ep, af = True, ep, h[i], step
+            elif l[i] < ep:
+                ep, af = l[i], min(af + step, max_step)
+        sar[i] = s
+        direction[i] = 1.0 if up else -1.0
+    return pd.DataFrame({"sar": sar, "direction": direction}, index=df.index)
+
+
+def ichimoku(df: pd.DataFrame, t: int = 9, k: int = 26, s: int = 52) -> pd.DataFrame:
+    """Tenkan, Kijun and the cloud that applies to each bar (spans computed `k` bars earlier)."""
+    mid = lambda n: (df["high"].rolling(n, min_periods=n).max() + df["low"].rolling(n, min_periods=n).min()) / 2.0  # noqa: E731
+    tenkan, kijun = mid(t), mid(k)
+    span_a = ((tenkan + kijun) / 2.0).shift(k)
+    span_b = mid(s).shift(k)
+    return pd.DataFrame({"tenkan": tenkan, "kijun": kijun, "span_a": span_a, "span_b": span_b})
+
+
+def session_vwap(df: pd.DataFrame, session_id: np.ndarray) -> pd.Series:
+    """Volume-weighted average price restarting every trading day (tick volume)."""
+    tp = (df["high"] + df["low"] + df["close"]) / 3.0
+    vol = df["volume"].fillna(0.0).clip(lower=0.0)
+    vol = vol.where(vol > 0, 1.0)  # bars without volume still count once
+    g = pd.Series(session_id, index=df.index)
+    pv = (tp * vol).groupby(g).cumsum()
+    vv = vol.groupby(g).cumsum()
+    return pv / vv

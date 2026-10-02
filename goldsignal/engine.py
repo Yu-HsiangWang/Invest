@@ -690,7 +690,7 @@ class Engine:
                         "spark": h1["close"].iloc[-48:].round(4).tolist()})
         return out
 
-    def candles(self, tf: str = "15m", limit: int = 600) -> dict:
+    def candles(self, tf: str = "15m", limit: int = 600, show: set | None = None, auto: bool = True) -> dict:
         with self.lock:
             m15, feat, trades, core = self.m15, self.feat, self.trades, self.core
         if m15.empty:
@@ -753,29 +753,6 @@ class Engine:
             marks.append({"time": t[-1], "position": "belowBar" if ns["dir"] > 0 else "aboveBar",
                           "shape": "arrowUp" if ns["dir"] > 0 else "arrowDown", "kind": "long" if ns["dir"] > 0 else "short",
                           "text": "現在做多" if ns["dir"] > 0 else "現在做空"})
-        # ---- reference tools
-        price = self.price()
-        mark_px = (price["bid"] - off) if price else float(bars["close"].iloc[-1])
-        an = chartlab.analyze(bars, tf, mark_px)
-        fmtp = lambda x: f"{x + off:,.{d}f}"  # noqa: E731
-        ov = {"levels": [], "fib": None, "triangle": None}
-        if an:
-            ov["levels"] = [{"price": _f(x["price"] + off, d), "kind": x["kind"],
-                             "title": ("壓力 " if x["kind"] == "resistance" else "支撐 ") + x["label"]} for x in an["levels"]]
-            fb = an.get("fib")
-            if fb:
-                ov["fib"] = {"t0": t[fb["start_i"]], "t1": t[-1], "dir": fb["dir"],
-                             "levels": [{"ratio": x["ratio"], "price": _f(x["price"] + off, d)} for x in fb["levels"]]}
-            tri = an.get("triangle")
-            if tri:
-                ov["triangle"] = {"name": tri["name"], "breakout": tri["breakout"],
-                                  "upper": [{"time": t[i], "value": _f(v + off, d)} for i, v in tri["upper"]],
-                                  "lower": [{"time": t[i], "value": _f(v + off, d)} for i, v in tri["lower"]]}
-                if tri["breakout"]:
-                    up_ = tri["breakout"] == "up"
-                    marks.append({"time": t[tri["break_i"]], "position": "belowBar" if up_ else "aboveBar", "shape": "circle",
-                                  "kind": "pattern", "text": "突破三角形" if up_ else "跌破三角形"})
-        out["overlays"] = ov
         out["markers"] = sorted(marks, key=lambda m: m["time"])
         a = core.get("active") if core else None
         if a:
@@ -791,12 +768,28 @@ class Engine:
             if st and st.get("ready") and st.get("trigger") is not None:
                 out["lines"] = [{"price": _f(st["trigger"] + off, d), "title": "站上做多" if bias > 0 else "跌破做空",
                                  "kind": "trigger", "dir": bias}]
+        # ---- chart-reading tools (reference only)
         mp = self.settings.my_positions.get(self.inst.key) or {}
         pos_dir = int(a["dir"]) if a else int(mp.get("dir") or 0)
         stop = a["stop"] if a else None
-        tf_label = {"5m": "5 分 K", "15m": "15 分 K", "1h": "1 小時 K", "4h": "4 小時 K", "1D": "日 K"}.get(tf, tf)
-        out["analysis"] = chartlab.describe(an, core, fmtp, tf_label, self.inst.name, pos_dir, stop)
+        price = self.price()
+        mark_px = (price["bid"] - off) if price else float(bars["close"].iloc[-1])
+        fmtp = lambda x: f"{x + off:,.{d}f}"  # noqa: E731
+        ta = chartlab.build(bars, tf, mark_px, core, fmtp, self.inst.name, pos_dir, stop, show, auto)
+        out["ta"] = _shift_ta(ta, off)
         return out
+
+
+def _shift_ta(ta: dict, off: float) -> dict:
+    """Add the user's price offset to everything drawn on the price chart (not to oscillator panes)."""
+    if not off:
+        return ta
+    for dr in ta.get("draw", {}).values():
+        for ln in dr.get("lines", []):
+            ln["points"] = [[t, (v + off if v is not None else None)] for t, v in ln["points"]]
+        for lv in dr.get("levels", []):
+            lv["price"] = lv["price"] + off
+    return ta
 
 
 def _floor_to_bar(ts: pd.Timestamp, index: pd.DatetimeIndex) -> pd.Timestamp:

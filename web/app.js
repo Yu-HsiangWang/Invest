@@ -40,7 +40,10 @@
 
   // ------------------------------------------------------------ chart
   let chart, sCandle, sE20, sE50, sHi, sLo, priceLines = [], ovSeries = [], ovLines = [], lastCandles = null;
-  const tools = store.get("tools", { sr: true, fib: true, tri: true });
+  const toolSel = new Set(store.get("toolSel", ["sr", "ma"]));      // tools the user ticked
+  let autoTools = store.get("autoTools", true);                      // let suitable tools pop up
+  const panes = {};                                                 // key -> {el, chart, series: []}
+  const PANE_ORDER = ["volume", "rsi", "macd", "kd"];
   const shift = (t) => t - new Date(t * 1000).getTimezoneOffset() * 60; // show local time on the axis
 
   function chartColors() {
@@ -53,7 +56,7 @@
       autoSize: true,
       layout: { background: { type: "solid", color: c.bg }, textColor: c.text, fontFamily: "IBM Plex Sans, Noto Sans TC, sans-serif" },
       grid: { vertLines: { color: c.grid }, horzLines: { color: c.grid } },
-      rightPriceScale: { borderColor: c.grid },
+      rightPriceScale: { borderColor: c.grid, minimumWidth: 78 },
       timeScale: { borderColor: c.grid, timeVisible: true, secondsVisible: false, rightOffset: 6 },
       crosshair: { mode: 0 },
       localization: { locale: "zh-TW", priceFormatter: (p) => fmt(p, DEC) },
@@ -61,6 +64,7 @@
     sCandle = chart.addCandlestickSeries({});
     const line = (w, style) => chart.addLineSeries({ lineWidth: w, lineStyle: style, priceLineVisible: false, lastValueVisible: false, crosshairMarkerVisible: false });
     sE20 = line(2, 0); sE50 = line(2, 0); sHi = line(1, 1); sLo = line(1, 1);
+    chart.timeScale().subscribeVisibleLogicalRangeChange((r) => { if (r) Object.values(panes).forEach((p) => p.chart.timeScale().setVisibleLogicalRange(r)); });
     applyChartColors();
     window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", applyChartColors);
   }
@@ -73,15 +77,18 @@
       priceFormat: { type: "price", precision: DEC, minMove: Math.pow(10, -DEC) } });
     sE20.applyOptions({ color: c.gold }); sE50.applyOptions({ color: c.blue });
     sHi.applyOptions({ color: c.neutral }); sLo.applyOptions({ color: c.neutral });
+    Object.values(panes || {}).forEach((p) => p.chart.applyOptions({ layout: { background: { type: "solid", color: c.bg }, textColor: c.text },
+      grid: { vertLines: { color: c.grid } } }));
   }
   let chartFitted = {};
   async function loadCandles() {
     try {
       const want = `${sym}|${tf}`;
-      const d = await api(`/api/candles?sym=${sym}&tf=${tf}&limit=${tf === "15m" || tf === "5m" ? 700 : 500}`);
+      const q = `show=${encodeURIComponent([...toolSel].join(","))}&auto=${autoTools ? 1 : 0}`;
+      const d = await api(`/api/candles?sym=${sym}&tf=${tf}&limit=${tf === "15m" || tf === "5m" ? 700 : 500}&${q}`);
       if (want !== `${sym}|${tf}`) return;
       if (!d.bars || !d.bars.length) {
-        if (d.note) { [sCandle, sE20, sE50, sHi, sLo].forEach((x) => x.setData([])); clearOverlays(); renderSituation({ headline: { kind: "wait", title: "沒有資料", text: d.note }, lines: [] }); }
+        if (d.note) { [sCandle, sE20, sE50, sHi, sLo].forEach((x) => x.setData([])); clearOverlays(); clearPanes(); renderSituation({ headline: { kind: "wait", title: "沒有資料", text: d.note }, lines: [] }); }
         return;
       }
       lastCandles = d;
@@ -91,14 +98,18 @@
       sE20.setData(m(d.ema20)); sE50.setData(m(d.ema50));
       sHi.setData(tf === "15m" ? m(d.chan_hi) : []); sLo.setData(tf === "15m" ? m(d.chan_lo) : []);
       const c = chartColors();
-      const mcol = { long: css("--sig-long"), short: css("--sig-short"), exit: c.neutral, pattern: c.gold };
-      sCandle.setMarkers((d.markers || []).filter((x) => x.kind !== "pattern" || tools.tri)
-        .map((x) => ({ ...x, time: shift(x.time), color: mcol[x.kind] || c.neutral })));
+      const mcol = { long: css("--sig-long"), short: css("--sig-short"), exit: c.neutral };
+      const ta = d.ta || {};
+      const toolMarks = Object.values(ta.draw || {}).flatMap((dr) => dr.markers || []).map((x) => ({ ...x, color: col(x.color) }));
+      sCandle.setMarkers([...(d.markers || []).map((x) => ({ ...x, color: mcol[x.kind] || c.neutral })), ...toolMarks]
+        .map((x) => ({ ...x, time: shift(x.time) })).sort((a, b) => a.time - b.time));
       priceLines.forEach((pl) => sCandle.removePriceLine(pl));
       priceLines = (d.lines || []).map((l) => sCandle.createPriceLine({ price: l.price, lineWidth: 2, lineStyle: 2, axisLabelVisible: true, title: l.title,
         color: l.kind === "stop" ? (l.dir > 0 ? c.down : c.up) : l.kind === "trigger" ? (l.dir > 0 ? css("--sig-long") : css("--sig-short")) : c.gold }));
-      drawOverlays(d);
-      renderSituation(d.analysis);
+      renderTools(ta);
+      drawOverlays(ta);
+      drawPanes(ta, d.bars.length);
+      renderSituation(ta);
       const key = `${sym}|${tf}`;
       if (!chartFitted[key]) {
         chart.timeScale().setVisibleLogicalRange({ from: d.bars.length - (tf === "15m" ? 220 : 160), to: d.bars.length + 5 });
@@ -106,45 +117,101 @@
       }
     } catch (e) { /* keep last chart */ }
   }
+  const col = (tok) => (tok ? (css(`--ta-${tok}`) || css(`--${tok}`) || tok) : css("--muted"));
+  const asData = (pts) => pts.map(([t, v]) => (v === null || v === undefined ? { time: shift(t) } : { time: shift(t), value: v }));
   function clearOverlays() {
     ovSeries.forEach((x) => chart.removeSeries(x)); ovSeries = [];
     ovLines.forEach((x) => sCandle.removePriceLine(x)); ovLines = [];
   }
-  function drawOverlays(d) {
-    clearOverlays();
-    const ov = d.overlays || {};
-    if (tools.sr) (ov.levels || []).forEach((l) => ovLines.push(sCandle.createPriceLine({ price: l.price, lineWidth: 1, lineStyle: 1, axisLabelVisible: true,
-      title: l.title, color: l.kind === "resistance" ? css("--lvl-r") : css("--lvl-s") })));
-    const seg = (pts, color, width, style, title) => {
-      const s2 = chart.addLineSeries({ color, lineWidth: width, lineStyle: style, priceLineVisible: false, lastValueVisible: !!title, title: title || "", crosshairMarkerVisible: false });
-      s2.setData(pts.map((p) => ({ time: shift(p.time), value: p.value })));
-      ovSeries.push(s2);
-    };
-    if (tools.fib && ov.fib && ov.fib.t1 > ov.fib.t0) {
-      ov.fib.levels.forEach((l) => {
-        const key = [0.382, 0.5, 0.618].includes(l.ratio);
-        seg([{ time: ov.fib.t0, value: l.price }, { time: ov.fib.t1, value: l.price }], css("--fib"), key ? 1 : 1, key ? 2 : 3,
-          key || l.ratio === 0.786 ? `${(l.ratio * 100).toFixed(1)}%` : "");
-      });
-    }
-    if (tools.tri && ov.triangle) {
-      const tr = ov.triangle;
-      if (tr.upper[1].time > tr.upper[0].time) seg(tr.upper, css("--gold"), 2, 0, "");
-      if (tr.lower[1].time > tr.lower[0].time) seg(tr.lower, css("--gold"), 2, 0, "");
-    }
+  function addLine(target, ln, store) {
+    const opts = { color: col(ln.color), lineWidth: ln.width || 1, lineStyle: ln.style || 0, priceLineVisible: false,
+      lastValueVisible: !!ln.title, title: ln.title || "", crosshairMarkerVisible: false };
+    if (ln.dots) Object.assign(opts, { lineVisible: false, pointMarkersVisible: true, pointMarkersRadius: 1.6 });
+    const sr = target.addLineSeries(opts);
+    const pts = ln.points.filter((p, i, a) => i === 0 || p[0] > a[i - 1][0]);   // strictly increasing times
+    sr.setData(asData(pts));
+    store.push(sr);
+    return sr;
   }
-  const TOOL_LABEL = { sr: "支撐壓力", fib: "費波納奇", tri: "三角形" };
-  function renderSituation(a) {
+  function drawOverlays(ta) {
+    clearOverlays();
+    Object.entries(ta.draw || {}).forEach(([, dr]) => {
+      (dr.levels || []).forEach((l) => ovLines.push(sCandle.createPriceLine({ price: l.price, lineWidth: 1, lineStyle: l.style ?? 1,
+        axisLabelVisible: true, title: l.title, color: col(l.color) })));
+      (dr.lines || []).forEach((ln) => { if (ln.points && ln.points.length > 1) addLine(chart, ln, ovSeries); });
+    });
+  }
+  function clearPanes() {
+    Object.keys(panes).forEach((k) => { panes[k].chart.remove(); panes[k].el.remove(); delete panes[k]; });
+  }
+  function drawPanes(ta) {
+    const want = PANE_ORDER.filter((k) => ta.draw && ta.draw[k] && ta.draw[k].pane);
+    Object.keys(panes).forEach((k) => { if (!want.includes(k)) { panes[k].chart.remove(); panes[k].el.remove(); delete panes[k]; } });
+    const c = chartColors();
+    want.forEach((k) => {
+      const spec = ta.draw[k].pane;
+      if (!panes[k]) {
+        const el = document.createElement("div");
+        el.className = "pane";
+        el.innerHTML = `<span class="pane-title"></span><div class="pane-chart"></div>`;
+        const box = $("#panes");
+        const after = PANE_ORDER.slice(PANE_ORDER.indexOf(k) + 1).map((x) => panes[x]).find(Boolean);
+        box.insertBefore(el, after ? after.el : null);
+        const pc = LightweightCharts.createChart($(".pane-chart", el), {
+          autoSize: true, handleScroll: false, handleScale: false,
+          layout: { background: { type: "solid", color: c.bg }, textColor: c.text, fontFamily: "IBM Plex Sans, Noto Sans TC, sans-serif", attributionLogo: false },
+          grid: { vertLines: { color: c.grid }, horzLines: { visible: false } },
+          rightPriceScale: { borderColor: c.grid, minimumWidth: 78, scaleMargins: { top: 0.12, bottom: 0.08 } },
+          timeScale: { visible: false }, crosshair: { mode: 0 },
+          localization: { locale: "zh-TW", priceFormatter: (p) => (Math.abs(p) >= 1000 ? fmt(p, 0) : fmt(p, Math.abs(p) >= 10 ? 1 : 3)) },
+        });
+        panes[k] = { el, chart: pc, series: [] };
+      }
+      const P = panes[k];
+      $(".pane-title", P.el).textContent = spec.title;
+      P.series.forEach((x) => P.chart.removeSeries(x)); P.series = [];
+      spec.series.forEach((sp, j) => {
+        let sr;
+        if (sp.type === "hist") {
+          sr = P.chart.addHistogramSeries({ priceLineVisible: false, lastValueVisible: false, priceFormat: { type: "price", precision: k === "volume" ? 0 : 3, minMove: k === "volume" ? 1 : 0.001 } });
+          sr.setData(sp.points.map(([t, v], i) => (v === null ? { time: shift(t) } : { time: shift(t), value: v, color: col(sp.colors ? sp.colors[i] : "pane2") + (k === "volume" ? "99" : "") })));
+        } else {
+          sr = P.chart.addLineSeries({ color: col(sp.color), lineWidth: 1.5, priceLineVisible: false, lastValueVisible: j === 0, crosshairMarkerVisible: false });
+          sr.setData(asData(sp.points));
+        }
+        if (j === 0) (spec.levels || []).forEach((lv) => sr.createPriceLine({ price: lv, color: c.neutral, lineWidth: 1, lineStyle: 2, axisLabelVisible: false }));
+        P.series.push(sr);
+      });
+      (spec.lines || []).forEach((ln) => addLine(P.chart, ln, P.series));
+      const r = chart.timeScale().getVisibleLogicalRange();
+      if (r) P.chart.timeScale().setVisibleLogicalRange(r);
+    });
+  }
+  function renderTools(ta) {
+    const tools = ta.tools || [];
+    if (!tools.length) return;
+    const groups = [["main", "主圖"], ["pane", "副圖"]];
+    $("#tools").innerHTML = groups.map(([g, gname]) => `<span class="grp">${gname}</span>` + tools.filter((t) => t.group === g).map((t) => {
+      const on = toolSel.has(t.key), auto = t.auto;
+      const tip = t.why ? `${t.why}（相關度 ${Math.round(t.rel * 100)}%）` : "目前沒有特別的訊號";
+      return `<label class="chip${on ? " on" : ""}${auto ? " auto" : ""}" title="${esc(tip)}"><input type="checkbox" data-tool="${t.key}" ${on ? "checked" : ""}>${auto ? '<span class="star">★</span>' : ""}${esc(t.name)}</label>`;
+    }).join("")).join("");
+    $$("#tools input").forEach((inp) => inp.addEventListener("change", () => {
+      if (inp.checked) toolSel.add(inp.dataset.tool); else toolSel.delete(inp.dataset.tool);
+      store.set("toolSel", [...toolSel]); loadCandles();
+    }));
+  }
+  function renderSituation(ta) {
     const head = $("#sit-head"), ul = $("#sit-lines");
-    if (!a || !a.headline) { head.innerHTML = ""; ul.innerHTML = ""; $("#sit-note").textContent = ""; return; }
-    const h = a.headline;
+    if (!ta || !ta.headline) { head.innerHTML = ""; ul.innerHTML = ""; $("#sit-note").textContent = ""; $("#sit-regime").textContent = ""; return; }
+    const h = ta.headline;
     const cls = h.kind === "signal" || h.kind === "hold" ? (h.dir > 0 ? "long" : "short") : h.kind === "ready" ? (h.dir > 0 ? "ready-long" : "ready-short") : "";
-    const badge = h.dir > 0 ? "▲ 做多" : h.dir < 0 ? "▼ 做空" : "— 觀望";
-    head.innerHTML = `<span class="sit-badge ${cls}">${h.kind === "ready" ? (h.dir > 0 ? "▲ 等多" : "▼ 等空") : badge}</span><span class="sit-title">${esc(h.title)}</span><span class="sit-text">${esc(h.text)}</span>`;
-    const lines = (a.lines || []).filter((x) => tools[x.tool] !== false);
-    ul.innerHTML = lines.map((x) => `<li><span class="tl">${TOOL_LABEL[x.tool] || ""}</span><span>${esc(x.text)}</span></li>`).join("")
-      || `<li><span class="tl">參考工具</span><span>這個週期目前沒有明顯的支撐壓力、費波納奇或三角形可以參考。</span></li>`;
-    $("#sit-note").textContent = a.note || "";
+    const badge = h.kind === "ready" ? (h.dir > 0 ? "▲ 等多" : "▼ 等空") : h.dir > 0 ? "▲ 做多" : h.dir < 0 ? "▼ 做空" : "— 觀望";
+    head.innerHTML = `<span class="sit-badge ${cls}">${badge}</span><span class="sit-title">${esc(h.title)}</span><span class="sit-text">${esc(h.text)}</span>`;
+    $("#sit-regime").textContent = ta.regime ? ta.regime.text : "";
+    ul.innerHTML = (ta.lines || []).map((x) => `<li class="${x.auto ? "auto" : ""}"><span class="tl">${x.auto ? "★ " : ""}${esc(x.name)}</span><span>${x.auto && x.why ? `<span class="why">${esc(x.why)}：</span>` : ""}${esc(x.text)}</span></li>`).join("")
+      || `<li><span class="tl">看圖工具</span><span>勾選上方的工具就會在這裡說明現在的情況。</span></li>`;
+    $("#sit-note").textContent = ta.note || "";
   }
   function setTf(next) {
     tf = next; store.set("tf", tf);
@@ -542,10 +609,9 @@
 
   function bind() {
     $$(".tf-tabs .tab").forEach((b) => b.addEventListener("click", () => setTf(b.dataset.tf)));
-    $$(".tools input").forEach((inp) => {
-      inp.checked = tools[inp.dataset.tool] !== false;
-      inp.addEventListener("change", () => { tools[inp.dataset.tool] = inp.checked; store.set("tools", tools); if (lastCandles) { drawOverlays(lastCandles); renderSituation(lastCandles.analysis); loadCandles(); } });
-    });
+    const au = $("#auto-tools");
+    au.checked = autoTools;
+    au.addEventListener("change", () => { autoTools = au.checked; store.set("autoTools", autoTools); loadCandles(); });
     $$(".side-tabs .tab").forEach((b) => b.addEventListener("click", () => { side = b.dataset.side; if (S) renderChecks(S); }));
     $("#btn-settings").addEventListener("click", () => { const d = $("#settings"); d.hidden = !d.hidden; $("#btn-settings").setAttribute("aria-expanded", String(!d.hidden)); if (!d.hidden && S) fillSettings(S.settings); });
     $("#settings-close").addEventListener("click", () => { $("#settings").hidden = true; $("#btn-settings").setAttribute("aria-expanded", "false"); });

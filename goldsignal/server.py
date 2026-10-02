@@ -37,9 +37,11 @@ def create_app(hub: Hub) -> FastAPI:
 
     @app.get("/api/candles")
     def candles(sym: str = Query("XAUUSD", pattern=SYM), tf: str = Query("15m", pattern="^(5m|15m|1h|4h|1D)$"),
-                limit: int = Query(600, ge=50, le=3000)):
+                limit: int = Query(600, ge=50, le=3000), show: str | None = Query(None, max_length=300),
+                auto: int = Query(1, ge=0, le=1)):
         e = hub.engines.get(sym)
-        return JSONResponse(e.candles(tf, limit) if e else {"bars": []})
+        sel = None if show is None else {x for x in show.split(",") if x}
+        return JSONResponse(e.candles(tf, limit, sel, bool(auto)) if e else {"bars": []})
 
     @app.get("/api/backtest")
     def backtest(sym: str = Query("XAUUSD", pattern=SYM)):

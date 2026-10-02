@@ -108,7 +108,7 @@ def test_live_engine_end_to_end(fake_api, tmp_path, sym):
     assert len(snap["lots_table"]) >= 5 and "eod" in snap
     for tf in ("5m", "15m", "1h", "4h", "1D"):
         c = eng.candles(tf, 300)
-        assert "analysis" in c and c["analysis"]["headline"]["title"]
+        assert "ta" in c and c["ta"]["headline"]["title"]
         assert len(c["bars"]) > 10
         times = [b["time"] for b in c["bars"]]
         assert times == sorted(times) and len(set(times)) == len(times)
