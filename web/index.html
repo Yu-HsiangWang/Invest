@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>金銀短線訊號</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/style.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='2' y='2' width='28' height='28' rx='3' fill='%23B8892B'/%3E%3Ctext x='16' y='23' font-size='18' text-anchor='middle' fill='white' font-family='serif'%3E金%3C/text%3E%3C/svg%3E">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand"><span class="mark" id="brand-mark" aria-hidden="true">金</span><span class="brand-name">金銀短線訊號</span></div>
+  <nav id="inst-tabs" class="inst-tabs" aria-label="選擇商品"></nav>
+  <div class="quote" aria-live="polite">
+    <span class="sym" id="sym">XAU/USD</span>
+    <span id="px" class="px">—</span>
+    <span id="chg" class="chg"></span>
+  </div>
+  <dl class="meta">
+    <div><dt>點差</dt><dd id="spread">—</dd></div>
+    <div><dt>時段</dt><dd id="session">—</dd></div>
+    <div><dt>資料</dt><dd id="fresh"><span class="dot"></span><span id="fresh-text">連線中</span></dd></div>
+  </dl>
+  <div class="top-actions">
+    <button id="btn-enable" class="btn ghost" type="button">開啟提醒</button>
+    <button id="btn-settings" class="btn ghost" type="button" aria-controls="settings" aria-expanded="false">設定</button>
+  </div>
+</header>
+
+<div id="banner" class="banner" hidden></div>
+<div id="replaybar" class="replaybar" hidden>
+  <strong>回放模式</strong>
+  <span id="replay-time"></span>
+  <label>速度 <select id="replay-speed"><option value="4">慢</option><option value="1.5" selected>中</option><option value="0.4">快</option><option value="0.1">極快</option></select></label>
+  <button id="replay-pause" class="btn ghost small" type="button">暫停</button>
+  <label>跳到 <input id="replay-jump" type="date"></label>
+</div>
+
+<main class="layout">
+  <section class="ticket-col" aria-label="目前建議">
+    <article id="ticket" class="ticket">
+      <div class="ticket-head">
+        <div id="stamp" class="stamp neutral" role="img" aria-label="觀望"><span id="stamp-text">觀望</span></div>
+        <div class="ticket-title">
+          <h1 id="verdict">連線中…</h1>
+          <p id="verdict-sub" class="sub">正在下載行情資料</p>
+        </div>
+      </div>
+      <div id="ticket-fields" class="fields"></div>
+      <div id="ticket-note" class="ticket-note"></div>
+      <details id="mypos" class="mypos">
+        <summary>我的實際持倉（選填，用來算你自己的移動停損）</summary>
+        <form id="mypos-form" class="mypos-form">
+          <label>方向 <select name="dir"><option value="1">多單</option><option value="-1">空單</option></select></label>
+          <label>進場價 <input name="entry" type="number" step="0.01" required></label>
+          <label>手數 <input name="lots" type="number" step="0.01" value="0.01"></label>
+          <label>進場時間 <input name="time" type="datetime-local"></label>
+          <div class="row"><button class="btn" type="submit">記錄持倉</button><button id="mypos-clear" class="btn ghost" type="button">清除</button></div>
+        </form>
+        <div id="mypos-view" class="mypos-view"></div>
+      </details>
+    </article>
+
+    <section class="panel checks-panel" aria-labelledby="checks-h">
+      <h2 id="checks-h">為什麼？條件檢查</h2>
+      <div class="side-tabs" role="tablist">
+        <button role="tab" class="tab" data-side="long" aria-selected="true">做多條件</button>
+        <button role="tab" class="tab" data-side="short" aria-selected="false">做空條件</button>
+      </div>
+      <ul id="checks" class="checks"></ul>
+      <p class="hint">全部打勾才會出訊號。訊號只在 15 分 K 收盤時判斷，盤中跳動不算。</p>
+    </section>
+  </section>
+
+  <section class="chart-col" aria-label="走勢圖">
+    <div class="panel chart-panel">
+      <div class="chart-head">
+        <div class="tf-tabs" role="tablist">
+          <button class="tab" data-tf="15m" aria-selected="true">15分</button>
+          <button class="tab" data-tf="1h" aria-selected="false">1小時</button>
+          <button class="tab" data-tf="4h" aria-selected="false">4小時</button>
+          <button class="tab" data-tf="1D" aria-selected="false">日線</button>
+        </div>
+        <div class="legend"><span class="lg ema20">EMA20</span><span class="lg ema50">EMA50</span><span class="lg chan">24小時高低點</span></div>
+      </div>
+      <div id="chart" class="chart"></div>
+    </div>
+    <div class="context">
+      <section class="panel" aria-labelledby="mtf-h">
+        <h2 id="mtf-h">多週期趨勢</h2>
+        <table class="mtf"><thead><tr><th>週期</th><th>趨勢</th><th>收盤</th><th>RSI</th><th>ADX</th><th>ATR</th></tr></thead><tbody id="mtf"></tbody></table>
+      </section>
+      <section class="panel" aria-labelledby="inter-h">
+        <h2 id="inter-h">相關市場</h2>
+        <ul id="inter" class="inter"></ul>
+        <p class="hint">美元、美債殖利率走強通常壓抑金價（2022 年後關聯變弱，僅供參考）。</p>
+      </section>
+    </div>
+  </section>
+
+  <section class="info-col">
+    <section class="panel" aria-labelledby="cal-h">
+      <h2 id="cal-h">重大數據</h2>
+      <ul id="calendar" class="calendar"></ul>
+    </section>
+    <section class="panel" aria-labelledby="news-h">
+      <div class="panel-head"><h2 id="news-h">相關新聞</h2><span id="news-agg" class="pill"></span></div>
+      <ul id="news" class="news"></ul>
+      <p class="hint">新聞情緒只當參考、不會直接產生訊號（研究顯示新聞多半是「同步反映」而非「事先預測」）。</p>
+    </section>
+    <section class="panel" aria-labelledby="hist-h">
+      <h2 id="hist-h">最近訊號</h2>
+      <ul id="history" class="history"></ul>
+    </section>
+    <section class="panel" aria-labelledby="bt-h">
+      <h2 id="bt-h">策略歷史回測</h2>
+      <div id="backtest" class="backtest"></div>
+    </section>
+  </section>
+</main>
+
+<footer class="foot">
+  <p>訊號僅供參考，不構成投資建議；過去績效不保證未來。請務必設定停損，單筆風險建議不超過帳戶 1%。行情：Dukascopy / Swissquote 公開報價；新聞：FXStreet、investingLive、Google News、Yahoo Finance；經濟日曆：ForexFactory。圖表：<a href="https://www.tradingview.com/" target="_blank" rel="noopener">TradingView Lightweight Charts</a>。</p>
+</footer>
+
+<aside id="settings" class="drawer" hidden aria-label="設定">
+  <form id="settings-form">
+    <div class="drawer-head"><h2>設定</h2><button type="button" class="btn ghost small" id="settings-close">關閉</button></div>
+    <fieldset><legend>資金</legend>
+      <label>帳戶資金（美元）<input name="account_balance" type="number" step="1" min="0"></label>
+    </fieldset>
+    <div id="inst-settings"></div>
+    <fieldset><legend>顯示</legend>
+      <label>顏色習慣 <select name="color_convention"><option value="tw">紅漲綠跌（台灣）</option><option value="intl">綠漲紅跌（國際）</option></select></label>
+    </fieldset>
+    <fieldset><legend>提醒</legend>
+      <label class="check"><input name="sound" type="checkbox"> 聲音</label>
+      <label class="check"><input name="desktop_notify" type="checkbox"> 桌面通知</label>
+      <label>Telegram Bot Token（選填）<input name="telegram_bot_token" type="password" autocomplete="off"></label>
+      <label>Telegram Chat ID（選填）<input name="telegram_chat_id" type="text"></label>
+      <label>Discord Webhook 網址（選填）<input name="discord_webhook_url" type="password" autocomplete="off"><small>訊號、出場會同步推送到手機（免費）。</small></label>
+      <button id="btn-test" class="btn ghost small" type="button">送出測試通知</button>
+    </fieldset>
+    <fieldset><legend>重大數據禁區</legend>
+      <label>公布前（分鐘）<input name="blackout_before_min" type="number" min="0" max="240"></label>
+      <label>公布後（分鐘）<input name="blackout_after_min" type="number" min="0" max="240"></label>
+      <label>FOMC 公布後（分鐘）<input name="fomc_after_min" type="number" min="0" max="240"></label>
+      <label class="check"><input name="show_medium_impact" type="checkbox"> 也顯示中等重要性數據</label>
+    </fieldset>
+    <div class="row"><button class="btn" type="submit">儲存設定</button><span id="settings-saved" class="saved" hidden>已儲存</span></div>
+  </form>
+</aside>
+
+<div id="toasts" class="toasts" aria-live="assertive"></div>
+<script src="/static/vendor/lightweight-charts.standalone.production.js"></script>
+<script>window.LightweightCharts || document.write('<script src="https://cdn.jsdelivr.net/npm/lightweight-charts@4.2.3/dist/lightweight-charts.standalone.production.js"><\/script>')</script>
+<script src="/static/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,4 @@
+-r requirements.txt
+pytest>=7
+numba>=0.58      # optional: makes research backtests ~50x faster
+pyarrow>=14      # research cache files

@@ -1,0 +1,335 @@
+{
+ "generated_utc": "2026-10-02T08:20:00Z",
+ "data_source": "Dukascopy",
+ "window": [
+  "2025-03-22",
+  "2026-10-01"
+ ],
+ "costs": {
+  "spread_pct": 0.0006,
+  "slip_pct_per_fill": 0.0001
+ },
+ "summary": {
+  "n": 39,
+  "win%": 35.9,
+  "avgR": 0.41,
+  "PF": 1.67,
+  "maxDD_R": 8.0,
+  "max_losing_streak": 8,
+  "avg_hours": 33.2
+ },
+ "trades": [
+  {
+   "entry_time_utc": "2025-03-27 10:30",
+   "dir": 1,
+   "entry": 33.969,
+   "exit": 33.703,
+   "R": -1.01,
+   "exit_reason": "stop"
+  },
+  {
+   "entry_time_utc": "2025-03-27 14:45",
+   "dir": 1,
+   "entry": 34.201,
+   "exit": 33.861,
+   "R": -1.01,
+   "exit_reason": "stop"
+  },
+  {
+   "entry_time_utc": "2025-04-21 05:45",
+   "dir": 1,
+   "entry": 32.906,
+   "exit": 32.533,
+   "R": -1.01,
+   "exit_reason": "stop"
+  },
+  {
+   "entry_time_utc": "2025-04-22 16:15",
+   "dir": 1,
+   "entry": 33.133,
+   "exit": 32.651,
+   "R": -1.01,
+   "exit_reason": "stop"
+  },
+  {
+   "entry_time_utc": "2025-04-23 14:45",
+   "dir": 1,
+   "entry": 33.432,
+   "exit": 32.981,
+   "R": -1.01,
+   "exit_reason": "stop"
+  },
+  {
+   "entry_time_utc": "2025-04-29 12:45",
+   "dir": 1,
+   "entry": 33.491,
+   "exit": 33.178,
+   "R": -1.01,
+   "exit_reason": "stop"
+  },
+  {
+   "entry_time_utc": "2025-05-21 14:30",
+   "dir": 1,
+   "entry": 33.264,
+   "exit": 33.016,
+   "R": -0.9,
+   "exit_reason": "trail"
+  },
+  {
+   "entry_time_utc": "2025-05-28 09:45",
+   "dir": 1,
+   "entry": 33.414,
+   "exit": 33.161,
+   "R": -1.01,
+   "exit_reason": "stop"
+  },
+  {
+   "entry_time_utc": "2025-06-02 12:45",
+   "dir": 1,
+   "entry": 33.674,
+   "exit": 36.249,
+   "R": 8.2,
+   "exit_reason": "trail"
+  },
+  {
+   "entry_time_utc": "2025-06-26 09:00",
+   "dir": 1,
+   "entry": 36.807,
+   "exit": 36.49,
+   "R": -1.01,
+   "exit_reason": "stop"
+  },
+  {
+   "entry_time_utc": "2025-07-02 17:30",
+   "dir": 1,
+   "entry": 36.529,
+   "exit": 36.347,
+   "R": -0.55,
+   "exit_reason": "trail"
+  },
+  {
+   "entry_time_utc": "2025-07-08 05:30",
+   "dir": 1,
+   "entry": 36.85,
+   "exit": 36.556,
+   "R": -1.01,
+   "exit_reason": "stop"
+  },
+  {
+   "entry_time_utc": "2025-07-10 18:15",
+   "dir": 1,
+   "entry": 36.937,
+   "exit": 38.156,
+   "R": 3.27,
+   "exit_reason": "trail"
+  },
+  {
+   "entry_time_utc": "2025-07-18 06:45",
+   "dir": 1,
+   "entry": 38.243,
+   "exit": 38.846,
+   "R": 2.33,
+   "exit_reason": "trail"
+  },
+  {
+   "entry_time_utc": "2025-08-07 10:45",
+   "dir": 1,
+   "entry": 38.443,
+   "exit": 38.11,
+   "R": -1.01,
+   "exit_reason": "stop"
+  },
+  {
+   "entry_time_utc": "2025-08-13 05:30",
+   "dir": 1,
+   "entry": 38.226,
+   "exit": 38.202,
+   "R": -0.09,
+   "exit_reason": "trail"
+  },
+  {
+   "entry_time_utc": "2025-08-28 03:15",
+   "dir": 1,
+   "entry": 38.79,
+   "exit": 38.525,
+   "R": -1.01,
+   "exit_reason": "stop"
+  },
+  {
+   "entry_time_utc": "2025-09-19 14:30",
+   "dir": 1,
+   "entry": 42.419,
+   "exit": 45.978,
+   "R": 8.52,
+   "exit_reason": "trail"
+  },
+  {
+   "entry_time_utc": "2025-11-11 23:15",
+   "dir": 1,
+   "entry": 51.323,
+   "exit": 52.467,
+   "R": 1.95,
+   "exit_reason": "trail"
+  },
+  {
+   "entry_time_utc": "2025-11-19 09:45",
+   "dir": 1,
+   "entry": 51.836,
+   "exit": 51.074,
+   "R": -1.01,
+   "exit_reason": "stop"
+  },
+  {
+   "entry_time_utc": "2025-11-25 06:00",
+   "dir": 1,
+   "entry": 51.73,
+   "exit": 51.087,
+   "R": -1.01,
+   "exit_reason": "stop"
+  },
+  {
+   "entry_time_utc": "2025-11-26 02:30",
+   "dir": 1,
+   "entry": 51.974,
+   "exit": 52.726,
+   "R": 1.06,
+   "exit_reason": "trail"
+  },
+  {
+   "entry_time_utc": "2025-11-28 14:15",
+   "dir": 1,
+   "entry": 54.71,
+   "exit": 56.836,
+   "R": 2.43,
+   "exit_reason": "trail"
+  },
+  {
+   "entry_time_utc": "2026-01-05 14:15",
+   "dir": 1,
+   "entry": 76.647,
+   "exit": 78.113,
+   "R": 0.94,
+   "exit_reason": "trail"
+  },
+  {
+   "entry_time_utc": "2026-01-09 15:00",
+   "dir": 1,
+   "entry": 79.362,
+   "exit": 87.279,
+   "R": 4.35,
+   "exit_reason": "trail"
+  },
+  {
+   "entry_time_utc": "2026-02-25 02:30",
+   "dir": 1,
+   "entry": 89.168,
+   "exit": 87.018,
+   "R": -1.0,
+   "exit_reason": "stop"
+  },
+  {
+   "entry_time_utc": "2026-02-27 06:15",
+   "dir": 1,
+   "entry": 90.527,
+   "exit": 91.148,
+   "R": 0.28,
+   "exit_reason": "trail"
+  },
+  {
+   "entry_time_utc": "2026-04-28 02:00",
+   "dir": -1,
+   "entry": 74.611,
+   "exit": 73.571,
+   "R": 0.96,
+   "exit_reason": "trail"
+  },
+  {
+   "entry_time_utc": "2026-05-28 01:30",
+   "dir": -1,
+   "entry": 73.321,
+   "exit": 74.523,
+   "R": -1.01,
+   "exit_reason": "stop"
+  },
+  {
+   "entry_time_utc": "2026-06-05 06:15",
+   "dir": -1,
+   "entry": 71.845,
+   "exit": 72.899,
+   "R": -1.01,
+   "exit_reason": "stop"
+  },
+  {
+   "entry_time_utc": "2026-06-18 11:45",
+   "dir": -1,
+   "entry": 66.742,
+   "exit": 66.262,
+   "R": 0.34,
+   "exit_reason": "trail"
+  },
+  {
+   "entry_time_utc": "2026-06-23 01:45",
+   "dir": -1,
+   "entry": 63.92,
+   "exit": 58.856,
+   "R": 4.54,
+   "exit_reason": "trail"
+  },
+  {
+   "entry_time_utc": "2026-07-13 06:15",
+   "dir": -1,
+   "entry": 57.76,
+   "exit": 58.754,
+   "R": -1.01,
+   "exit_reason": "stop"
+  },
+  {
+   "entry_time_utc": "2026-07-13 18:00",
+   "dir": -1,
+   "entry": 57.301,
+   "exit": 58.337,
+   "R": -1.01,
+   "exit_reason": "stop"
+  },
+  {
+   "entry_time_utc": "2026-07-15 15:15",
+   "dir": -1,
+   "entry": 57.576,
+   "exit": 57.025,
+   "R": 0.56,
+   "exit_reason": "trail"
+  },
+  {
+   "entry_time_utc": "2026-08-03 13:15",
+   "dir": -1,
+   "entry": 56.754,
+   "exit": 57.631,
+   "R": -1.01,
+   "exit_reason": "stop"
+  },
+  {
+   "entry_time_utc": "2026-08-28 07:00",
+   "dir": 1,
+   "entry": 70.474,
+   "exit": 69.281,
+   "R": -1.01,
+   "exit_reason": "stop"
+  },
+  {
+   "entry_time_utc": "2026-09-22 19:45",
+   "dir": 1,
+   "entry": 67.494,
+   "exit": 66.463,
+   "R": -1.01,
+   "exit_reason": "stop"
+  },
+  {
+   "entry_time_utc": "2026-09-30 15:00",
+   "dir": -1,
+   "entry": 60.353,
+   "exit": 61.176,
+   "R": -1.01,
+   "exit_reason": "stop"
+  }
+ ]
+}
