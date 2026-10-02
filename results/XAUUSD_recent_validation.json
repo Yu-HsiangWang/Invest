@@ -1,18 +1,47 @@
 {
- "generated_utc": "2026-10-02T09:15:00Z",
- "how": "Exact goldsignal rules run (in-browser via Pyodide) on Dukascopy 1-minute BID data aggregated to 15m, 2013-2026; trades entered 2025-04-01..2026-10-01. None of this window was used to design the entry rules (the day-mode exit rule was chosen on 2005-2025/3 data).",
+ "generated_utc": "2026-10-02T18:19:23+00:00",
+ "how": "Exact goldsignal rules run (in-browser via Pyodide) on Dukascopy 1-minute BID data aggregated to 15m, 2013-2026; trades entered 2025-04-01..2026-10-01. None of this window was used to design the entry rules; the day-mode exit rule and the Bollinger-squeeze filter were chosen on 2005-2025/3 data.",
  "data_source": "Dukascopy (jetta.dukascopy.com JSON API)",
  "mode": "day",
  "window": [
   "2025-04-01",
   "2026-10-01"
  ],
+ "params": {
+  "breakout_hours": 24,
+  "stop_atr_h1": 2.0,
+  "trail_atr_h1": 5.0,
+  "adx_max": 30.0,
+  "ext_max": 1.5,
+  "close_pos_min": 0.7,
+  "cooldown_bars": 4,
+  "friday_cutoff_ny": 12.0,
+  "use_h4": true,
+  "use_h1": true,
+  "day_cutoff_ny": 12.0,
+  "eod_keep_r": 0.25,
+  "eod_time_ny": 16.75,
+  "squeeze_bars": 16,
+  "squeeze_pct": 0.3
+ },
  "costs": {
   "spread_pct": 0.00012,
   "slip_pct_per_fill": 5e-05,
   "swap": "Mitrade 0.0168%/0.014% per night"
  },
  "summary": {
+  "n": 32,
+  "win%": 37.5,
+  "avgR": 0.164,
+  "totR": 5.2,
+  "PF": 1.28,
+  "maxDD_R": 4.6,
+  "avg_bars": 102.2,
+  "per_week": 0.41,
+  "max_losing_streak": 3,
+  "avg_hours": 25.5
+ },
+ "summary_nofilter": {
   "n": 39,
   "win%": 38.5,
   "avgR": 0.204,
@@ -21,38 +50,37 @@
   "maxDD_R": 6.6,
   "avg_bars": 105.2,
   "per_week": 0.5,
-  "max_losing_streak": 5,
-  "avg_hours": 26.3
+  "max_losing_streak": 5
  },
  "summary_hold": {
-  "n": 38,
-  "win%": 36.8,
-  "avgR": 0.217,
+  "n": 30,
+  "win%": 40.0,
+  "avgR": 0.275,
   "totR": 8.3,
-  "PF": 1.38,
-  "maxDD_R": 4.9,
-  "avg_bars": 119.9,
-  "per_week": 0.49,
+  "PF": 1.48,
+  "maxDD_R": 4.6,
+  "avg_bars": 126.3,
+  "per_week": 0.38,
   "max_losing_streak": 4
  },
  "long": {
-  "n": 26,
-  "win%": 38.5,
-  "avgR": 0.318,
-  "totR": 8.3,
-  "PF": 1.57,
-  "maxDD_R": 6.1,
-  "avg_bars": 110.8,
-  "max_losing_streak": 5
+  "n": 20,
+  "win%": 40.0,
+  "avgR": 0.317,
+  "totR": 6.3,
+  "PF": 1.55,
+  "maxDD_R": 3.3,
+  "avg_bars": 109.9,
+  "max_losing_streak": 3
  },
  "short": {
-  "n": 13,
-  "win%": 38.5,
-  "avgR": -0.025,
-  "totR": -0.3,
-  "PF": 0.95,
-  "maxDD_R": 2.6,
-  "avg_bars": 94.1,
+  "n": 12,
+  "win%": 33.3,
+  "avgR": -0.091,
+  "totR": -1.1,
+  "PF": 0.84,
+  "maxDD_R": 3.6,
+  "avg_bars": 89.2,
   "max_losing_streak": 3
  },
  "trades": [
@@ -60,13 +88,15 @@
    "entry_time_utc": "2025-05-08 02:00",
    "dir": 1,
    "entry": 3408.9,
+   "exit": 3376.71,
    "R": -1.01,
    "exit_reason": "stop"
   },
   {
    "entry_time_utc": "2025-05-23 11:45",
    "dir": 1,
-   "entry": 3334,
+   "entry": 3334.0,
+   "exit": 3328.02,
    "R": -0.37,
    "exit_reason": "trail"
   },
@@ -74,6 +104,7 @@
    "entry_time_utc": "2025-06-02 05:15",
    "dir": 1,
    "entry": 3318.91,
+   "exit": 3343.93,
    "R": 1.08,
    "exit_reason": "trail"
   },
@@ -81,34 +112,31 @@
    "entry_time_utc": "2025-06-05 09:30",
    "dir": 1,
    "entry": 3388.28,
+   "exit": 3369.64,
    "R": -1.01,
    "exit_reason": "stop"
   },
   {
-   "entry_time_utc": "2025-06-11 22:15",
+   "entry_time_utc": "2025-06-12 10:30",
    "dir": 1,
-   "entry": 3361.4,
-   "R": 1.42,
-   "exit_reason": "trail"
-  },
-  {
-   "entry_time_utc": "2025-07-18 11:45",
-   "dir": 1,
-   "entry": 3356.19,
-   "R": -0.38,
+   "entry": 3379.9,
+   "exit": 3385.73,
+   "R": 0.22,
    "exit_reason": "eod"
   },
   {
-   "entry_time_utc": "2025-07-21 05:15",
+   "entry_time_utc": "2025-06-13 01:15",
    "dir": 1,
-   "entry": 3363.4,
-   "R": 3.06,
-   "exit_reason": "trail"
+   "entry": 3426.03,
+   "exit": 3400.48,
+   "R": -1.07,
+   "exit_reason": "stop"
   },
   {
    "entry_time_utc": "2025-08-07 06:45",
    "dir": 1,
    "entry": 3385.79,
+   "exit": 3371.31,
    "R": -1.17,
    "exit_reason": "stop"
   },
@@ -116,6 +144,7 @@
    "entry_time_utc": "2025-08-28 09:00",
    "dir": 1,
    "entry": 3401.13,
+   "exit": 3530.67,
    "R": 10.58,
    "exit_reason": "trail"
   },
@@ -123,6 +152,7 @@
    "entry_time_utc": "2025-11-12 15:15",
    "dir": 1,
    "entry": 4162.43,
+   "exit": 4165.04,
    "R": 0.07,
    "exit_reason": "trail"
   },
@@ -130,6 +160,7 @@
    "entry_time_utc": "2025-11-26 02:30",
    "dir": 1,
    "entry": 4162.92,
+   "exit": 4164.19,
    "R": 0.04,
    "exit_reason": "eod"
   },
@@ -137,20 +168,15 @@
    "entry_time_utc": "2025-11-28 00:30",
    "dir": 1,
    "entry": 4171.22,
+   "exit": 4153.1,
    "R": -1.01,
    "exit_reason": "stop"
-  },
-  {
-   "entry_time_utc": "2025-11-28 16:30",
-   "dir": 1,
-   "entry": 4209.98,
-   "R": -0.68,
-   "exit_reason": "trail"
   },
   {
    "entry_time_utc": "2025-12-03 14:00",
    "dir": 1,
    "entry": 4237.75,
+   "exit": 4209.64,
    "R": -1.01,
    "exit_reason": "stop"
   },
@@ -158,41 +184,23 @@
    "entry_time_utc": "2025-12-05 06:15",
    "dir": 1,
    "entry": 4226.05,
+   "exit": 4206.95,
    "R": -0.87,
    "exit_reason": "trail"
-  },
-  {
-   "entry_time_utc": "2025-12-11 00:15",
-   "dir": 1,
-   "entry": 4243.62,
-   "R": -1.01,
-   "exit_reason": "stop"
   },
   {
    "entry_time_utc": "2025-12-11 15:45",
    "dir": 1,
    "entry": 4255.12,
+   "exit": 4279.63,
    "R": 0.86,
-   "exit_reason": "trail"
-  },
-  {
-   "entry_time_utc": "2025-12-17 05:45",
-   "dir": 1,
-   "entry": 4338.83,
-   "R": -1.01,
-   "exit_reason": "stop"
-  },
-  {
-   "entry_time_utc": "2025-12-22 07:00",
-   "dir": 1,
-   "entry": 4419.8,
-   "R": 0.68,
    "exit_reason": "trail"
   },
   {
    "entry_time_utc": "2026-01-06 02:30",
    "dir": 1,
    "entry": 4460.86,
+   "exit": 4426.42,
    "R": -1.02,
    "exit_reason": "trail"
   },
@@ -200,6 +208,7 @@
    "entry_time_utc": "2026-01-09 13:45",
    "dir": 1,
    "entry": 4487.41,
+   "exit": 4572.75,
    "R": 3.02,
    "exit_reason": "trail"
   },
@@ -207,6 +216,7 @@
    "entry_time_utc": "2026-02-11 10:45",
    "dir": 1,
    "entry": 5100.13,
+   "exit": 5051.85,
    "R": -1.01,
    "exit_reason": "stop"
   },
@@ -214,6 +224,7 @@
    "entry_time_utc": "2026-02-20 14:00",
    "dir": 1,
    "entry": 5044.12,
+   "exit": 5003.28,
    "R": -1.01,
    "exit_reason": "stop"
   },
@@ -221,20 +232,15 @@
    "entry_time_utc": "2026-02-23 14:45",
    "dir": 1,
    "entry": 5191.41,
+   "exit": 5146.03,
    "R": -1.03,
-   "exit_reason": "stop"
-  },
-  {
-   "entry_time_utc": "2026-02-25 05:30",
-   "dir": 1,
-   "entry": 5195.97,
-   "R": -1.01,
    "exit_reason": "stop"
   },
   {
    "entry_time_utc": "2026-02-27 13:15",
    "dir": 1,
    "entry": 5213.48,
+   "exit": 5287.83,
    "R": 2.04,
    "exit_reason": "trail"
   },
@@ -242,6 +248,7 @@
    "entry_time_utc": "2026-04-23 00:15",
    "dir": -1,
    "entry": 4699.05,
+   "exit": 4731.26,
    "R": -1.01,
    "exit_reason": "stop"
   },
@@ -249,6 +256,7 @@
    "entry_time_utc": "2026-04-24 04:30",
    "dir": -1,
    "entry": 4659.04,
+   "exit": 4699.72,
    "R": -1.01,
    "exit_reason": "stop"
   },
@@ -256,6 +264,7 @@
    "entry_time_utc": "2026-04-28 05:15",
    "dir": -1,
    "entry": 4651.92,
+   "exit": 4603.99,
    "R": 1.86,
    "exit_reason": "trail"
   },
@@ -263,6 +272,7 @@
    "entry_time_utc": "2026-05-01 10:00",
    "dir": -1,
    "entry": 4562.37,
+   "exit": 4595.31,
    "R": -1.01,
    "exit_reason": "stop"
   },
@@ -270,6 +280,7 @@
    "entry_time_utc": "2026-05-04 10:15",
    "dir": -1,
    "entry": 4541.52,
+   "exit": 4576.72,
    "R": -1.01,
    "exit_reason": "stop"
   },
@@ -277,6 +288,7 @@
    "entry_time_utc": "2026-05-19 10:45",
    "dir": -1,
    "entry": 4528.7,
+   "exit": 4544.0,
    "R": -0.42,
    "exit_reason": "trail"
   },
@@ -284,20 +296,23 @@
    "entry_time_utc": "2026-05-26 11:45",
    "dir": -1,
    "entry": 4509.67,
+   "exit": 4509.42,
    "R": 0.01,
    "exit_reason": "eod"
   },
   {
-   "entry_time_utc": "2026-05-27 10:45",
+   "entry_time_utc": "2026-05-28 03:00",
    "dir": -1,
-   "entry": 4465.31,
-   "R": 0.09,
-   "exit_reason": "trail"
+   "entry": 4393.91,
+   "exit": 4434.73,
+   "R": -1.01,
+   "exit_reason": "stop"
   },
   {
    "entry_time_utc": "2026-06-05 13:00",
    "dir": -1,
    "entry": 4406.13,
+   "exit": 4346.26,
    "R": 1.52,
    "exit_reason": "trail"
   },
@@ -305,20 +320,15 @@
    "entry_time_utc": "2026-06-23 03:00",
    "dir": -1,
    "entry": 4146.56,
+   "exit": 4057.2,
    "R": 2.4,
-   "exit_reason": "trail"
-  },
-  {
-   "entry_time_utc": "2026-07-13 14:00",
-   "dir": -1,
-   "entry": 4042.82,
-   "R": -0.33,
    "exit_reason": "trail"
   },
   {
    "entry_time_utc": "2026-07-16 12:45",
    "dir": -1,
    "entry": 4002.38,
+   "exit": 4013.42,
    "R": -0.43,
    "exit_reason": "eod"
   },
@@ -326,6 +336,7 @@
    "entry_time_utc": "2026-10-01 00:30",
    "dir": -1,
    "entry": 4143.19,
+   "exit": 4170.55,
    "R": -1.01,
    "exit_reason": "stop"
   }

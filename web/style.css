@@ -210,6 +210,10 @@ table.mtf { width: 100%; border-collapse: collapse; font-size: 13.5px; }
 .backtest .sub2 { display: block; color: var(--muted); font-size: 11.5px; }
 
 .backtest .bt-h3 { font-size: 13.5px; margin: 16px 0 0; }
+.toolbt details { margin-top: 12px; }
+.toolbt summary { cursor: pointer; font-size: 13px; font-weight: 600; color: var(--ink); }
+.toolbt summary::marker { color: var(--muted); }
+.toolbt .tagrec { font-size: 11px; }
 .backtest table.money tr.rec td, table.lots tr.rec td { background: var(--gold-soft); font-weight: 600; }
 .backtest tr.risky td, table.lots tr.risky td { color: var(--amber); }
 .backtest tr.danger td, table.lots tr.danger td { color: var(--red); }

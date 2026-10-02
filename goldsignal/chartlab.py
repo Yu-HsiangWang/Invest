@@ -12,8 +12,10 @@ arrows and the trade ticket); nothing in this module creates or changes a signal
 """
 from __future__ import annotations
 
+import json
 import logging
 from dataclasses import dataclass, field
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -56,6 +58,35 @@ CFG = {  # pivot half-window, bars scanned for levels, Fibonacci window, pattern
 }
 FIB_RATIOS = (0.0, 0.236, 0.382, 0.5, 0.618, 0.786, 1.0)
 TF_LABEL = {"5m": "5 分 K", "15m": "15 分 K", "1h": "1 小時 K", "4h": "4 小時 K", "1D": "日 K"}
+BT_PATH = Path(__file__).resolve().parents[1] / "results" / "XAUUSD_tool_backtest.json"
+_BT: dict = {}
+
+
+def backtest_notes() -> dict:
+    """research/tool_backtest.py results (gold 2005-2025/3): per-tool verdicts and exit studies."""
+    if not _BT:
+        try:
+            _BT.update(json.loads(BT_PATH.read_text(encoding="utf-8")))
+        except Exception:  # the app still works without the file
+            _BT["notes"] = {}
+    return _BT
+
+
+def _exit_r(name: str) -> tuple[float, float] | None:
+    """(system avg R, avg R when this chart-tool exit is used) from the back-test, if known."""
+    bt = backtest_notes()
+    e = next((x for x in bt.get("exits", []) if x.get("name") == name), None)
+    sysr = (bt.get("system") or {}).get("all")
+    if not e or e.get("all") is None or sysr is None:
+        return None
+    return float(sysr), float(e["all"])
+
+
+def _exit_hint(name: str, what: str) -> str:
+    r = _exit_r(name)
+    if not r:
+        return f"系統單請照移動停損走，不建議因為{what}就提早出場。"
+    return f"回測顯示因為{what}就提早出場，系統每筆平均會從 {r[0]:+.2f}R 掉到 {r[1]:+.2f}R，系統單請照移動停損走。"
 
 
 # ----------------------------------------------------------------------------- context
@@ -191,9 +222,9 @@ def t_sr(cx: Ctx) -> dict:
             why = f"價格正在測試支撐 {f(near['price'])}"
             txt += f"價格正在測試支撐 {f(near['price'])}：守住通常會反彈，收盤跌破則容易再往下。"
     if cx.pos_dir > 0 and res:
-        txt += f"持多單的話，接近 {f(res[0]['price'])} 要留意是否過不去。"
+        txt += f"持多單的話，上方壓力在 {f(res[0]['price'])}；" + _exit_hint("前方1h壓力/支撐", "碰到壓力")
     elif cx.pos_dir < 0 and sup:
-        txt += f"持空單的話，接近 {f(sup[0]['price'])} 要留意是否跌不破。"
+        txt += f"持空單的話，下方支撐在 {f(sup[0]['price'])}；" + _exit_hint("前方1h壓力/支撐", "碰到支撐")
     draw = {"levels": [{"price": x["price"], "title": ("壓力 " if x["kind"] == "resistance" else "支撐 ") + x["label"],
                         "color": "lvl-r" if x["kind"] == "resistance" else "lvl-s", "style": 1} for x in lv]}
     return {"rel": rel, "why": why, "text": txt, "draw": draw}
@@ -301,7 +332,7 @@ def t_trend(cx: Ctx) -> dict:
         rel, why = 0.85, ("剛跌破" if d > 0 else "剛突破") + name
         txt = f"收盤{'跌破' if d > 0 else '突破'}{name}（約 {f(now)}），原本的{'上漲' if d > 0 else '下跌'}節奏被打破，要小心反轉。"
         if cx.pos_dir == d:
-            txt += "你的部位和原趨勢同方向，可考慮先減碼或收緊停損。"
+            txt += "你的部位和原趨勢同方向：" + _exit_hint("1h 趨勢線被反向突破", "趨勢線被突破")
     elif dist <= 0.5:
         rel, why = 0.75, f"價格回到{name}附近"
         txt = f"價格回到{name}（約 {f(now)}）附近，{'守住常是買點、跌破則轉弱' if d > 0 else '壓住常是賣點、突破則轉強'}。"
@@ -347,10 +378,11 @@ def t_fib(cx: Ctx) -> dict:
         rel, why = 0.75, f"價格正好在 {near * 100:.1f}% 回撤位"
     elif _trending(cx, d) and r < 0.12:
         rel, why = 0.7, f"價格接近{leg}前{'高' if up else '低'}"
-        txt += f"如果{'創新高' if up else '創新低'}，延伸目標可參考 127.2%（{f(ext[1.272])}）、161.8%（{f(ext[1.618])}）。"
+        txt += (f"如果{'創新高' if up else '創新低'}，延伸位在 127.2%（{f(ext[1.272])}）、161.8%（{f(ext[1.618])}），"
+                "只當參考：回測顯示在延伸位先停利會讓平均獲利變少。")
     if cx.pos_dir == d:
-        txt += f"你的部位和這段{leg}同方向：{back}超過 61.8%（{f(lv[0.618])}）可以考慮先減碼或平倉" + \
-               (f"，系統停損在 {f(cx.stop)}" if cx.stop is not None else "") + "。"
+        txt += (f"你的部位和這段{leg}同方向：照系統停損走就好" + (f"（目前 {f(cx.stop)}）" if cx.stop is not None else "") +
+                f"；回測中{back}到 61.8% 之前，系統停損都已經先出場了。")
     elif cx.pos_dir == -d and r < 0.382:
         txt += f"你的部位方向和這段{leg}相反，{back}不到 38.2%（{f(lv[0.382])}）就再{'創新高' if up else '創新低'}的話要特別小心。"
     lines = []
@@ -391,6 +423,12 @@ def t_bb(cx: Ctx) -> dict:
             txt += f"盤整中衝出{'上' if out_up else '下'}軌常會被拉回中軌（{f(mid[-1])}）附近。"
     elif cx.regime.get("key") == "range":
         txt += "盤整時價格常在上下軌之間來回，靠近上軌偏向壓力、靠近下軌偏向支撐。"
+    if cx.cache.get("squeeze_rule") and cx.tf == "15m":   # the system's own 布林收窄濾網 (15m bands only)
+        bwp = pd.Series(bw).rolling(200, min_periods=50).rank(pct=True).to_numpy()[-16:]
+        if np.isfinite(bwp).any():
+            ok = bool(np.nanmin(bwp) <= 0.3)
+            txt += ("系統規則：突破前 4 小時內，15 分 K 布林通道寬度要曾經縮到近 200 根裡最窄的 30%（先收斂、再突破）才做；"
+                    f"現在{'符合 ✓' if ok else '不符合，這時就算突破系統也不做'}。回測：加這條後總獲利差不多、最大回撤少約四成。")
     draw = {"lines": [{"points": cx.pts(up_), "color": "bb", "width": 1, "title": ""},
                       {"points": cx.pts(mid), "color": "bb", "width": 1, "style": 2, "title": ""},
                       {"points": cx.pts(lo_), "color": "bb", "width": 1, "title": ""}]}
@@ -541,8 +579,10 @@ def t_sar(cx: Ctx) -> dict:
     if flip is not None:
         rel = 0.75 if _trending(cx, int(dr[-1])) else 0.55
         why = "SAR 翻到價格" + ("下方（短線轉多）" if dr[-1] > 0 else "上方（短線轉空）")
-    txt = (f"SAR 在價格{'下方 → 短線偏多' if dr[-1] > 0 else '上方 → 短線偏空'}，目前 {f(sar[-1])}。"
-           "SAR 會跟著價格移動，可以當短線的移動停損參考；翻到另一邊代表短線轉向。")
+    r = _exit_r("1h SAR 翻轉")
+    txt = (f"SAR 在價格{'下方 → 短線偏多' if dr[-1] > 0 else '上方 → 短線偏空'}，目前 {f(sar[-1])}；翻到另一邊代表短線轉向。"
+           + (f"但不要拿它當系統單的停損：回測中用 SAR 出場，系統每筆平均從 {r[0]:+.2f}R 掉到 {r[1]:+.2f}R。" if r else
+              "但它太靈敏，不建議拿來當系統單的停損。"))
     return {"rel": rel, "why": why, "text": txt,
             "draw": {"lines": [{"points": cx.pts(sar), "color": "sar", "width": 1, "dots": True, "title": ""}]}}
 
@@ -657,7 +697,7 @@ def t_rsi(cx: Ctx) -> dict:
     if dv:
         main_lines, pane_lines, word = _div_draw(cx, dv, r)
         rel, why = 0.85, "RSI " + word.split("（")[0]
-        txt += f"出現{word}，{'持空單要小心反彈' if dv[0] > 0 else '持多單要小心拉回'}。"
+        txt += f"出現{word}。" + (_exit_hint("1h 反向背離(RSI/MACD)", "背離") if cx.pos_dir == -dv[0] else "")
     elif r[-1] >= 70 or r[-1] <= 30:
         hot = r[-1] >= 70
         rel = 0.78 if cx.regime.get("key") == "range" else 0.62
@@ -976,7 +1016,13 @@ def build(bars: pd.DataFrame, tf: str, price: float | None, core: dict, fmt, ins
     head = _headline(core, fmt, inst_name)
     note = ("綠色▲／紅色▼箭頭與交易單是回測驗證過的系統訊號；其他看圖工具（標 ★ 的是依目前行情自動跳出的）"
             "只當輔助參考，不會單獨產生訊號。")
-    meta = [{"key": k, "name": nm, "group": g, "rel": 0.0, "why": None, "auto": False, "visible": False} for k, nm, g, _ in TOOLS]
+    cnt = backtest_notes().get("counts")
+    if cnt:
+        note += (f"回測過 {cnt['signals']} 種看圖工具訊號：單獨拿來進出場都沒有穩定優勢，持單時拿它們提早出場或停利幾乎都讓系統變差，"
+                 "所以有系統單時請照系統的停損走（滑鼠移到工具名稱上可以看各工具的回測結果）。")
+    notes = backtest_notes().get("notes", {})
+    meta = [{"key": k, "name": nm, "group": g, "rel": 0.0, "why": None, "auto": False, "visible": False, "bt": notes.get(k)}
+            for k, nm, g, _ in TOOLS]
     empty = {"headline": head, "regime": None, "tools": meta, "draw": {}, "lines": [], "note": note}
     if len(bars) < 60:
         return empty
@@ -991,6 +1037,7 @@ def build(bars: pd.DataFrame, tf: str, price: float | None, core: dict, fmt, ins
              price=float(c[-1]) if price is None else float(price), fmt=fmt,
              bias=int((core or {}).get("bias") or 0), pos_dir=pos_dir, stop=stop, ph=ph, pl=pl)
     cx.regime = _regime(cx)
+    cx.cache["squeeze_rule"] = bool(((core or {}).get("params") or {}).get("squeeze_bars"))
     res = {}
     for key, fn in REGISTRY.items():  # sr runs first: candle patterns look at its levels
         try:

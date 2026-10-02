@@ -52,14 +52,19 @@ def test_htf_alignment_has_no_lookahead():
         assert row["close"] == known["close"].iloc[-1]
 
 
-def test_signals_do_not_change_when_future_data_is_added():
-    """The rule table at bar t must be identical whether or not bars after t exist."""
+@pytest.mark.parametrize("squeeze", [0, 16])
+def test_signals_do_not_change_when_future_data_is_added(squeeze):
+    """The rule table at bar t must be identical whether or not bars after t exist
+    (also with the 布林收窄濾網, whose band-width ranks use a rolling window)."""
+    from dataclasses import replace
+    p = replace(S.StrategyParams(), squeeze_bars=squeeze, use_h4=False, adx_max=100.0)
     m15 = synthetic_m15(9000)
-    full = S.rule_table(m15, S.compute_features(m15))
+    full = S.rule_table(m15, S.compute_features(m15), p)
+    assert (full["long_signal"] | full["short_signal"]).sum() > 0
     for cut in (6000, 7337, 8999):
         part = m15.iloc[:cut]
-        t = S.rule_table(part, S.compute_features(part))
-        cols = ["long_signal", "short_signal", "long_setup", "short_setup"]
+        t = S.rule_table(part, S.compute_features(part), p)
+        cols = ["long_signal", "short_signal", "long_setup", "short_setup", "squeeze_ok"]
         assert (t[cols].values == full[cols].iloc[:cut].values).all(), f"look-ahead detected at cut={cut}"
 
 

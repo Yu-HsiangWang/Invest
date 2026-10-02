@@ -86,3 +86,49 @@ def test_position_sizing_numbers():
     assert rows[0.3]["margin"] == 1254.0 and abs(rows[0.3]["liq_move"] - 45.77) < 0.01
     e = eod_decision(1, 100.0, 2.0, 100.3, 0.25)
     assert not e["keep"] and abs(e["target_price"] - 100.5) < 1e-9
+
+
+def test_squeeze_filter_only_keeps_breakouts_out_of_a_squeeze():
+    df = synthetic_m15(9000)
+    f = S.compute_features(df)
+    loose = replace(S.StrategyParams(), use_h4=False, use_h1=False, adx_max=100.0, ext_max=99.0)  # many breakouts
+    plain = S.rule_table(df, f, loose)
+    p = replace(loose, squeeze_bars=16, squeeze_pct=0.3)
+    sq = S.rule_table(df, f, p)
+    sig_plain = plain["long_signal"] | plain["short_signal"]
+    sig_sq = sq["long_signal"] | sq["short_signal"]
+    assert sig_plain.sum() > sig_sq.sum() > 0
+    assert not (sig_sq & ~sig_plain).any()                     # the filter only removes signals
+    low = f["m15_bw_pct"].shift(1).rolling(16, min_periods=1).min()
+    assert (low[sig_sq] <= 0.3).all() and (low[sig_plain & ~sig_sq] > 0.3).all()
+    assert f["m15_bw_pct"].dropna().between(0, 1).all()
+
+
+def test_instrument_defaults_and_toggle():
+    from goldsignal.instruments import INSTRUMENTS
+    gold, silver = INSTRUMENTS["XAUUSD"], INSTRUMENTS["XAGUSD"]
+    assert gold.strategy_params(True).squeeze_bars == S.SQUEEZE_BARS
+    assert gold.strategy_params(True, squeeze=False).squeeze_bars == 0
+    assert silver.strategy_params(True).squeeze_bars == 0
+    assert silver.strategy_params(False, squeeze=True).squeeze_bars == S.SQUEEZE_BARS
+    assert gold.strategy_params(False).day_cutoff_ny is None    # hold mode keeps the filter, not the day rules
+
+
+def test_research_hooks_tool_exit_and_target():
+    n = 30
+    up = _bars("2026-09-15 03:00", list(np.linspace(100, 103, n)))
+    sig = np.zeros(n, dtype=np.int64)
+    sig[0] = 1
+    atr = np.full(n, 1.0)
+    z = np.zeros(n)
+    ex = np.zeros(n, dtype=np.int64)
+    ex[10] = -1                                               # a chart tool says "close longs" at bar 10
+    tr = simulate_plan(up, sig, atr, Plan(swap=False), z, z, exit_sig=ex)
+    assert tr.iloc[0]["reason"] == "tool" and tr.iloc[0]["exit_i"] == 10
+    assert tr.iloc[0]["exit"] == up["close"].iloc[10]
+    tgt = np.full(n, np.nan)
+    tgt[0] = 101.0                                            # price target for the trade from bar 0
+    tr2 = simulate_plan(up, sig, atr, Plan(swap=False), z, z, target_px=tgt)
+    assert tr2.iloc[0]["reason"] == "target" and tr2.iloc[0]["exit"] == 101.0
+    same = simulate_plan(up, sig, atr, Plan(swap=False), z, z, exit_sig=-ex)  # an exit for shorts ignores longs
+    assert same.iloc[0]["reason"] != "tool"

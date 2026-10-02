@@ -10,6 +10,9 @@ Evaluated on every completed 15-minute bar. A LONG signal needs ALL of:
   6. Strong close        : the breakout bar closes in the top 30 % of its own range
   7. Timing              : Mon-Fri, not after 12:00 New York on Friday, no high-impact news blackout
                            (day mode: also no new entries from `day_cutoff_ny` until the 17:00 break)
+  8. Squeeze (gold)      : 布林收窄濾網 - in the 4 hours before the breakout the 15m Bollinger band
+                           width was in the narrowest 30 % of its last 200 bars (`squeeze_bars`,
+                           off = 0; picked by the chart-tool back-test, docs/RESEARCH.md section 9)
 
 SHORT is the mirror image. Trade management (identical in live mode and backtest):
 
@@ -62,7 +65,7 @@ class StrategyParams:
     eod_time_ny: float = 16.75
     # 布林收窄濾網 (0 = off): only take a breakout that comes out of a volatility squeeze - the 15m
     # Bollinger band width (20, 2) was in the lowest `squeeze_pct` of its last 200 bars at least once
-    # in the `squeeze_bars` bars before the signal bar (docs/RESEARCH.md section 10)
+    # in the `squeeze_bars` bars before the signal bar (docs/RESEARCH.md section 9)
     squeeze_bars: int = 0
     squeeze_pct: float = 0.3
 

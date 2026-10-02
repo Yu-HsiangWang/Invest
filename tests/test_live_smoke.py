@@ -106,6 +106,10 @@ def test_live_engine_end_to_end(fake_api, tmp_path, sym):
     assert snap["instrument"]["key"] == sym and snap["instruments"][0]["key"] == sym
     assert snap["day"]["on"] is True and snap["sizing"]["balance"] == 2000.0          # 當日平倉模式 is the default
     assert len(snap["lots_table"]) >= 5 and "eod" in snap
+    keys = [c["key"] for c in snap["setup"]["long"]["checks"]]
+    assert ("squeeze" in keys) == (sym == "XAUUSD")                                   # 布林收窄濾網: gold only
+    hub.update_settings({"instruments": {sym: {"squeeze_filter": sym != "XAUUSD"}}})
+    assert eng.params.squeeze_bars == (0 if sym == "XAUUSD" else 16)
     for tf in ("5m", "15m", "1h", "4h", "1D"):
         c = eng.candles(tf, 300)
         assert "ta" in c and c["ta"]["headline"]["title"]

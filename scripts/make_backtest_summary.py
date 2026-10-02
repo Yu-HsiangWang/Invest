@@ -9,7 +9,7 @@ data/raw/XAU_15m_data.csv, then run:
 
 Three variants are reported, with Mitrade's overnight financing charged:
   day          = the app default: 當日平倉模式 (no entries 12:00-17:00 NY, 16:45 NY check)
-                 + 布林收窄濾網 (only breakouts out of a 15m Bollinger squeeze, docs/RESEARCH.md section 10)
+                 + 布林收窄濾網 (only breakouts out of a 15m Bollinger squeeze, docs/RESEARCH.md section 9)
   day_nofilter = the same without the 布林收窄濾網 (the rules before the chart-tool back-test)
   hold         = the original trade management (positions may run for days), same entries
 """

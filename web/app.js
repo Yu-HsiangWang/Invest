@@ -193,7 +193,7 @@
     const groups = [["main", "主圖"], ["pane", "副圖"]];
     $("#tools").innerHTML = groups.map(([g, gname]) => `<span class="grp">${gname}</span>` + tools.filter((t) => t.group === g).map((t) => {
       const on = toolSel.has(t.key), auto = t.auto;
-      const tip = t.why ? `${t.why}（相關度 ${Math.round(t.rel * 100)}%）` : "目前沒有特別的訊號";
+      const tip = (t.why ? `${t.why}（相關度 ${Math.round(t.rel * 100)}%）` : "目前沒有特別的訊號") + (t.bt ? `\n${t.bt}` : "");
       return `<label class="chip${on ? " on" : ""}${auto ? " auto" : ""}" title="${esc(tip)}"><input type="checkbox" data-tool="${t.key}" ${on ? "checked" : ""}>${auto ? '<span class="star">★</span>' : ""}${esc(t.name)}</label>`;
     }).join("")).join("");
     $$("#tools input").forEach((inp) => inp.addEventListener("change", () => {
@@ -498,11 +498,48 @@
       let cmp = "";
       const md = b.modes;
       if (md && md.day && md.hold) {
-        const a = md.day.all, h = md.hold.all;
+        const a = md.day.all, h = md.hold.all, nf = md.day_nofilter && md.day_nofilter.all;
         cmp = `<p class="cap">同期比較——當日平倉模式：平均 ${sgn(a.avgR, 2)}R、最大回撤 ${fmt(a.maxDD_R, 1)}R、${fmt(md.day.overnight_pct, 0)}% 的單留過夜；原策略（可一直抱著）：${sgn(h.avgR, 2)}R、${fmt(h.maxDD_R, 1)}R、${fmt(md.hold.overnight_pct, 0)}%。</p>`;
+        if (nf) cmp += `<p class="cap">不加布林收窄濾網（舊規則）：${nf.n} 筆、平均 ${sgn(nf.avgR, 2)}R、累積 ${sgn(nf.totR, 0)}R、最大回撤 ${fmt(nf.maxDD_R, 1)}R——加了濾網總獲利差不多，回撤小很多（說明見下方「看圖工具回測」）。</p>`;
       }
-      el.innerHTML = `${svg}<p class="cap">${esc(b.caption || "")}</p><table><thead><tr><th>期間</th><th>筆數</th><th>勝率</th><th>平均</th><th>最大回撤</th></tr></thead><tbody>${rows}${recent}</tbody></table>${cmp}<p class="cap">R = 每筆的初始風險。平均 +0.3R 代表每冒 100 美元風險，長期平均每筆約賺 30 美元（已扣點差、滑價與隔夜費）。勝率只有三到四成：多數單小賠出場，靠少數大波段賺回來，連輸 5–10 筆是正常的。</p>${moneyTable(d.money)}`;
+      const rvn = rv && rv.summary_nofilter;
+      const recentNf = rvn && rvn.n ? row("　同期不加濾網", "舊規則，對照用", rvn) : "";
+      el.innerHTML = `${svg}<p class="cap">${esc(b.caption || "")}</p><table><thead><tr><th>期間</th><th>筆數</th><th>勝率</th><th>平均</th><th>最大回撤</th></tr></thead><tbody>${rows}${recent}${recentNf}</tbody></table>${cmp}<p class="cap">R = 每筆的初始風險。平均 +0.3R 代表每冒 100 美元風險，長期平均每筆約賺 30 美元（已扣點差、滑價與隔夜費）。勝率只有三到四成：多數單小賠出場，靠少數大波段賺回來，連輸 5–10 筆是正常的。</p>${moneyTable(d.money)}`;
+      try { renderToolBacktest(d.tool_backtest); } catch { $("#toolbt").innerHTML = `<p class="cap">看圖工具回測結果載入失敗。</p>`; }
     } catch { el.innerHTML = `<p class="cap">回測結果載入失敗。</p>`; }
+  }
+
+  function renderToolBacktest(tb) {
+    const el = $("#toolbt");
+    if (!tb || !tb.counts) { el.innerHTML = `<p class="cap">尚無看圖工具的回測結果。</p>`; return; }
+    const c = tb.counts, sq = tb.squeeze || {}, k = sq.kaggle || {}, du = sq.dukascopy || {}, rc = sq.recent || {};
+    const r2 = (x) => (x == null ? "—" : sgn(x, 2) + "R");
+    const cell = (n, avg, dd) => `<td><b>${r2(avg)}</b><span class="sub2">${n} 筆・回撤 ${fmt(dd, 1)}R</span></td>`;
+    const last = (a) => (a && a.length ? a[a.length - 1] : null);
+    const sqRows = [];
+    if (k.system && k.filter) sqRows.push(`<tr><td>黃金 2005–2025/3<span class="sub2">設計用的資料</span></td>${cell(k.system.n, k.system.all, k.system.dd)}${cell(k.filter.n, k.filter.all, k.filter.dd)}</tr>`);
+    const g = du.XAUUSD, s2 = du.XAGUSD;
+    if (g && g.system && g.filter) { const a = last(g.system), b = last(g.filter); sqRows.push(`<tr><td>黃金 2013/7–2026/10<span class="sub2">另一家資料商</span></td>${cell(a[0], a[1], a[3])}${cell(b[0], b[1], b[3])}</tr>`); }
+    if (rc.system && rc.filter && rc.system.n && rc.window && rc.window.length === 2) sqRows.push(`<tr><td>黃金 ${esc(String(rc.window[0]).slice(0, 7).replace("-", "/"))}–${esc(String(rc.window[1]).slice(0, 7).replace("-", "/"))}<span class="sub2">全新資料</span></td>${cell(rc.system.n, rc.system.avgR, rc.system.maxDD_R)}${cell(rc.filter.n, rc.filter.avgR, rc.filter.maxDD_R)}</tr>`);
+    if (s2 && s2.system && s2.filter) { const a = last(s2.system), b = last(s2.filter); sqRows.push(`<tr><td>白銀 2013/7–2026/10<span class="sub2">效果不一致，白銀不採用</span></td>${cell(a[0], a[1], a[3])}${cell(b[0], b[1], b[3])}</tr>`); }
+    const pp = k.perm_p || {};
+    const verdict = { pass: "勉強通過", faded: "後來失效", none: "沒有優勢" };
+    const tfw = { "15m": "15分", "1h": "1時", "4h": "4時" };
+    const sigRows = (tb.signals || []).slice().sort((a, b) => (b.all ?? -9) - (a.all ?? -9)).map((x) => `<tr class="${x.verdict === "pass" ? "rec" : ""}"><td>${esc(x.name)}<span class="sub2">${tfw[x.tf] || x.tf}・${esc(x.exit)}</span></td><td>${r2(x.dev)}</td><td>${r2(x.val)}</td><td>${r2(x.test)}</td><td>${verdict[x.verdict] || ""}</td></tr>`).join("");
+    const sy = tb.system || {};
+    const exRows = [`<tr class="rec"><td>系統原本的出場<span class="sub2">移動停損＋收盤前檢查</span></td><td>${r2(sy.all)}</td><td>${fmt(sy.totR, 0)}R</td><td>${fmt(sy.dd, 1)}R</td></tr>`].concat((tb.exits || []).slice().sort((a, b) => (b.all ?? -9) - (a.all ?? -9)).map((x) => `<tr class="${(x.all ?? 0) < (sy.all ?? 0) - 0.1 ? "risky" : ""}"><td>${esc(x.name)}</td><td>${r2(x.all)}</td><td>${fmt(x.totR, 0)}R</td><td>${fmt(x.dd, 1)}R</td></tr>`)).join("");
+    const fRows = (tb.filters || []).slice().sort((a, b) => (b.all ?? -9) - (a.all ?? -9)).map((x) => `<tr class="${x.passed ? "rec" : ""}"><td>${esc(x.name)}${x.passed ? ' <span class="tagrec">採用</span>' : ""}<span class="sub2">保留 ${x.keep}% 的單</span></td><td>${r2(x.dev)}</td><td>${r2(x.val)}</td><td>${r2(x.test)}</td><td>${fmt(x.dd, 1)}R</td></tr>`).join("");
+    el.innerHTML = `<p class="cap"><b>結論：</b>${c.signals} 種看圖工具訊號、${c.tests} 種組合（3 個週期 × 2 種出場），單獨拿來進出場沒有一個能穩定賺錢——只有 ${c.passed} 組勉強過關，而這麼多組裡本來就會有一兩組靠運氣過關。持單時拿工具提早出場或停利，幾乎全部讓系統變差。唯一有用的是<b>「布林通道收窄後才突破」</b>，已加進黃金系統（設定裡可以關掉）。</p>
+      <h3 class="bt-h3">布林收窄濾網：加進系統前後</h3>
+      <table><thead><tr><th>資料</th><th>不加濾網<span class="sub2">每筆平均</span></th><th>加濾網<span class="sub2">每筆平均</span></th></tr></thead><tbody>${sqRows.join("")}</tbody></table>
+      <p class="cap">規則：突破前 4 小時內，15 分 K 布林通道寬度曾經掉到近 200 根裡最窄的 30%（先收斂、再突破）才進場。被濾掉的單過去平均幾乎不賺（${k.dropped ? r2(k.dropped.avgR) : "—"}，${k.dropped ? k.dropped.n : ""} 筆）。</p>
+      <p class="cap">誠實提醒：2017 年以後的改善不夠顯著——隨機刪掉同樣多筆單，也有 ${pp.val != null ? fmt(pp.val * 100, 0) : "—"}%（2017–2020）和 ${pp.test != null ? fmt(pp.test * 100, 0) : "—"}%（2021–2025/3）的機率做得一樣好；最近一年半加濾網反而少賺一點。它最確定的好處是回撤變小，總獲利大致不變。</p>
+      <details><summary>每種工具單獨進出場的成績（平均每筆 R，已扣成本）</summary><table><thead><tr><th>工具（最好的一組）</th><th>2005–16</th><th>2017–20</th><th>2021–25/3</th><th>結論</th></tr></thead><tbody>${sigRows}</tbody></table>
+      <p class="cap">規則先訂好再看結果：2005–2016 要明顯賺錢（t ≥ 2、獲利因子 ≥ 1.15），2017–2020 和 2021–2025/3 也都要賺錢才算通過。表中每個工具列出它表現最好的週期與出場方式。</p></details>
+      <details><summary>持單時用工具出場或停利，結果如何？</summary><table><thead><tr><th>出場方式（1 小時 K）</th><th>平均</th><th>累積</th><th>回撤</th></tr></thead><tbody>${exRows}</tbody></table>
+      <p class="cap">同一批系統進場訊號（黃金 2005–2025/3），只換出場方式。黃字＝每筆平均少了 0.1R 以上。</p></details>
+      <details><summary>拿工具當系統的過濾條件，結果如何？</summary><table><thead><tr><th>過濾條件</th><th>2005–16</th><th>2017–20</th><th>2021–25/3</th><th>回撤</th></tr></thead><tbody>${fRows}</tbody></table>
+      <p class="cap">系統不加任何過濾：${r2(sy.dev)}／${r2(sy.val)}／${r2(sy.test)}，回撤 ${fmt(sy.dd, 1)}R。要三段期間都變好、而且至少留下 6 成的單才算通過。</p></details>`;
   }
 
   function moneyTable(mo) {
@@ -558,6 +595,8 @@
         <label>每筆風險（% 資金）<input data-k="risk_pct" type="number" step="0.1" min="0.1" max="5"></label>
         <label>每 1 手 = 幾盎司 <input data-k="oz_per_lot" type="number" step="1" min="1"><small>請在 Mitrade ${nm}商品資訊確認（常見為 ${oz}）。</small></label>
         <label class="check"><input data-k="confirmed" type="checkbox"> 我已在 Mitrade 確認過合約大小</label>
+        <label class="check"><input data-k="squeeze_filter" type="checkbox"> 布林收窄濾網（只做「先收斂、再突破」的訊號）</label>
+        <small>${k === "XAUUSD" ? "建議開啟：回測總獲利差不多、最大回撤少約四成。" : "白銀回測效果不一致，預設關閉。"}</small>
         <label>最小手數 <input data-k="min_lot" type="number" step="0.01" min="0.01"></label>
         <label>價格校正（加到本程式報價上）<input data-k="price_offset" type="number" step="0.001"><small>若 Mitrade 報價比這裡高 0.30，就填 0.30。</small></label>
       </fieldset>`;

@@ -375,9 +375,10 @@ class Engine:
 
         fmt = f"{{:.{d}f}}"
         sq_ok, sq_detail = True, ""
-        if p.squeeze_bars > 0:   # 布林收窄濾網: while waiting, the window that the NEXT bar will use
-            bwp = f["m15_bw_pct"]
-            win = bwp.iloc[-p.squeeze_bars - 1:-1] if new_signal else bwp.iloc[-p.squeeze_bars:]
+        if p.squeeze_bars > 0:   # 布林收窄濾網: while waiting, the window that the NEXT bar will use;
+            bwp = f["m15_bw_pct"]  # on a signal / breakout bar, the window this bar was judged with
+            this_bar = bool(new_signal) or bool(tl["long_break"]) or bool(tl["short_break"])
+            win = bwp.iloc[-p.squeeze_bars - 1:-1] if this_bar else bwp.iloc[-p.squeeze_bars:]
             lo_pct = float(win.min()) if win.notna().any() else float("nan")
             sq_ok = bool(lo_pct <= p.squeeze_pct)
             sq_detail = (f"近 {p.squeeze_bars // 4} 小時布林帶寬最窄時，排在近 200 根的 {lo_pct * 100:.0f}%（需 ≤ {p.squeeze_pct * 100:.0f}%）"

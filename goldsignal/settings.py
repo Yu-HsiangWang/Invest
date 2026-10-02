@@ -13,6 +13,13 @@ def _default_instruments() -> dict:
                 "min_lot": 0.01, "confirmed": False, "squeeze_filter": ins.squeeze_default} for k, ins in INSTRUMENTS.items()}
 
 
+def _to_bool(v) -> bool:
+    """JSON true/false from the UI, but also "false"/"0"/"off" from a hand-edited file."""
+    if isinstance(v, str):
+        return v.strip().lower() not in ("", "0", "false", "no", "off")
+    return bool(v)
+
+
 @dataclass
 class Settings:
     account_balance: float = 2000.0      # USD
@@ -82,7 +89,7 @@ class Settings:
                     for kk, vv in vals.items():
                         try:
                             if kk in ("confirmed", "squeeze_filter"):
-                                tgt[kk] = bool(vv)
+                                tgt[kk] = _to_bool(vv)
                             elif kk in ("oz_per_lot", "price_offset", "risk_pct", "min_lot"):
                                 tgt[kk] = float(vv)
                         except (TypeError, ValueError):
@@ -91,7 +98,7 @@ class Settings:
             cur = getattr(self, f.name)
             try:
                 if isinstance(cur, bool):
-                    v = bool(v)
+                    v = _to_bool(v)
                 elif isinstance(cur, int):
                     v = int(v)
                 elif isinstance(cur, float):

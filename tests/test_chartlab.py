@@ -86,3 +86,13 @@ def test_every_tool_runs_on_real_like_data():
         out = chartlab.build(bars.iloc[-700:], tf, None, CORE, FMT, "黃金", show={k for k, *_ in chartlab.TOOLS}, auto=True)
         assert out["regime"]["label"] and len(out["tools"]) == len(chartlab.TOOLS)
         assert sum(m["auto"] for m in out["tools"]) <= chartlab.AUTO_MAX
+
+
+def test_backtest_notes_and_squeeze_headline():
+    bars = _zigzag([100, 130, 118, 126, 119, 125, 120], 20)
+    out = chartlab.build(bars, "1h", None, CORE, FMT, "黃金", show={"sr"}, auto=False)
+    if chartlab.BT_PATH.exists():                                    # results/XAUUSD_tool_backtest.json
+        assert all(m["bt"] for m in out["tools"]) and "回測" in out["note"]
+    core = {"state": "flat", "bias": 1, "setup": {"long": {"ready": False, "missing": ["squeeze"], "trigger": 101.0}}}
+    h = chartlab._headline(core, FMT, "黃金")
+    assert h["kind"] == "wait" and "收窄" in h["text"]

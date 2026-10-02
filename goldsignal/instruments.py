@@ -29,7 +29,7 @@ class Instrument:
     # a trade needs at the 16:45 NY check to be kept overnight
     day_cutoff_ny: float = 12.0
     eod_keep_r: float = 0.25
-    # 布林收窄濾網 (docs/RESEARCH.md section 10) on by default? Gold yes (same total profit with a much
+    # 布林收窄濾網 (docs/RESEARCH.md section 9) on by default? Gold yes (same total profit with a much
     # smaller drawdown 2005-2026); silver's results were mixed, so it keeps the plain rules.
     squeeze_default: bool = False
 

@@ -670,9 +670,128 @@ def part_c(df15: pd.DataFrame, n_perm: int = 1000, seed: int = 7) -> dict:
     return out
 
 
+# =============================================================================== Part S: summary for the app
+
+# chartlab tool key -> (stand-alone signals, filters, exits/targets) in the result tables
+TOOL_KEYS = {
+    "sr": (["壓力突破/支撐跌破", "支撐/壓力反彈"], [], ["1h 跌破支撐/突破壓力", "前方1h壓力/支撐"]),
+    "ma": (["均線黃金/死亡交叉", "價格穿越EMA200"], ["1h EMA200同向"], ["1h 均線反向交叉"]),
+    "trend": (["趨勢線反彈", "趨勢線跌破/突破"], [], ["1h 趨勢線被反向突破"]),
+    "fib": (["費波納奇回撤反彈"], ["費波納奇在波段高檔(延續)"], ["1h 費波納奇回撤>61.8%", "費波納奇延伸127.2%", "費波納奇延伸161.8%"]),
+    "pattern": (["三角形突破", "M頭/W底頸線突破", "頭肩頸線突破", "箱型突破", "旗形突破"], ["1h型態同向突破", "1h無反向型態"],
+                ["1h 反向型態突破"]),
+    "bb": (["布林收窄後突破", "布林盤整回歸"], ["15m布林收窄後", "1h布林收窄後", "收在布林通道內"], []),
+    "round": (["突破整數關卡"], ["整數關卡還有空間"], []),
+    "pivot": (["穿越樞軸P", "突破R1/跌破S1"], ["樞軸P同向", "已突破R1/S1"], []),
+    "session": (["亞洲盤區間突破"], ["在亞洲盤區間外(同向)"], []),
+    "vwap": (["穿越VWAP(歐美盤)"], ["VWAP同向"], ["15m 穿越VWAP"]),
+    "ichimoku": (["雲帶突破", "轉換線/基準線交叉(雲外)"], ["1h雲帶同向"], []),
+    "sar": (["SAR 翻轉"], ["1h SAR同向"], ["1h SAR 翻轉"]),
+    "candle": (["吞噬/錘子/流星(不看位置)", "K線型態@支撐壓力"], [], ["1h K線反轉型態@支撐壓力"]),
+    "volume": (["爆量長K"], ["訊號K放量(≥1.5倍)"], []),
+    "rsi": (["RSI 30/70 回歸", "RSI背離"], ["RSI15未過熱", "RSI1h未過熱", "1h RSI同向(>50/<50)", "1h無反向背離"],
+            ["1h RSI 超買/超賣回落", "1h 反向背離(RSI/MACD)"]),
+    "macd": (["MACD 交叉", "MACD背離"], ["1h MACD同向"], ["1h MACD 反向交叉"]),
+    "kd": (["KD 高低檔交叉"], ["KD15未過熱"], ["1h KD 高低檔反向交叉"]),
+}
+TF_WORD = {"15m": "15 分", "1h": "1 小時", "4h": "4 小時"}
+
+
+def _r(x, k=3):
+    return None if x is None or not np.isfinite(x) else round(float(x), k)
+
+
+def part_s() -> dict:
+    """results/XAUUSD_tool_backtest.json - what the dashboard shows about the chart tools."""
+    A = pd.read_csv(OUT / "XAUUSD_tool_signals.csv")
+    B = pd.read_csv(OUT / "XAUUSD_tool_filters.csv")
+    sq = json.loads((OUT / "XAUUSD_squeeze_filter_check.json").read_text(encoding="utf-8"))
+    duka = json.loads((OUT / "XAUUSD_tool_dukascopy.json").read_text(encoding="utf-8"))
+    rv = json.loads((OUT / "XAUUSD_recent_validation.json").read_text(encoding="utf-8"))
+    sel = select(A)
+    passed = sel[sel["passed"]]
+    base = B[B["kind"] == "base"].iloc[0]
+    key_of = {nm: k for k, (sig, fil, ex) in TOOL_KEYS.items() for nm in sig + fil + ex}
+    signals = []
+    for name, g in A.groupby("tool", sort=False):
+        best = g.sort_values("dev_t", ascending=False).iloc[0]
+        ok = passed[passed["tool"] == name]
+        row = ok.iloc[0] if len(ok) else best
+        cand = bool(((g["dev_t"] >= 2.0) & (g["dev_PF"] >= 1.15) & (g["dev_n"] >= np.where(g["tf"] == "4h", 50, 100))).any())
+        verdict = "pass" if len(ok) else ("faded" if cand else "none")
+        signals.append({"name": name, "key": key_of.get(name), "tf": row["tf"], "exit": row["exit"], "n": int(row["all_n"]),
+                        "dev": _r(row["dev_avgR"]), "val": _r(row["val_avgR"]), "test": _r(row["test_avgR"]),
+                        "dev_t": _r(row["dev_t"], 2), "all": _r(row["all_avgR"]), "dd": _r(row["all_maxDD"], 1), "verdict": verdict})
+    rows = {}
+    for kind in ("filter", "exit", "target"):
+        rows[kind] = [{"name": r["name"], "key": key_of.get(r["name"]), "keep": int(r["keep%"]), "n": int(r["n"]),
+                       "dev": _r(r["dev_avgR"]), "val": _r(r["val_avgR"]), "test": _r(r["test_avgR"]), "all": _r(r["all_avgR"]),
+                       "totR": _r(r["all_totR"], 1), "dd": _r(r["all_DD"], 1), "passed": bool(r["passed"])}
+                      for _, r in B[B["kind"] == kind].iterrows()]
+    sysd = {"n": int(base["n"]), "dev": _r(base["dev_avgR"]), "val": _r(base["val_avgR"]), "test": _r(base["test_avgR"]),
+            "all": _r(base["all_avgR"]), "totR": _r(base["all_totR"], 1), "dd": _r(base["all_DD"], 1)}
+    win = next(f for f in rows["filter"] if f["name"] == "15m布林收窄後")
+    notes = {}
+    for key, (sig, fil, ex) in TOOL_KEYS.items():
+        parts = []
+        mine = [x for x in signals if x["name"] in sig]
+        good = [x for x in mine if x["verdict"] == "pass"]
+        if good:
+            x = good[0]
+            parts.append(f"單獨進出場：{TF_WORD[x['tf']]}「{x['name']}」勉強通過檢驗，但平均只有 {x['all']:+.2f}R"
+                         f"（2017–2020 {x['val']:+.2f}R），不如系統。")
+        elif mine:
+            x = max(mine, key=lambda z: z["dev_t"] or -9)
+            if x["verdict"] == "faded":
+                parts.append(f"單獨進出場：2005–2016 平均 {x['dev']:+.2f}R 看似有效，但 2017–2020 {x['val']:+.2f}R、"
+                             f"2021–2025 {x['test']:+.2f}R，之後就失效。")
+            else:
+                parts.append(f"單獨進出場：沒有優勢（最好的一組每筆平均 {x['all']:+.2f}R）。")
+        for f in rows["filter"]:
+            if f["name"] in fil and f["passed"]:
+                parts.append(f"當系統濾網：「{f['name']}」通過檢驗，已加進黃金系統（每筆 {sysd['all']:+.2f}R → {f['all']:+.2f}R、"
+                             f"最大回撤 {sysd['dd']:.1f}R → {f['dd']:.1f}R）。")
+        if fil and not any(f["name"] in fil and f["passed"] for f in rows["filter"]):
+            parts.append("當系統濾網：沒有幫助。")
+        exs = [e for e in rows["exit"] + rows["target"] if e["name"] in ex]
+        if exs:
+            changed = [e for e in exs if e["n"] != sysd["n"] or abs((e["all"] or 0) - sysd["all"]) > 0.005]
+            if changed:
+                lo, hi = min(e["all"] for e in changed), max(e["all"] for e in changed)
+                if hi >= sysd["all"] - 0.02:
+                    parts.append(f"持單時拿它出場：整體差不多（{hi:+.2f}R），但不是每段期間都比較好，不需要特別用。")
+                else:
+                    rng = f"{lo:+.2f}R" if abs(hi - lo) < 0.005 else f"{lo:+.2f}～{hi:+.2f}R"
+                    parts.append(f"持單時拿它提早出場或停利：系統每筆 {sysd['all']:+.2f}R 會變成 {rng}，交給移動停損就好。")
+            else:
+                parts.append("持單時拿它出場：幾乎不會比系統停損先觸發，結果跟原本一樣。")
+        notes[key] = "回測（黃金 2005–2025/3）：" + "".join(parts)
+    rs = rv.get("summary", {})
+    rn = rv.get("summary_nofilter", {})
+    return {
+        "generated_utc": pd.Timestamp.now(tz="UTC").isoformat(timespec="seconds"),
+        "symbol": "XAUUSD", "data": "Kaggle 15m 2005–2025/3（扣點差 0.012%、滑價 0.005%/次、隔夜費）",
+        "counts": {"signals": int(A["tool"].nunique()), "combos": int(len(A.groupby(["tool", "tf"]))), "tests": int(len(A)),
+                   "candidates": int(len(sel)), "passed": int(len(passed))},
+        "system": sysd, "signals": signals, "filters": rows["filter"], "exits": rows["exit"] + rows["target"],
+        "squeeze": {
+            "kaggle": {"system": sysd, "filter": win, "perm_p": {k: v["p_value"] for k, v in sq["perm"].items()},
+                       "kept": sq["base_kept"], "dropped": sq["base_dropped"],
+                       "grid": [{"lookback": g["lookback"], "q": g["q"], "keep": g["keep%"], "all": g["all_avgR"], "dd": g["all_DD"],
+                                 "passed": g["passed"]} for g in sq["grid"]]},
+            "dukascopy": duka["squeeze"], "periods": duka["periods"],
+            "recent": {"window": rv.get("window"), "filter": {k: rs.get(k) for k in ("n", "avgR", "totR", "maxDD_R")},
+                       "system": {k: rn.get(k) for k in ("n", "avgR", "totR", "maxDD_R")}},
+        },
+        "ichimoku_dukascopy": duka["ichimoku_tk_4h_trailing"],
+        "notes": notes,
+    }
+
+
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--part", default="ab", help="e = only build the event caches, a = signals, b = filters")
+    ap.add_argument("--part", default="ab", help="e = event caches only, a = signals, b = filters/exits, c = squeeze checks, "
+                                                     "s = summary json for the app")
     ap.add_argument("--tfs", default="15m,1h,4h")
     ap.add_argument("--no-15m-rolling", action="store_true")
     args = ap.parse_args()
@@ -694,6 +813,12 @@ def main():
         sel = select(res)
         print("\ncandidates (dev t>=2, PF>=1.15):")
         print(sel[show + ["passed"]].to_string(index=False))
+    if "s" in args.part:
+        out = part_s()
+        (OUT / "XAUUSD_tool_backtest.json").write_text(json.dumps(out, ensure_ascii=False, indent=1))
+        print(json.dumps({k: out[k] for k in ("counts", "system")}, ensure_ascii=False))
+        for k, v in out["notes"].items():
+            print(k, v)
     if "c" in args.part:
         pc = part_c(df15)
         (OUT / "XAUUSD_squeeze_filter_check.json").write_text(json.dumps(pc, ensure_ascii=False, indent=1, default=float))
