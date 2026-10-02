@@ -1,18 +1,30 @@
 @echo off
-chcp 65001 >nul
+rem Gold/silver signal dashboard - Windows launcher (ASCII only on purpose)
 cd /d "%~dp0"
-echo 金銀短線訊號儀表板 - 啟動中...
-where py >nul 2>nul
-if %errorlevel%==0 (set "PY=py -3") else (set "PY=python")
-if not exist ".venv\Scripts\python.exe" (
-  echo 第一次啟動：建立 Python 環境並安裝套件（約 1-2 分鐘）...
-  %PY% -m venv .venv
-  if errorlevel 1 (
-    echo 找不到 Python。請先到 https://www.python.org/downloads/ 安裝 Python 3.10 以上，並勾選 Add Python to PATH。
-    pause
-    exit /b 1
-  )
-)
+echo Starting the gold/silver signal dashboard...
+
+set "PY="
+py -3 --version >nul 2>nul && set "PY=py -3"
+if not defined PY python --version >nul 2>nul && set "PY=python"
+if not defined PY goto nopython
+
+if exist ".venv\Scripts\python.exe" goto run
+echo First run: creating the Python environment and installing packages (1-2 minutes)...
+%PY% -m venv .venv
+if errorlevel 1 goto nopython
+
+:run
 ".venv\Scripts\python.exe" -m pip install -q --disable-pip-version-check -r requirements.txt
 ".venv\Scripts\python.exe" run.py %*
 pause
+exit /b 0
+
+:nopython
+echo.
+echo Python 3.10 or newer was not found on this computer.
+echo 1. Download it from https://www.python.org/downloads/
+echo 2. In the installer, tick "Add python.exe to PATH", then click Install Now.
+echo 3. Double-click start_windows.bat again.
+echo.
+pause
+exit /b 1
