@@ -479,6 +479,103 @@ def f9_prevday(F: dict, trend: str, exit_: str) -> Orders:
     return od
 
 
+@njit(cache=True)
+def _grid(o, h, l, c, spread, slip, starts, ends, ref, step, side_ok_l, side_ok_s, levels, tp_steps, sl_steps, eod, no_entry):
+    """Classic grid, one independent order per level: buy limits at ref - k*step (k = 1..levels) and
+    sell limits at ref + k*step. A filled order takes profit tp_steps*step away, stops out sl_steps*step
+    away, and is closed at the 16:45 NY bar. After a take-profit the level is re-armed the same day;
+    after a stop it is not. Returns rows: entry_i, exit_i, dir, entry, exit, risk, R, reason."""
+    out = np.zeros((len(starts) * levels * 2 * 6 + 10, 8))
+    k = 0
+    for d in range(len(starts)):
+        a, b = starts[d], ends[d]
+        s = step[d]
+        if not (s > 0):
+            continue
+        for side in (1, -1):
+            if (side > 0 and not side_ok_l[d]) or (side < 0 and not side_ok_s[d]):
+                continue
+            for lv in range(1, levels + 1):
+                px = ref[d] - side * lv * s
+                armed = True
+                j = a
+                while j < b and armed:
+                    if no_entry[j] or eod[j]:
+                        break
+                    sp = spread[j]
+                    hit = (side > 0 and l[j] + sp <= px) or (side < 0 and h[j] >= px)
+                    if not hit:
+                        j += 1
+                        continue
+                    entry = px
+                    tgt = entry + side * tp_steps * s
+                    stp = entry - side * sl_steps * s
+                    risk = sl_steps * s
+                    reason = -1
+                    ex = np.nan
+                    jj = j
+                    while jj < b:
+                        sp2 = spread[jj]
+                        if side > 0:
+                            if l[jj] <= stp:
+                                ex = stp - slip[jj]
+                                reason = 0
+                            elif jj > j and h[jj] >= tgt:
+                                ex = tgt
+                                reason = 1
+                        else:
+                            if h[jj] + sp2 >= stp:
+                                ex = stp + slip[jj]
+                                reason = 0
+                            elif jj > j and l[jj] + sp2 <= tgt:
+                                ex = tgt
+                                reason = 1
+                        if reason < 0 and eod[jj]:
+                            ex = c[jj] - slip[jj] if side > 0 else c[jj] + sp2 + slip[jj]
+                            reason = 2
+                        if reason >= 0:
+                            break
+                        jj += 1
+                    if reason < 0:
+                        jj = b - 1
+                        ex = c[jj] - slip[jj] if side > 0 else c[jj] + spread[jj] + slip[jj]
+                        reason = 2
+                    if k < out.shape[0]:
+                        out[k, 0] = j
+                        out[k, 1] = jj
+                        out[k, 2] = side
+                        out[k, 3] = entry
+                        out[k, 4] = ex
+                        out[k, 5] = risk
+                        out[k, 6] = (ex - entry) / risk if side > 0 else (entry - ex) / risk
+                        out[k, 7] = reason
+                        k += 1
+                    if reason == 1:
+                        j = jj + 1          # re-arm after a take-profit
+                    else:
+                        armed = False
+    return out[:k]
+
+
+def f2g_grid(F: dict, step_mult: float, direction: str, cost_mult: float = 1.0) -> pd.DataFrame:
+    """Classic grid around each day's opening price (18:00 NY): 3 levels each side, step = step_mult x ATR(1h),
+    take profit 1 step, stop 3 steps, everything closed at 16:45 NY."""
+    sess = F["session"]
+    starts = np.flatnonzero(np.r_[True, sess[1:] != sess[:-1]])
+    ends = np.r_[starts[1:], len(sess)]
+    ref = F["open"][starts]
+    step = step_mult * F["atr1"][starts]
+    td = F["trend_d"][starts]
+    ok_l = np.ones(len(starts), np.bool_) if direction == "both" else td > 0
+    ok_s = np.ones(len(starts), np.bool_) if direction == "both" else td < 0
+    px = F["open"]
+    res = _grid(F["open"], F["high"], F["low"], F["close"], px * SPREAD * cost_mult, px * SLIP * cost_mult, starts, ends, ref, step,
+                ok_l, ok_s, 3, 1.0, 3.0, F["eod"], F["no_entry"])
+    t = pd.DataFrame(res, columns=["entry_i", "exit_i", "dir", "entry", "exit", "risk", "R", "reason"])
+    t["entry_time"] = F["index"][t["entry_i"].astype(int).to_numpy()]
+    return t
+
+
 def variants(F: dict) -> list[Orders]:
     out = []
     for trig in ("rsi2", "bb", "rsi14"):
@@ -623,6 +720,12 @@ def main():
             ev = evaluate(tr)
             ev15 = evaluate(simulate(F, od, cost_mult=1.5))
             rows.append(flat(od.name, ev, {"all_avgR_cost1.5": ev15["all"].get("avgR")}))
+        for sm in (0.5, 1.0):
+            for dr in ("both", "trend"):
+                name = f"F2g 經典網格 step{sm}ATR/{dr}"
+                ev = evaluate(f2g_grid(F, sm, dr))
+                ev15 = evaluate(f2g_grid(F, sm, dr, cost_mult=1.5))
+                rows.append(flat(name, ev, {"all_avgR_cost1.5": ev15["all"].get("avgR")}))
         res = pd.DataFrame(rows)
         res["candidate"] = (res["dev_per_week"] >= 1.0) & (res["dev_t"] >= 2.5) & (res["dev_PF"] >= 1.10)
         res["passed"] = select(res)
