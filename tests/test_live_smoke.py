@@ -110,6 +110,29 @@ def test_live_engine_end_to_end(fake_api, tmp_path, sym):
     assert ("squeeze" in keys) == (sym == "XAUUSD")                                   # 布林收窄濾網: gold only
     hub.update_settings({"instruments": {sym: {"squeeze_filter": sym != "XAUUSD"}}})
     assert eng.params.squeeze_bars == (0 if sym == "XAUUSD" else 16)
+    # 積極模式: 12-hour breakouts, no squeeze filter, several positions allowed
+    hub.update_settings({"active_mode": True})
+    assert eng.active_mode and eng.params.breakout_hours == 12 and eng.params.squeeze_bars == 0
+    eng._tick()
+    snap = hub.state(sym)
+    assert snap["active_mode"] is True and snap["max_open"] == 2 and isinstance(snap["positions"], list)
+    assert snap["cooldown_until"] is None
+    assert eng.candles("15m", 300)["ta"]["headline"]["title"]
+    hub.update_settings({"active_mode": False})
+    assert eng.params.breakout_hours == 24
+    # switching modes rebuilds the positions: no false "stopped out" alert, one info alert instead
+    pos = [{"entry_time": "2026-09-01T00:00:00Z", "dir": 1, "entry": 100.0, "stop": 99.0},
+           {"entry_time": "2026-09-01T01:00:00Z", "dir": 1, "entry": 101.0, "stop": 99.0}]
+    n0 = len(hub.alerts)
+    eng._emit_transition_alerts({"active_mode": True, "params": {"breakout_hours": 12}, "positions": pos, "active": pos[-1]},
+                                {"active_mode": False, "params": {"breakout_hours": 24}, "positions": [], "history": []})
+    assert [a["kind"] for a in list(hub.alerts)[n0:]] == ["info"]
+    # two positions whose trailing stops moved to the same price -> a single stop-move alert
+    n0 = len(hub.alerts)
+    moved = [dict(x, stop=99.5) for x in pos]
+    eng._emit_transition_alerts({"active_mode": True, "params": {}, "positions": pos, "active": pos[-1]},
+                                {"active_mode": True, "params": {}, "positions": moved, "active": moved[-1], "history": [], "atr_h1": 1.0})
+    assert [a["kind"] for a in list(hub.alerts)[n0:]] == ["stop_move"]
     for tf in ("5m", "15m", "1h", "4h", "1D"):
         c = eng.candles(tf, 300)
         assert "ta" in c and c["ta"]["headline"]["title"]

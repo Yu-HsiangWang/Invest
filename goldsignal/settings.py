@@ -24,6 +24,7 @@ def _to_bool(v) -> bool:
 class Settings:
     account_balance: float = 2000.0      # USD
     day_mode: bool = True                # 當日平倉模式: 16:45 NY check + no late entries
+    active_mode: bool = False            # 積極模式: 12h breakouts, every signal its own position (max 2)
     max_lots: float = 0.3                # cap on one position (lots)
     leverage: float = 100.0              # broker leverage (only affects margin)
     color_convention: str = "tw"         # "tw" = 紅漲綠跌 (Taiwan), "intl" = 綠漲紅跌
@@ -51,9 +52,11 @@ class Settings:
             try:
                 raw = json.loads(p.read_text(encoding="utf-8"))
                 known = {f.name for f in fields(cls)}
-                for k, v in raw.items():
-                    if k in known:
-                        setattr(s, k, v)
+                # plain fields go through update() so a hand-edited "false" / "1" is read correctly
+                s.update({k: v for k, v in raw.items() if k in known and k not in ("instruments", "my_positions")})
+                for k in ("instruments", "my_positions"):
+                    if isinstance(raw.get(k), dict):
+                        setattr(s, k, raw[k])
                 # migrate the single-instrument settings of the first version
                 gold = s.instruments.setdefault("XAUUSD", {})
                 for key in ("oz_per_lot", "price_offset", "risk_pct", "min_lot"):

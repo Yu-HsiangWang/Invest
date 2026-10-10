@@ -46,7 +46,7 @@ def create_app(hub: Hub) -> FastAPI:
     @app.get("/api/backtest")
     def backtest(sym: str = Query("XAUUSD", pattern=SYM)):
         out = {}
-        for kind in ("backtest_summary", "recent_validation", "money", "tool_backtest"):
+        for kind in ("backtest_summary", "recent_validation", "money", "tool_backtest", "active_summary"):
             p = ROOT / "results" / f"{sym}_{kind}.json"
             if not p.exists() and kind == "tool_backtest":   # the chart-tool study was run on gold
                 p = ROOT / "results" / f"XAUUSD_{kind}.json"

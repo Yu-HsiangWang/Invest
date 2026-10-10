@@ -10,8 +10,10 @@ does raise the number of trades while staying positive is to loosen the system i
 * every new signal opens its own position, even if earlier ones are still open
   (each with its own stop, trailing stop and 16:45 New York check), up to MAX_OPEN at a time.
 
-Gold and silver together give roughly 1.3-1.6 trades a week this way, against ~0.5 for the
-normal system, with about twice the drawdown (several positions in the same direction).
+Positions are independent, so there is no cooldown after an exit. Gold and silver together give
+roughly 1.2-2 trades a week this way (two positions at most per instrument), against ~0.6-0.9
+for the normal settings, with roughly 1.5-3 times the drawdown (positions in the same direction
+add up). docs/RESEARCH.md section 10 has the numbers.
 """
 from __future__ import annotations
 
@@ -24,7 +26,7 @@ from .plans import Clock, simulate_plan
 from .strategy import StrategyParams, rule_table, signals_from_rules
 
 ACTIVE_BREAKOUT_HOURS = 12
-MAX_OPEN = 3
+MAX_OPEN = 2
 
 
 def active_params(base: StrategyParams, breakout_hours: int = ACTIVE_BREAKOUT_HOURS) -> StrategyParams:

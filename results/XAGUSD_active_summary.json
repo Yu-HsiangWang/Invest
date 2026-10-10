@@ -1,0 +1,299 @@
+{
+ "mode": "active",
+ "rules": {
+  "breakout_hours": 12,
+  "max_open": 2,
+  "squeeze": false
+ },
+ "caption": "積極模式：12 小時突破、不用布林收窄濾網、同一商品最多同時 2 張；其餘規則（趨勢、停損、移動停損、16:45 檢查）與一般設定相同。已扣點差、滑價與隔夜費。",
+ "dukascopy": {
+  "normal": {
+   "2013/7-2016": {
+    "n": 63,
+    "per_week": 0.34,
+    "win%": 22.2,
+    "avgR": 0.053,
+    "totR": 3.3,
+    "maxDD": 9.5
+   },
+   "2017-2020": {
+    "n": 58,
+    "per_week": 0.28,
+    "win%": 34.5,
+    "avgR": 0.69,
+    "totR": 40.0,
+    "maxDD": 11.4
+   },
+   "2021-2025/3": {
+    "n": 76,
+    "per_week": 0.35,
+    "win%": 26.3,
+    "avgR": 0.142,
+    "totR": 10.8,
+    "maxDD": 10.3
+   },
+   "2025/3-2026/10": {
+    "n": 37,
+    "per_week": 0.46,
+    "win%": 32.4,
+    "avgR": 0.418,
+    "totR": 15.5,
+    "maxDD": 3.9
+   },
+   "all": {
+    "n": 234,
+    "per_week": 0.34,
+    "win%": 28.2,
+    "avgR": 0.298,
+    "totR": 69.6,
+    "maxDD": 11.4
+   }
+  },
+  "active": {
+   "2013/7-2016": {
+    "n": 103,
+    "per_week": 0.56,
+    "win%": 24.3,
+    "avgR": 0.108,
+    "totR": 11.1,
+    "maxDD": 24.1
+   },
+   "2017-2020": {
+    "n": 112,
+    "per_week": 0.54,
+    "win%": 29.5,
+    "avgR": 0.421,
+    "totR": 47.2,
+    "maxDD": 18.7
+   },
+   "2021-2025/3": {
+    "n": 132,
+    "per_week": 0.6,
+    "win%": 27.3,
+    "avgR": 0.031,
+    "totR": 4.2,
+    "maxDD": 16.9
+   },
+   "2025/3-2026/10": {
+    "n": 63,
+    "per_week": 0.79,
+    "win%": 25.4,
+    "avgR": 0.062,
+    "totR": 3.9,
+    "maxDD": 13.7
+   },
+   "all": {
+    "n": 410,
+    "per_week": 0.59,
+    "win%": 26.8,
+    "avgR": 0.162,
+    "totR": 66.3,
+    "maxDD": 24.1
+   }
+  }
+ },
+ "both": {
+  "normal": {
+   "2013/7-2016": {
+    "n": 97,
+    "per_week": 0.53,
+    "win%": 28.9,
+    "avgR": 0.334,
+    "totR": 32.4,
+    "maxDD": 11.2
+   },
+   "2017-2020": {
+    "n": 111,
+    "per_week": 0.53,
+    "win%": 35.1,
+    "avgR": 0.698,
+    "totR": 77.4,
+    "maxDD": 17.8
+   },
+   "2021-2025/3": {
+    "n": 131,
+    "per_week": 0.6,
+    "win%": 29.0,
+    "avgR": 0.018,
+    "totR": 2.4,
+    "maxDD": 16.5
+   },
+   "2025/3-2026/10": {
+    "n": 61,
+    "per_week": 0.76,
+    "win%": 32.8,
+    "avgR": 0.418,
+    "totR": 25.5,
+    "maxDD": 5.5
+   },
+   "all": {
+    "n": 400,
+    "per_week": 0.58,
+    "win%": 31.2,
+    "avgR": 0.344,
+    "totR": 137.7,
+    "maxDD": 17.8
+   }
+  },
+  "active": {
+   "2013/7-2016": {
+    "n": 188,
+    "per_week": 1.03,
+    "win%": 29.8,
+    "avgR": 0.186,
+    "totR": 35.0,
+    "maxDD": 27.6
+   },
+   "2017-2020": {
+    "n": 268,
+    "per_week": 1.28,
+    "win%": 30.6,
+    "avgR": 0.417,
+    "totR": 111.8,
+    "maxDD": 27.5
+   },
+   "2021-2025/3": {
+    "n": 276,
+    "per_week": 1.25,
+    "win%": 30.8,
+    "avgR": 0.154,
+    "totR": 42.4,
+    "maxDD": 17.0
+   },
+   "2025/3-2026/10": {
+    "n": 121,
+    "per_week": 1.52,
+    "win%": 30.6,
+    "avgR": 0.182,
+    "totR": 22.0,
+    "maxDD": 14.8
+   },
+   "all": {
+    "n": 853,
+    "per_week": 1.23,
+    "win%": 30.5,
+    "avgR": 0.248,
+    "totR": 211.2,
+    "maxDD": 27.6
+   }
+  }
+ },
+ "source": "Dukascopy hourly BID data, trades entered 2013/7-2026/10, hourly version of the rules (research/multi_market.py, in-browser via Pyodide). normal = the regular settings (gold: 24h breakouts + Bollinger-squeeze filter; silver: 24h breakouts), one position at a time; active = 12h breakouts, no squeeze filter, every signal its own position, at most 2 open per instrument. Costs: gold spread 0.012 %, silver 0.06 %, slippage per fill, overnight fees.",
+ "recent_15m": {
+  "window_label": "2025/4–2026/10",
+  "how": "Exact live 15m rules (goldsignal.strategy / goldsignal.active) on Dukascopy 1-minute BID data aggregated to 15m, 2024/9-2026/10 (first months only warm up the indicators); trades entered 2025-04-01..2026-10-09, in-browser via Pyodide. Fields as goldsignal.backtest.metrics plus trades per week.",
+  "normal": {
+   "n": 40,
+   "win%": 30.0,
+   "avgR": 0.348,
+   "totR": 13.9,
+   "PF": 1.64,
+   "maxDD_R": 6.0,
+   "max_losing_streak": 9,
+   "per_week": 0.5
+  },
+  "active": {
+   "n": 77,
+   "win%": 32.5,
+   "avgR": 0.308,
+   "totR": 23.7,
+   "PF": 1.57,
+   "maxDD_R": 10.3,
+   "max_losing_streak": 12,
+   "per_week": 0.97
+  },
+  "both": {
+   "normal": {
+    "n": 73,
+    "win%": 32.9,
+    "avgR": 0.26,
+    "totR": 19.0,
+    "PF": 1.47,
+    "maxDD_R": 7.4,
+    "max_losing_streak": 12,
+    "per_week": 0.92
+   },
+   "active": {
+    "n": 161,
+    "win%": 32.9,
+    "avgR": 0.161,
+    "totR": 25.9,
+    "PF": 1.3,
+    "maxDD_R": 17.3,
+    "max_losing_streak": 20,
+    "per_week": 2.02
+   }
+  }
+ },
+ "money": {
+  "how": "One-year block bootstrap (5-trade blocks, 20,000 paths) of the hourly-proxy trades 2013/7-2026/10 above, $2,000 account, 0.01 lot on every signal (gold 1 oz, silver 50 oz), stop distances drawn from the last year's trades at today's prices (gold ~$4,190, silver ~$60.6). Returns and drawdowns in % of the account; hist_maxdd_usd = worst peak-to-trough of the actual history at today's typical stop.",
+  "balance": 2000,
+  "lots": 0.01,
+  "gold_normal": {
+   "trades_per_year": 13,
+   "per_week": 0.25,
+   "stop_usd_median": {
+    "XAU-USD": 31.6
+   },
+   "med_ret": 4.4,
+   "p5_ret": -11.3,
+   "p95_ret": 39.6,
+   "p_loss": 37.5,
+   "med_dd": 5.9,
+   "p_dd30": 0.0,
+   "p_dd50": 0.0,
+   "hist_maxdd_usd": 619.0,
+   "n_hist": 166
+  },
+  "gold_active": {
+   "trades_per_year": 34,
+   "per_week": 0.65,
+   "stop_usd_median": {
+    "XAU-USD": 30.5
+   },
+   "med_ret": 12.7,
+   "p5_ret": -19.6,
+   "p95_ret": 67.4,
+   "p_loss": 28.9,
+   "med_dd": 11.4,
+   "p_dd30": 1.3,
+   "p_dd50": 0.0,
+   "hist_maxdd_usd": 789.0,
+   "n_hist": 443
+  },
+  "both_normal": {
+   "trades_per_year": 30,
+   "per_week": 0.58,
+   "stop_usd_median": {
+    "XAU-USD": 31.6,
+    "XAG-USD": 54.2
+   },
+   "med_ret": 17.7,
+   "p5_ret": -27.7,
+   "p95_ret": 88.8,
+   "p_loss": 29.2,
+   "med_dd": 15.3,
+   "p_dd30": 9.1,
+   "p_dd50": 0.3,
+   "hist_maxdd_usd": 818.0,
+   "n_hist": 400
+  },
+  "both_active": {
+   "trades_per_year": 65,
+   "per_week": 1.25,
+   "stop_usd_median": {
+    "XAU-USD": 30.5,
+    "XAG-USD": 52.6
+   },
+   "med_ret": 23.3,
+   "p5_ret": -49.5,
+   "p95_ret": 138.1,
+   "p_loss": 32.4,
+   "med_dd": 26.0,
+   "p_dd30": 40.0,
+   "p_dd50": 10.8,
+   "hist_maxdd_usd": 1244.0,
+   "n_hist": 853
+  }
+ }
+}

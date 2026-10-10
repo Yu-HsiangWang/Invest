@@ -132,3 +132,38 @@ def test_research_hooks_tool_exit_and_target():
     assert tr2.iloc[0]["reason"] == "target" and tr2.iloc[0]["exit"] == 101.0
     same = simulate_plan(up, sig, atr, Plan(swap=False), z, z, exit_sig=-ex)  # an exit for shorts ignores longs
     assert same.iloc[0]["reason"] != "tool"
+
+
+def test_active_mode_positions_are_independent_and_capped():
+    from goldsignal.active import active_params, run_multi
+    df = synthetic_m15(9000)
+    base = replace(S.StrategyParams(), use_h4=False, adx_max=100.0, ext_max=99.0, day_cutoff_ny=12.0, eod_keep_r=0.25)
+    p = active_params(base, 12)
+    assert p.breakout_hours == 12 and p.squeeze_bars == 0
+    f = S.compute_features(df, params=p)
+    sp = np.full(len(df), 0.2)
+    sl = np.full(len(df), 0.05)
+    many = run_multi(df, f, p, sp, sl, swap=False, max_open=0)
+    capped = run_multi(df, f, p, sp, sl, swap=False, max_open=2)
+    single = run_multi(df, f, p, sp, sl, swap=False, max_open=1)
+    assert len(many) >= len(capped) >= len(single) > 3
+    # never more than 2 open at once with the cap
+    ev = sorted([(int(r.sig_i) + 1, 1) for r in capped.itertuples()] + [(int(r.exit_i) + 1, -1) for r in capped.itertuples()],
+                key=lambda x: (x[0], x[1]))
+    assert max(np.cumsum([e[1] for e in ev])) <= 2
+    # each position is exactly the trade a lone signal would give
+    sig = S.signals_from_rules(S.rule_table(df, f, p))
+    r0 = capped.iloc[0]
+    one = np.zeros(len(df), dtype=np.int64)
+    one[int(r0.sig_i)] = sig[int(r0.sig_i)]
+    alone = simulate_plan(df, one, f["h1_atr"].to_numpy(), p.plan(swap=False), sp, sl)
+    assert np.isclose(alone.iloc[0]["R"], r0["R"])
+
+
+def test_settings_file_types_are_parsed(tmp_path):
+    import json
+    from goldsignal.settings import Settings
+    path = tmp_path / "settings.json"
+    path.write_text(json.dumps({"active_mode": "false", "day_mode": "1", "account_balance": "5000"}), encoding="utf-8")
+    st = Settings.load(path)
+    assert st.active_mode is False and st.day_mode is True and st.account_balance == 5000.0

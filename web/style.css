@@ -301,3 +301,14 @@ table.lots { width: 100%; border-collapse: collapse; font-size: 13px; }
   .chart { height: 380px; }
   .top-actions { margin-left: 0; }
 }
+
+.mode-pill { background: var(--gold-soft); color: var(--ink); font-weight: 600; align-self: center; }
+table.positions { width: 100%; border-collapse: collapse; font-size: 13px; }
+table.positions th, table.positions td { padding: 4px 4px; border-bottom: 1px solid var(--rule-soft); text-align: right; white-space: nowrap; }
+table.positions th:first-child, table.positions td:first-child { text-align: left; color: var(--muted); }
+table.positions th { color: var(--muted); font-weight: 500; font-size: 12px; }
+table.positions small { display: block; color: var(--muted); font-size: 11px; }
+table.positions td.copy { cursor: pointer; }
+
+.active-bt { border: 1px solid var(--gold); border-radius: 6px; padding: 8px 10px; margin-bottom: 12px; background: var(--gold-soft); }
+.active-bt .bt-h3 { margin-top: 2px; }

@@ -25,6 +25,7 @@ from .bars import resample
 from .datafeed import Dukascopy, SwissquoteQuote, to_m15
 from .instruments import INSTRUMENTS, Instrument
 from .news import NewsMonitor
+from .active import MAX_OPEN, active_params, run_multi
 from .plans import eod_decision, lots_table, size_position
 from .settings import Settings
 
@@ -239,11 +240,20 @@ class Engine:
         return self.hub.settings
 
     @property
+    def active_mode(self) -> bool:
+        """積極模式: shorter breakout channel, every signal its own position (goldsignal/active.py)."""
+        return bool(getattr(self.settings, "active_mode", False))
+
+    @property
     def params(self) -> S.StrategyParams:
         """Strategy parameters, including the day-mode rules when 當日平倉模式 is on and the
-        布林收窄濾網 when it is ticked for this instrument (gold: on by default)."""
+        布林收窄濾網 when it is ticked for this instrument (gold: on by default). 積極模式 uses
+        the active-mode rules instead (no squeeze filter, 12-hour breakouts)."""
+        day = bool(self.settings.day_mode)
+        if self.active_mode:
+            return active_params(self.inst.strategy_params(day, squeeze=False))
         sq = self.iset.get("squeeze_filter", self.inst.squeeze_default)
-        return self.inst.strategy_params(bool(self.settings.day_mode), squeeze=bool(sq))
+        return self.inst.strategy_params(day, squeeze=bool(sq))
 
     @property
     def iset(self) -> dict:
@@ -309,10 +319,10 @@ class Engine:
         if m15.empty or len(m15) < 200:
             return
         lb = m15.iloc[-1]
-        key = (m15.index[-1], float(lb["high"]), float(lb["low"]), float(lb["close"]))
+        key = (m15.index[-1], float(lb["high"]), float(lb["low"]), float(lb["close"]), self.hub.settings_version)
         if key != self._last_bar:
             self._recompute(m15)
-            self._last_bar = key
+            self._last_bar = key            # a settings change during the recompute bumps the version again
         self._live_checks()
 
     # ------------------------------------------------------------ strategy
@@ -329,7 +339,12 @@ class Engine:
         feat = S.compute_features(m15, h1_hist if not h1_hist.empty else None, p)
         px = m15["open"].to_numpy(float)
         blackout = self._blackout(m15.index)
-        trades, feat, rules = S.run(m15, feat, p, px * inst.spread_pct, px * inst.slip_pct, blackout, swap=True)
+        if self.active_mode:
+            rules = S.rule_table(m15, feat, p, blackout)
+            trades = run_multi(m15, feat, p, px * inst.spread_pct, px * inst.slip_pct, blackout, swap=True,
+                               max_open=MAX_OPEN, rules=rules)
+        else:
+            trades, feat, rules = S.run(m15, feat, p, px * inst.spread_pct, px * inst.slip_pct, blackout, swap=True)
         prev = self.core
         core = self._build_core(m15, feat, rules, trades, blackout)
         with self.lock:
@@ -345,27 +360,29 @@ class Engine:
         bar_close_time = m15.index[-1] + pd.Timedelta(minutes=15)
         atr1 = float(fl["h1_atr"])
         state = "flat"
-        active = None
+        positions = []        # open system positions, oldest first (積極模式 can hold several)
         if not trades.empty:
-            lt = trades.iloc[-1]
-            if lt["reason"] == "end" and int(lt["exit_i"]) == n - 1:
-                state = "long" if lt["dir"] > 0 else "short"
+            for _, lt in trades[(trades["reason"] == "end") & (trades["exit_i"] == n - 1)].iterrows():
                 held_bars = n - 1 - int(lt["sig_i"])
-                active = {
+                positions.append({
                     "dir": int(lt["dir"]), "signal_time": _iso(lt["signal_time"]), "entry_time": _iso(lt["entry_time"]),
                     "entry": _f(lt["entry"], d), "init_stop": _f(lt["init_stop"], d), "stop": _f(lt["stop_last"], d),
                     "risk": _f(lt["risk"], d), "best_R": _f(lt["mfeR"]), "bars_held": held_bars,
                     "hours_held": round(held_bars / 4, 1),
-                }
+                })
+        active = positions[-1] if positions else None
+        if active:
+            state = "long" if active["dir"] > 0 else "short"
         closed = trades[(trades["reason"] != "end") | (trades["exit_i"] < n - 1)] if not trades.empty else trades
         cooldown_until = None
-        if state == "flat" and not closed.empty:
+        if state == "flat" and not closed.empty and not self.active_mode:
             ex_i = int(closed.iloc[-1]["exit_i"])
             if n - 1 < ex_i + p.cooldown_bars + 1:
                 cooldown_until = _iso(m15.index[min(ex_i + p.cooldown_bars + 1, n - 1)] + pd.Timedelta(minutes=15))
 
         new_signal = None
-        if state == "flat" and cooldown_until is None and (tl["long_signal"] or tl["short_signal"]):
+        room = (len(positions) < MAX_OPEN) if self.active_mode else (state == "flat")
+        if room and cooldown_until is None and (tl["long_signal"] or tl["short_signal"]):
             dr = 1 if tl["long_signal"] else -1
             c = float(last["close"])
             stop = c - dr * p.stop_atr_h1 * atr1
@@ -444,9 +461,13 @@ class Engine:
                              "exit_time": None if is_open else _iso(r["exit_time"] + pd.Timedelta(minutes=15)),
                              "entry": _f(r["entry"], d), "exit": None if is_open else _f(r["exit"], d), "R": None if is_open else _f(r["R"]),
                              "reason": "持倉中" if is_open else REASON_WORD.get(r["reason"], r["reason"])})
+        blocked = None
+        if self.active_mode and not room and (tl["long_signal"] or tl["short_signal"]):
+            blocked = f"已經同時持有 {MAX_OPEN} 張系統單，這個新訊號不進場"
         return {
             "bar_time": _iso(m15.index[-1]), "bar_close_time": _iso(bar_close_time),
-            "state": state, "active": active, "new_signal": new_signal, "cooldown_until": cooldown_until,
+            "state": state, "active": active, "positions": positions, "new_signal": new_signal, "cooldown_until": cooldown_until,
+            "active_mode": self.active_mode, "max_open": MAX_OPEN if self.active_mode else 1, "signal_blocked": blocked,
             "bias": int(fl["trend_d1"]), "setup": setup, "mtf": mtf, "history": hist,
             "atr_h1": _f(atr1, d + 1), "last_close": _f(last["close"], d),
             "blackout_now": bool(blackout[-1]) if len(blackout) else False,
@@ -468,20 +489,36 @@ class Engine:
             word = "做多" if ns["dir"] > 0 else "做空"
             self._alert("signal", f"🔔 {name}{word}訊號", f"參考價 {ns['ref_price']}，停損 {ns['stop']}（風險 {ns['risk']}）。"
                         f"請在 {ns['valid_minutes']} 分鐘內、價格未超過 {ns['max_chase']} 前進場，否則放棄。", "signal")
-        pa, ca = prev.get("active"), core.get("active")
-        if pa and not ca:
-            last = core["history"][0] if core.get("history") else None
+        if bool(prev.get("active_mode")) != bool(core.get("active_mode")) or prev.get("params") != core.get("params"):
+            # the user switched modes / rules: positions were rebuilt with the new rules, nothing was stopped out
+            mode = "積極模式" if core.get("active_mode") else "一般設定"
+            n_pos = len(core.get("positions") or [])
+            self._alert("info", f"⚙ {name}改用{mode}", (f"系統持倉已依新規則重新計算，目前 {n_pos} 張；請以交易單上的持倉與停損為準。"
+                                                     if n_pos else "系統依新規則重新計算，目前沒有持倉。"), "info")
+            return
+        prev_pos = {x["entry_time"]: x for x in (prev.get("positions") or ([prev["active"]] if prev.get("active") else []))}
+        cur_pos = {x["entry_time"]: x for x in (core.get("positions") or [])}
+        many = len(prev_pos) > 1 or len(cur_pos) > 1
+        moved = {}
+        for key, pa in prev_pos.items():
+            if key in cur_pos:
+                ca = cur_pos[key]
+                if pa.get("stop") and ca.get("stop") and abs(ca["stop"] - pa["stop"]) >= 0.25 * (core.get("atr_h1") or 1):
+                    moved.setdefault((ca["stop"], pa["stop"]), []).append(pa["entry"])
+                continue
+            last = next((h for h in core.get("history", []) if h.get("entry_time") == key), None)
             r = last["R"] if last else None
             res = f"，結果 {r:+.2f}R" if r is not None else ""
+            word = ("多單" if pa["dir"] > 0 else "空單") + (f"（{pa['entry']} 進場）" if many else "")
             if last and last.get("reason") == REASON_WORD["eod"]:
                 keep = core.get("day", {}).get("keep_r") or 0
                 why = f"獲利未達 {keep:+.2f}R" if keep > 0 else "還在虧損"
-                self._alert("exit", f"⏰ {name}收盤前平倉", f"16:45 檢查時{'多單' if pa['dir'] > 0 else '空單'}{why}，"
-                            f"系統平倉{res}。請在 17:00 前到 Mitrade 平倉。", "exit")
+                self._alert("exit", f"⏰ {name}收盤前平倉", f"16:45 檢查時{word}{why}，系統平倉{res}。請在 17:00 前到 Mitrade 平倉。", "exit")
             else:
-                self._alert("exit", f"🏁 {name}系統出場", f"{'多單' if pa['dir'] > 0 else '空單'}已觸及停損/移動停損出場{res}", "exit")
-        if pa and ca and pa.get("stop") and ca.get("stop") and abs(ca["stop"] - pa["stop"]) >= 0.25 * (core.get("atr_h1") or 1):
-            self._alert("stop_move", f"↕ {name}移動停損更新", f"新停損 {ca['stop']}（原 {pa['stop']}）", "info")
+                self._alert("exit", f"🏁 {name}系統出場", f"{word}已觸及停損/移動停損出場{res}", "exit")
+        for (new_stop, old_stop), entries in moved.items():     # one alert when several positions share the stop
+            tag = (f"（{len(entries)} 張單都改）" if len(entries) > 1 else f"（{entries[0]} 進場那張）") if many else ""
+            self._alert("stop_move", f"↕ {name}移動停損更新", f"新停損 {new_stop}（原 {old_stop}）{tag}", "info")
 
     def _live_checks(self):
         core = self.core
@@ -489,12 +526,16 @@ class Engine:
         if not core or not q:
             return
         a = core.get("active")
-        if a and a.get("stop"):
-            hit = (a["dir"] > 0 and q["bid"] <= a["stop"]) or (a["dir"] < 0 and q["ask"] >= a["stop"])
-            key = ("stop_hit", a["entry_time"])
+        pos = core.get("positions") or ([a] if a else [])
+        for x in pos:
+            if not x.get("stop"):
+                continue
+            hit = (x["dir"] > 0 and q["bid"] <= x["stop"]) or (x["dir"] < 0 and q["ask"] >= x["stop"])
+            key = ("stop_hit", x["entry_time"])
             if hit and key not in self._sent:
                 self._sent.add(key)
-                self._alert("stop_hit", f"⛔ {self.inst.name}觸及停損", f"即時價已觸及停損 {a['stop']}，系統視為出場。", "exit")
+                tag = f"（{x['entry']} 進場那張）" if len(pos) > 1 else ""
+                self._alert("stop_hit", f"⛔ {self.inst.name}觸及停損", f"即時價已觸及停損 {x['stop']}{tag}，系統視為出場。", "exit")
         self._eod_heads_up()
         if isinstance(self.src, ReplaySource):
             return
@@ -522,11 +563,9 @@ class Engine:
             return
         view = self._eod_view(self.price())
         parts = []
-        for who, label in (("system", "系統"), ("mine", "你的")):
-            v = view.get(who)
-            if not v:
-                continue
-            word = "多單" if v["dir"] > 0 else "空單"
+        items = [("系統", v) for v in view.get("systems", [])] + ([("你的", view["mine"])] if view.get("mine") else [])
+        for label, v in items:
+            word = ("多單" if v["dir"] > 0 else "空單") + (f"（{v['entry']} 進場）" if len(view.get("systems", [])) > 1 and label == "系統" else "")
             if v["keep"]:
                 parts.append(f"{label}{word}目前 {v['R_now']:+.2f}R：可以留過夜，停損 {v['stop']}。")
             else:
@@ -551,13 +590,19 @@ class Engine:
                "minutes": int((check - now_ny).total_seconds() // 60)}
         off = self.iset["price_offset"]
         a = self.core.get("active")
-        if a and price and a.get("risk"):
-            mark = (price["bid"] if a["dir"] > 0 else price["ask"]) - off
-            v = eod_decision(a["dir"], a["entry"], a["risk"], mark, p.eod_keep_r)
-            locked = (a["dir"] > 0 and a["stop"] >= a["entry"]) or (a["dir"] < 0 and a["stop"] <= a["entry"])
-            v.update(dir=a["dir"], keep=v["keep"] or locked, locked=locked, stop=_f(a["stop"] + off, d),
-                     target_price=_f(v["target_price"] + off, d))
-            out["system"] = v
+        views = []
+        for x in self.core.get("positions") or ([a] if a else []):
+            if not (price and x.get("risk")):
+                continue
+            mark = (price["bid"] if x["dir"] > 0 else price["ask"]) - off
+            v = eod_decision(x["dir"], x["entry"], x["risk"], mark, p.eod_keep_r)
+            locked = (x["dir"] > 0 and x["stop"] >= x["entry"]) or (x["dir"] < 0 and x["stop"] <= x["entry"])
+            v.update(dir=x["dir"], keep=v["keep"] or locked, locked=locked, stop=_f(x["stop"] + off, d),
+                     target_price=_f(v["target_price"] + off, d), entry=_f(x["entry"] + off, d), entry_time=x["entry_time"])
+            views.append(v)
+        if views:
+            out["system"] = views[-1]
+            out["systems"] = views
         mp = self.settings.my_positions.get(self.inst.key) or {}
         if mp.get("entry") and mp.get("dir") and not self.m15.empty and price:
             m = self._my_position(mp, price)
@@ -615,6 +660,13 @@ class Engine:
         if a and price and a.get("risk"):
             mark = price["bid"] - iset["price_offset"] if a["dir"] > 0 else price["ask"] - iset["price_offset"]
             out["active"] = dict(a, R_now=_f((mark - a["entry"]) / a["risk"] * a["dir"]), mark=_f(mark + iset["price_offset"], d))
+        if price and core.get("positions"):
+            pos = []
+            for x in core["positions"]:
+                mark = (price["bid"] if x["dir"] > 0 else price["ask"]) - iset["price_offset"]
+                pos.append(dict(x, R_now=_f((mark - x["entry"]) / x["risk"] * x["dir"]) if x.get("risk") else None,
+                                mark=_f(mark + iset["price_offset"], d)))
+            out["positions"] = pos
         atr1 = core.get("atr_h1")
         if atr1:
             spread = float(price["spread"]) if price and price.get("spread") else 0.0
@@ -770,9 +822,17 @@ class Engine:
                           "text": "現在做多" if ns["dir"] > 0 else "現在做空"})
         out["markers"] = sorted(marks, key=lambda m: m["time"])
         a = core.get("active") if core else None
-        if a:
-            out["lines"] = [{"price": _f(a["entry"] + off, d), "title": "進場", "kind": "entry"},
-                            {"price": _f(a["stop"] + off, d), "title": "停損", "kind": "stop", "dir": a["dir"]}]
+        pos = (core.get("positions") or ([a] if a else [])) if core else []
+        if pos:
+            many = len(pos) > 1
+            out["lines"] = []
+            for k, x in enumerate(pos, 1):
+                tag = f"#{k}" if many else ""
+                out["lines"] += [{"price": _f(x["entry"] + off, d), "title": "進場" + tag, "kind": "entry"},
+                                 {"price": _f(x["stop"] + off, d), "title": "停損" + tag, "kind": "stop", "dir": x["dir"]}]
+            if ns:
+                out["lines"] += [{"price": _f(ns["ref_price"] + off, d), "title": "新訊號", "kind": "entry"},
+                                 {"price": _f(ns["stop"] + off, d), "title": "新停損", "kind": "stop", "dir": ns["dir"]}]
         elif ns:
             out["lines"] = [{"price": _f(ns["ref_price"] + off, d), "title": "訊號價", "kind": "entry"},
                             {"price": _f(ns["stop"] + off, d), "title": "停損", "kind": "stop", "dir": ns["dir"]}]
@@ -822,6 +882,7 @@ class Hub:
         self.cache.mkdir(parents=True, exist_ok=True)
         self.settings_path = self.root / "settings.json"
         self.settings = Settings.load(self.settings_path)
+        self.settings_version = 0          # bumped on every settings change -> engines recompute
         self.news = NewsMonitor(self.cache)
         self.alerts: deque = deque(maxlen=300)
         self._alert_id = 0
@@ -886,7 +947,8 @@ class Hub:
     def update_settings(self, data: dict) -> dict:
         self.settings.update(data)
         self.settings.save(self.settings_path)
-        for e in self.engines.values():  # e.g. day mode toggled: recompute on the next tick
+        self.settings_version += 1       # e.g. day / active mode toggled: every engine recomputes on its next tick
+        for e in self.engines.values():
             e._last_bar = None
         return self.settings.public()
 

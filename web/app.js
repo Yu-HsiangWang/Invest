@@ -266,6 +266,9 @@
     $("#fresh .dot").className = "dot " + cls; $("#fresh-text").textContent = txt;
     document.title = p ? `${inst.name} ${fmt(p.bid)}｜金銀短線訊號` : "金銀短線訊號";
     $("#news-h").textContent = `${inst.name || ""}相關新聞`;
+    $("#mode-pill").hidden = !s.active_mode;
+    const bh = (s.params && s.params.breakout_hours) || 24;
+    $(".legend .chan").textContent = `${bh}小時高低點`;
 
     const banner = $("#banner"), msgs = [];
     if (s.status && s.status.error) msgs.push(`⚠ ${s.status.error}`);
@@ -305,6 +308,17 @@
     return [`${fmt(sz.lots, 2)} 手`, ex];
   }
   const notYet = (k) => (k > 0 ? `獲利未達 ${sgn(k, 2)}R` : "還在虧損");
+  function positionsTable(s) {
+    const pos = s.positions || [];
+    if (!pos.length) return "";
+    const eods = (s.eod && s.eod.systems) || [];
+    const rows = pos.map((x, k) => {
+      const e = eods.find((v) => v.entry_time === x.entry_time);
+      const eodTxt = e ? (e.keep ? "可留過夜" : `<span class="warn-c">${notYet(e.keep_r)}就平</span>`) : "";
+      return `<tr><td>#${k + 1}</td><td class="${dirCls(x.dir)}">${x.dir > 0 ? "多" : "空"}</td><td>${fmt(x.entry)}<small>${tHM(x.entry_time)}</small></td><td class="copy" data-copy="${String(x.stop).replace(/,/g, "")}" title="點一下複製"><b>${fmt(x.stop)}</b></td><td class="${x.R_now > 0 ? (x.dir > 0 ? "up-c" : "down-c") : ""}">${sgn(x.R_now, 2)}R</td>${s.day && s.day.on ? `<td>${eodTxt}</td>` : ""}</tr>`;
+    }).join("");
+    return `<table class="positions"><thead><tr><th></th><th>方向</th><th>進場</th><th>目前停損</th><th>浮動</th>${s.day && s.day.on ? `<th>16:45</th>` : ""}</tr></thead><tbody>${rows}</tbody></table>`;
+  }
   function exitPlanText(s, sz) {
     const day = s.day || {};
     let t = (sz && sz.scale_out ? "其餘部位一起平" : "全部一起平") + "：碰到停損或移動停損";
@@ -353,6 +367,15 @@
       else if (sz.scale_out) notes.push(`<p>在 Mitrade 分兩張單：${fmt(sz.scale_out.lots, 2)} 手停利設 <b>${fmt(sz.scale_out.price)}</b>、另外 ${fmt(sz.lots - sz.scale_out.lots, 2)} 手不設停利；兩張停損都設 <b>${fmt(ns.stop)}</b>。</p>`);
       else notes.push(`<p>在 Mitrade：${d > 0 ? "買入" : "賣出"} ${lotsTxt}，停損設 <b>${fmt(ns.stop)}</b>，不設停利。之後每 1–2 小時回來看「目前停損」，只往有利方向移動。</p>`);
       notes.push(`<p>出場：${exitPlanText(s, sz)}。</p>`);
+      if ((s.positions || []).length) notes.push(`<p>積極模式：這是第 ${s.positions.length + 1} 張（最多同時 ${s.max_open} 張）。目前的系統持倉：</p>${positionsTable(s)}`);
+    } else if ((st === "long" || st === "short") && (s.positions || []).length > 1) {
+      const pos = s.positions, d = pos[pos.length - 1].dir;
+      setStamp(d > 0 ? "持多" : "持空", d > 0 ? "up" : "down", "pos" + pos.map((x) => x.entry_time).join());
+      H.textContent = `系統持有 ${pos.length} 張${inst.name}單`;
+      Sub.textContent = `積極模式：每張單各自有停損，最多同時 ${s.max_open} 張`;
+      F.innerHTML = `<div class="field wide">${positionsTable(s)}</div>`;
+      notes.push(`<p>在 Mitrade 把每一張單的停損改成表中的「目前停損」（點一下可複製）。停損只會往有利方向移動，碰到就出場。</p>`);
+      if (s.signal_blocked) notes.push(`<p class="warn">${esc(s.signal_blocked)}。</p>`);
     } else if (st === "long" || st === "short") {
       const a = s.active, d = a.dir;
       setStamp(d > 0 ? "持多" : "持空", d > 0 ? "up" : "down", "pos" + a.entry_time);
@@ -366,6 +389,7 @@
         + field("1R =", `$${fmt(a.risk)}`, "每盎司價格距離")
         + eodField(s, d);
       notes.push(`<p>把 Mitrade 的停損改成 <b>${fmt(a.stop)}</b>。停損只會往有利方向移動，碰到就出場——不要把停損拉遠。</p>`);
+      if (s.active_mode) notes.push(`<p>積極模式：持有中如果又出現新訊號，可以再開一張（最多同時 ${s.max_open} 張）。</p>`);
       const e = s.eod && s.eod.system;
       if (e && !e.keep && s.eod.minutes <= 60) notes.push(`<p class="warn">⏰ ${s.eod.minutes} 分鐘後（美東 ${s.eod.time_ny}）收盤前檢查：目前 ${sgn(e.R_now, 2)}R，屆時${notYet(e.keep_r)}就請平倉。</p>`);
     } else if (closed) {
@@ -393,10 +417,11 @@
         else Sub.textContent = bias === 0 ? "日線沒有明確方向，系統不交易盤整。" : `日線${biasWord(bias)}，但「${failing[0] ? failing[0].label : "條件"}」還沒成立。`;
       }
       F.innerHTML = field("日線方向", `<span class="${dirCls(bias)}">${biasWord(bias)}</span>`)
-        + field(sideKey === "short" ? "跌破價（24小時低點）" : "突破價（24小時高點）", setup ? fmt(setup.trigger) : "—", setup ? `距最新收盤 ${fmt(Math.abs(setup.distance))}` : "")
+        + field(sideKey === "short" ? `跌破價（${(s.params || {}).breakout_hours || 24}小時低點）` : `突破價（${(s.params || {}).breakout_hours || 24}小時高點）`, setup ? fmt(setup.trigger) : "—", setup ? `距最新收盤 ${fmt(Math.abs(setup.distance))}` : "")
         + field("若觸發：停損距離", sz.stop_dist ? `$${fmt(sz.stop_dist)}` : "—", "2 × 1小時ATR")
         + field("若觸發：建議手數", lotsTxt, lotsExtra);
       notes.push(`<p>系統只順著日線方向交易；條件到齊後，等 15 分 K 收盤突破才出訊號，並會跳出通知。</p>`);
+      if (s.active_mode) notes.push(`<p>目前是<b>積極模式</b>：突破週期 ${(s.params || {}).breakout_hours || 12} 小時、每個新訊號都可以再開一張（最多同時 ${s.max_open} 張）。</p>`);
     }
     if (inst.note) notes.push(`<p class="warn">${esc(inst.note)}</p>`);
     const nh = s.news && s.news.aggregate;
@@ -431,7 +456,7 @@
       const liq = !r.can_open ? "保證金不夠" : (r.liq_move <= sz.stop_dist ? `<b>$${fmt(r.liq_move, pd)}</b> ⚠` : `$${fmt(r.liq_move, pd)}`);
       return `<tr class="${cls}"><td>${fmt(r.lots, 2)}${isRec ? ' <span class="tagrec">建議</span>' : ""}</td><td>$${fmt(r.per_dollar, r.per_dollar < 10 ? 2 : 0)}</td><td>$${fmt(r.loss_usd, 0)}<small>${fmt(r.loss_pct, 1)}%</small></td><td>$${fmt(r.margin, 0)}</td><td>${liq}</td></tr>`;
     }).join("");
-    $("#lots-note").innerHTML = `以現在的停損距離 $${fmt(sz.stop_dist)}（2 × 1小時ATR）計算。建議手數 = 本金 × ${fmt(sz.risk_pct, 1)}% ÷ 每 0.01 手碰停損的虧損，無條件捨去。黃字＝一次停損超過本金 3%，紅字＝超過 10%。⚠ 代表還沒碰到停損就會先被強平（保證金水平 50%）。`;
+    $("#lots-note").innerHTML = (s.active_mode ? `<b>積極模式最多同時 ${s.max_open} 張，每張都照建議手數的話，最壞會同時虧 ${s.max_open} 倍。</b>` : "") + `以現在的停損距離 $${fmt(sz.stop_dist)}（2 × 1小時ATR）計算。建議手數 = 本金 × ${fmt(sz.risk_pct, 1)}% ÷ 每 0.01 手碰停損的虧損，無條件捨去。黃字＝一次停損超過本金 3%，紅字＝超過 10%。⚠ 代表還沒碰到停損就會先被強平（保證金水平 50%）。`;
   }
   function renderMTF(s) {
     if (!s.mtf) { $("#mtf").innerHTML = ""; return; }
@@ -504,9 +529,40 @@
       }
       const rvn = rv && rv.summary_nofilter;
       const recentNf = rvn && rvn.n ? row("　同期不加濾網", "舊規則，對照用", rvn) : "";
-      el.innerHTML = `${svg}<p class="cap">${esc(b.caption || "")}</p><table><thead><tr><th>期間</th><th>筆數</th><th>勝率</th><th>平均</th><th>最大回撤</th></tr></thead><tbody>${rows}${recent}${recentNf}</tbody></table>${cmp}<p class="cap">R = 每筆的初始風險。平均 +0.3R 代表每冒 100 美元風險，長期平均每筆約賺 30 美元（已扣點差、滑價與隔夜費）。勝率只有三到四成：多數單小賠出場，靠少數大波段賺回來，連輸 5–10 筆是正常的。</p>${moneyTable(d.money)}`;
+      let act = "";
+      const am = S && ((S.settings && S.settings.active_mode != null) ? S.settings.active_mode : S.active_mode);
+      if (am) { try { act = activeBlock(d.active_summary); } catch { act = ""; } }
+      el.innerHTML = `${act}${svg}<p class="cap">${esc(b.caption || "")}</p><table><thead><tr><th>期間</th><th>筆數</th><th>勝率</th><th>平均</th><th>最大回撤</th></tr></thead><tbody>${rows}${recent}${recentNf}</tbody></table>${cmp}<p class="cap">R = 每筆的初始風險。平均 +0.3R 代表每冒 100 美元風險，長期平均每筆約賺 30 美元（已扣點差、滑價與隔夜費）。勝率只有三到四成：多數單小賠出場，靠少數大波段賺回來，連輸 5–10 筆是正常的。</p>${moneyTable(d.money)}`;
       try { renderToolBacktest(d.tool_backtest); } catch { $("#toolbt").innerHTML = `<p class="cap">看圖工具回測結果載入失敗。</p>`; }
     } catch { el.innerHTML = `<p class="cap">回測結果載入失敗。</p>`; }
+  }
+
+  function activeBlock(a) {
+    if (!a) return "";
+    const r2 = (x) => (x == null ? "—" : sgn(x, 2) + "R");
+    const cell = (x) => (x ? `<td><b>${r2(x.avgR)}</b><span class="sub2">${fmt(x.per_week, 2)} 筆/週・回撤 ${fmt(x.maxDD ?? x.maxDD_R, 1)}R</span></td>` : "<td>—</td>");
+    const rows = [];
+    const k = a.kaggle;
+    if (k) k.active.periods.forEach((p, i) => rows.push(`<tr><td>黃金 ${esc(p.label)}<span class="sub2">券商 15 分 K・${esc(p.sub)}</span></td>${cell(k.normal.periods[i])}${cell(p)}</tr>`));
+    const du = a.dukascopy || {}, both = a.both || {};
+    if (du.active) rows.push(`<tr><td>${esc((S.instrument || {}).name || "")} 2013/7–2026/10<span class="sub2">Dukascopy 1 小時近似</span></td>${cell(du.normal.all)}${cell(du.active.all)}</tr>`);
+    if (both.active) rows.push(`<tr><td>黃金＋白銀合計<span class="sub2">Dukascopy 1 小時近似</span></td>${cell(both.normal.all)}${cell(both.active.all)}</tr>`);
+    const rec = a.recent_15m;
+    if (rec && rec.active) rows.push(`<tr><td>${esc((S.instrument || {}).name || "")} ${esc(rec.window_label || "")}<span class="sub2">全新資料・15 分 K 實際規則</span></td>${cell(rec.normal)}${cell(rec.active)}</tr>`);
+    if (rec && rec.both && rec.both.active) rows.push(`<tr><td>黃金＋白銀 ${esc(rec.window_label || "")}<span class="sub2">全新資料・15 分 K 實際規則</span></td>${cell(rec.both.normal)}${cell(rec.both.active)}</tr>`);
+    const mo = a.money;
+    let money = "";
+    if (mo && mo.both_active && mo.both_normal) {
+      const pct = (x) => `${x > 0 ? "+" : ""}${fmt(x, 0)}%`;
+      const mrow = (label, m) => `<tr class="${m.p_dd50 >= 10 ? "danger" : m.p_dd30 >= 10 ? "risky" : ""}"><td>${label}<span class="sub2">一年約 ${m.trades_per_year} 筆</span></td><td>${pct(m.med_ret)}</td><td>${pct(m.p5_ret)}</td><td>${fmt(m.p_dd30, 0)}%</td><td>${fmt(m.p_dd50, 0)}%</td></tr>`;
+      money = `<h3 class="bt-h3">本金 $${fmt(mo.balance, 0)}、每個訊號 0.01 手，一年後會怎樣？</h3>
+        <table class="money"><thead><tr><th>做法</th><th>一般</th><th>運氣差</th><th>跌三成</th><th>腰斬</th></tr></thead><tbody>
+        ${mrow("只做黃金・一般設定", mo.gold_normal)}${mrow("只做黃金・積極模式", mo.gold_active)}${mrow("黃金＋白銀・一般設定", mo.both_normal)}${mrow("黃金＋白銀・積極模式", mo.both_active)}</tbody></table>
+        <p class="cap">四種做法都用同一種方法（2013/7–2026/10 的 1 小時近似交易結果隨機重抽 20,000 次），適合互相比較；下方「每筆下幾手」那張用的是另一種算法（${sym === "XAUUSD" ? "黃金 15 分 K 的精確版本" : "白銀單獨計算"}），所以數字會不一樣。停損用最近一年的水準（黃金 0.01 手約 $${fmt(((mo.both_active.stop_usd_median || {})["XAU-USD"]) || 30, 0)}、白銀 0.01 手約 $${fmt(((mo.both_active.stop_usd_median || {})["XAG-USD"]) || 50, 0)}）。白銀 0.01 手就是 50 盎司，是回撤變大的主因。</p>`;
+    }
+    return `<div class="active-bt"><h3 class="bt-h3">積極模式回測（你現在用的設定）</h3>
+      <table><thead><tr><th>資料</th><th>一般設定<span class="sub2">每筆平均</span></th><th>積極模式<span class="sub2">每筆平均</span></th></tr></thead><tbody>${rows.join("")}</tbody></table>
+      <p class="cap">${esc(a.caption || "")}交易次數約是 2 倍、總獲利較多，但每筆平均較低、最大回撤較大、連輸的次數也更長。最新一年半：黃金積極模式幾乎打平，白銀表現較好。</p>${money}</div>`;
   }
 
   function renderToolBacktest(tb) {
@@ -626,7 +682,7 @@
     });
     fillSettings(await post("/api/settings", data));
     $("#settings-saved").hidden = false; setTimeout(() => ($("#settings-saved").hidden = true), 1800);
-    refresh();
+    refresh().then(() => { renderBacktest(); loadCandles(); });
   }
 
   // ------------------------------------------------------------ loop
