@@ -120,6 +120,18 @@ def test_live_engine_end_to_end(fake_api, tmp_path, sym):
     assert eng.candles("15m", 300)["ta"]["headline"]["title"]
     hub.update_settings({"active_mode": False})
     assert eng.params.breakout_hours == 24
+    # 高效積極模式: gold 18-hour breakouts with the squeeze filter and up to 2 positions; silver unchanged
+    hub.update_settings({"trade_mode": "efficient"})
+    eng._tick()
+    snap = hub.state(sym)
+    assert snap["trade_mode"] == "efficient" and snap["mode_label"] == "高效積極模式" and not snap["active_mode"]
+    if sym == "XAUUSD":
+        assert eng.params.breakout_hours == 18 and eng.params.squeeze_bars == 16 and snap["max_open"] == 2 and snap["multi"]
+    else:
+        assert eng.params.breakout_hours == 24 and snap["max_open"] == 1 and not snap["multi"]
+    assert eng.candles("15m", 300)["ta"]["headline"]["title"]
+    hub.update_settings({"trade_mode": "normal"})
+    assert eng.params.breakout_hours == 24 and eng.rules.max_open == 1
     # switching modes rebuilds the positions: no false "stopped out" alert, one info alert instead
     pos = [{"entry_time": "2026-09-01T00:00:00Z", "dir": 1, "entry": 100.0, "stop": 99.0},
            {"entry_time": "2026-09-01T01:00:00Z", "dir": 1, "entry": 101.0, "stop": 99.0}]
@@ -127,6 +139,11 @@ def test_live_engine_end_to_end(fake_api, tmp_path, sym):
     eng._emit_transition_alerts({"active_mode": True, "params": {"breakout_hours": 12}, "positions": pos, "active": pos[-1]},
                                 {"active_mode": False, "params": {"breakout_hours": 24}, "positions": [], "history": []})
     assert [a["kind"] for a in list(hub.alerts)[n0:]] == ["info"]
+    n0 = len(hub.alerts)                                           # 積極 -> 高效積極 is a mode change too
+    eng._emit_transition_alerts({"trade_mode": "active", "params": {}, "positions": pos, "active": pos[-1]},
+                                {"trade_mode": "efficient", "mode_label": "高效積極模式", "params": {}, "positions": pos[:1], "history": []})
+    al = list(hub.alerts)[n0:]
+    assert [a["kind"] for a in al] == ["info"] and "高效積極模式" in al[0]["title"]
     # two positions whose trailing stops moved to the same price -> a single stop-move alert
     n0 = len(hub.alerts)
     moved = [dict(x, stop=99.5) for x in pos]

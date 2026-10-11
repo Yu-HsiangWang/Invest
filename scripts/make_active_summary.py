@@ -1,4 +1,7 @@
-"""Re-create results/<SYM>_active_summary.json - the 積極模式 back-test shown in the dashboard.
+"""Re-create results/<SYM>_active_summary.json - the first 積極模式 back-test (docs/RESEARCH.md 10.4).
+
+The dashboard now shows the three-mode comparison from scripts/make_mode_summary.py instead
+(results/modes_summary.json, exact 15m rules on Dukascopy 2013-2026); this file is kept for the record.
 
 Gold: the exact live rules (goldsignal.active) on the 2004-2025 15-minute history (same file
 as scripts/make_backtest_summary.py). Gold and silver on Dukascopy data were run in the browser

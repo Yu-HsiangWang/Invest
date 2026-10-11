@@ -38,6 +38,7 @@ VARIANTS = {
         "normal": ((24, True), None, "any", 1, True),          # 一般設定
         "active": ((12, False), (12, False), "any", 2, False),  # 現在的積極模式
         "eff16": ((16, True), (16, True), "any", 2, True),      # 16h + 收窄，最多 2 張
+        # "18sq_max2" below = 高效積極模式 for gold (goldsignal/active.py EFFICIENT)
         "16sq_max1": ((16, True), None, "any", 1, True),
         "16sq_max3": ((16, True), (16, True), "any", 3, True),
         "14sq_max2": ((14, True), (14, True), "any", 2, True),
@@ -61,7 +62,10 @@ VARIANTS = {
 # gold + silver traded together (positions are independent; per-instrument caps as above)
 COMBOS = {"normal": ("normal", "normal"), "active": ("active", "active"), "eff16+normal": ("eff16", "normal"),
           "eff16+16_max2": ("eff16", "16_max2"), "eff16+eff16": ("eff16", "eff16"), "eff16+24_max2": ("eff16", "24_max2"),
-          "eff16+active": ("eff16", "active")}
+          "eff16+active": ("eff16", "active"), "eff16+24sq_max1": ("eff16", "24sq_max1")}
+for _g in ("18sq_max2", "20sq_max2", "16sq_max1"):   # 18sq_max2 + normal = 高效積極模式
+    for _s in ("normal", "24sq_max1"):
+        COMBOS[f"{_g}+{_s}"] = (_g, _s)
 
 PRICE = {"XAUUSD": None, "XAGUSD": None}   # filled from the last bar
 OZ_PER_001 = {"XAUUSD": 1.0, "XAGUSD": 50.0}   # 0.01 lot
@@ -176,7 +180,19 @@ MONEY = [  # label, {sym: variant}, {sym: lots}
     ("both_eff16+eff16", {"XAUUSD": "eff16", "XAGUSD": "eff16"}, {"XAUUSD": 0.01, "XAGUSD": 0.01}),
     ("both_eff16+24_max2", {"XAUUSD": "eff16", "XAGUSD": "24_max2"}, {"XAUUSD": 0.01, "XAGUSD": 0.01}),
     ("both_eff16x2+normal", {"XAUUSD": "eff16", "XAGUSD": "normal"}, {"XAUUSD": 0.02, "XAGUSD": 0.01}),
+    ("gold_18sq_max2", {"XAUUSD": "18sq_max2"}, {"XAUUSD": 0.01}),
+    ("gold_18sq_max2_x2", {"XAUUSD": "18sq_max2"}, {"XAUUSD": 0.02}),
+    ("both_18sq_max2+normal", {"XAUUSD": "18sq_max2", "XAGUSD": "normal"}, {"XAUUSD": 0.01, "XAGUSD": 0.01}),
+    ("both_18sq_max2x2+normal", {"XAUUSD": "18sq_max2", "XAGUSD": "normal"}, {"XAUUSD": 0.02, "XAGUSD": 0.01}),
+    ("both_18sq_max2+24sq_max1", {"XAUUSD": "18sq_max2", "XAGUSD": "24sq_max1"}, {"XAUUSD": 0.01, "XAGUSD": 0.01}),
+    ("both_eff16+24sq_max1", {"XAUUSD": "eff16", "XAGUSD": "24sq_max1"}, {"XAUUSD": 0.01, "XAGUSD": 0.01}),
+    ("silver_normal", {"XAGUSD": "normal"}, {"XAGUSD": 0.01}),
+    ("silver_active", {"XAGUSD": "active"}, {"XAGUSD": 0.01}),
 ]
+MONEY_HOW = ("One-year block bootstrap (5-trade blocks, 20,000 paths) of the 15m trades above, $2,000 account, "
+             "lots per signal as given (0.01 lot = gold 1 oz / silver 50 oz), stop distances drawn from each "
+             "instrument's trades of the last 12 months at the last price; hist_maxdd_usd = worst drop of the actual "
+             "2013-2026 sequence at today's median stop.")
 
 
 def run_all(frames: dict[str, pd.DataFrame]) -> tuple[dict, dict]:
@@ -194,6 +210,7 @@ def run_all(frames: dict[str, pd.DataFrame]) -> tuple[dict, dict]:
     res["prices"] = {s: round(p, 3) for s, p in PRICE.items() if p}
     res["money"] = {lab: money([trades[s][v] for s, v in pick.items() if s in trades], lots)
                     for lab, pick, lots in MONEY if all(s in trades for s in pick)}
+    res["money_how"] = MONEY_HOW
     return res, trades
 
 
@@ -210,7 +227,8 @@ def main():
     for p in sys.argv[1:]:
         frames["XAGUSD" if "XAG" in Path(p).name.upper() else "XAUUSD"] = load_csv(p)
     res, _ = run_all(frames)
-    (ROOT / "results" / "efficient_dukascopy.json").write_text(json.dumps(res, ensure_ascii=False, indent=1), encoding="utf-8")
+    (ROOT / "results" / "efficient_dukascopy.json").write_text(json.dumps(res, ensure_ascii=False, indent=1, sort_keys=True),
+                                                               encoding="utf-8")
     print(json.dumps(res["money"], ensure_ascii=False, indent=1))
 
 

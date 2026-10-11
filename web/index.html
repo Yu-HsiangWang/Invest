@@ -14,7 +14,7 @@
 <header class="topbar">
   <div class="brand"><span class="mark" id="brand-mark" aria-hidden="true">金</span><span class="brand-name">金銀短線訊號</span></div>
   <nav id="inst-tabs" class="inst-tabs" aria-label="選擇商品"></nav>
-  <span id="mode-pill" class="pill mode-pill" hidden title="設定裡可以切回一般模式">積極模式</span>
+  <span id="mode-pill" class="pill mode-pill" hidden title="設定裡可以切換交易模式">積極模式</span>
   <div class="quote" aria-live="polite">
     <span class="sym" id="sym">XAU/USD</span>
     <span id="px" class="px">—</span>
@@ -162,8 +162,12 @@
       <label>單筆最多幾手 <input name="max_lots" type="number" step="0.01" min="0.01"></label>
       <label>槓桿（倍）<input name="leverage" type="number" step="1" min="1"><small>槓桿只決定要押多少保證金，不會改變每 $1 波動的盈虧。</small></label>
       <label class="check"><input name="day_mode" type="checkbox"> 當日平倉模式</label>
-      <label class="check"><input name="active_mode" type="checkbox"> 積極模式（交易次數較多、回撤較大）</label>
-      <small id="active-note">突破週期縮短為 12 小時、不用布林收窄濾網、出場後不用等冷卻，而且持倉中出現新訊號可以再開一張（同一商品最多同時 2 張）。黃金＋白銀合計每週約 1.2–2 筆（一般設定約 0.6–0.9 筆）；歷史上仍是賺的，但每筆平均較低、最大回撤約是一般設定的 1.5–3 倍（本金 $2,000、每個訊號 0.01 手時，一年內約四成機率回撤超過 30%）。</small>
+      <label>交易模式 <select name="trade_mode" id="trade-mode">
+        <option value="normal">一般設定（最穩，單最少）</option>
+        <option value="efficient">高效積極模式（推薦：單較多、效率最好）</option>
+        <option value="active">積極模式（單最多、回撤最大）</option>
+      </select></label>
+      <small id="mode-note"></small>
       <small>美東 16:45 收盤前檢查：黃金獲利未達 +0.25R、白銀還在虧損就平倉，其餘留著過夜；黃金 12:00、白銀 13:45 之後不開新倉。</small>
     </fieldset>
     <div id="inst-settings"></div>

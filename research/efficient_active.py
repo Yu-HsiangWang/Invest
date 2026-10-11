@@ -1,4 +1,5 @@
-"""More trades, but at least as efficient as the original rules (docs/RESEARCH.md section 11).
+"""More trades, but at least as efficient as the original rules (docs/RESEARCH.md section 11) -
+the study behind 高效積極模式 (goldsignal/active.py).
 
 The first 積極模式 (12-hour breakouts, every signal its own position) doubled the number of
 trades but halved the profit per trade and tripled the drawdown. This script looks for ways
@@ -10,7 +11,13 @@ Ideas, fixed before running:
     their trailing stop has reached the entry price ("locked") or they are >= +1R in profit;
     the first position still needs the full original rules;
   * a shorter channel / no squeeze filter only for those add-on positions;
-  * the 16-hour channel with the squeeze filter (the most efficient faster variant earlier).
+  * the 16-hour channel with the squeeze filter (the most efficient faster variant earlier);
+  * then (second run) its neighbourhood: 14-20 hour channels and the squeeze settings
+    (robustness()), and full-size squeeze signals plus reduced-size other signals (tiered()).
+
+The channel length of 高效積極模式 (18 hours) was picked on the design period 2005-2016 alone
+(the best dev efficiency of 14/16/18/20 hours); 2017-2025 and the Dukascopy data
+(research/efficient_dukascopy.py) are the check.
 
 Gold 15m 2005-2025/3 (dev 2005-2016 / val 2017-2020 / test 2021-2025/3), day mode, costs and
 overnight fees as everywhere else. Every position is managed exactly like a normal trade
@@ -241,13 +248,18 @@ VARIANTS = [
     ("24h＋收窄，+0.5R 後才加 16h＋收窄", (24, True), (16, True), "profit0.5", 2, True),
     ("12h＋收窄，最多 2 張", (12, True), (12, True), "any", 2, True),
     ("16h（不收窄），最多 2 張", (16, False), (16, False), "any", 2, True),
+    # third batch: the channel length around 16 hours (the mode uses 18)
+    ("14h＋收窄，最多 2 張", (14, True), (14, True), "any", 2, True),
+    ("高效積極模式：18h＋收窄，同向最多 2 張", (18, True), (18, True), "any", 2, True),
+    ("20h＋收窄，最多 2 張", (20, True), (20, True), "any", 2, True),
 ]
 
 
 def run_all(df: pd.DataFrame, sym: str = "XAUUSD", start="2005-01-01", end="2025-03-21", blackout=None,
             variants=VARIANTS) -> tuple[pd.DataFrame, dict]:
     inst = INSTRUMENTS[sym]
-    sets = signal_sets(df, sym, blackout=blackout)
+    hours = tuple(sorted({v[1][0] for v in variants} | {v[2][0] for v in variants if v[2]}))
+    sets = signal_sets(df, sym, hours=hours, blackout=blackout)
     px = df["open"].to_numpy(float)
     sp, sl = px * inst.spread_pct, px * inst.slip_pct
     clock = Clock.build(df.index)
@@ -272,6 +284,61 @@ def run_all(df: pd.DataFrame, sym: str = "XAUUSD", start="2005-01-01", end="2025
     return pd.DataFrame(rows), trades
 
 
+def _row(name: str, tr: pd.DataFrame, w=None) -> dict:
+    """evaluate() with optional per-trade size weights (R x weight; avgR stays per trade)."""
+    tr = tr[tr["reason"] != "end"].copy()
+    if w is not None:
+        tr["R"] = tr["R"] * w(tr)
+    ev = evaluate(tr)
+    row = {"name": name}
+    for per, d in ev.items():
+        for k, v in d.items():
+            row[f"{per}_{k}"] = v
+    return row
+
+
+def robustness(df: pd.DataFrame, sym: str = "XAUUSD") -> pd.DataFrame:
+    """2 positions with the squeeze filter: channel 14-20 hours x squeeze window / threshold."""
+    inst = INSTRUMENTS[sym]
+    px = df["open"].to_numpy(float)
+    sp, sl = px * inst.spread_pct, px * inst.slip_pct
+    clock = Clock.build(df.index)
+    rows = []
+    for h in (14, 16, 18, 20, 24):
+        p0 = replace(inst.strategy_params(True, squeeze=False), breakout_hours=h)
+        f = S.compute_features(df, params=p0)
+        for bars, pct in ((16, 0.3), (8, 0.3), (24, 0.3), (16, 0.2), (16, 0.4)):
+            p = replace(p0, squeeze_bars=bars, squeeze_pct=pct)
+            sig = S.signals_from_rules(S.rule_table(df, f, p, None))
+            mo = 1 if h == 24 else 2
+            tr = run_variant(df, sig, sig, f["h1_atr"].to_numpy(float), p.plan(swap=True), sp, sl, clock, "any", mo, True)
+            rows.append(_row(f"{h}h 收窄 {bars // 4}h/{int(pct * 100)}% 最多 {mo} 張", tr))
+            print("  ", rows[-1]["name"], rows[-1]["all_eff"], flush=True)
+    return pd.DataFrame(rows)
+
+
+def tiered(df: pd.DataFrame, sym: str = "XAUUSD") -> pd.DataFrame:
+    """Squeeze signals (16h) at full size plus the other signals (12h or 16h, no squeeze) at a
+    smaller size, sharing the 2-3 slots: does trading the weaker signals small add anything?"""
+    inst = INSTRUMENTS[sym]
+    sets = signal_sets(df, sym, hours=(16, 12))
+    px = df["open"].to_numpy(float)
+    sp, sl = px * inst.spread_pct, px * inst.slip_pct
+    clock = Clock.build(df.index)
+    hi, f, p = sets[(16, True)]
+    rows = []
+    for lo_h in (12, 16):
+        lo = sets[(lo_h, False)][0]
+        u = np.where(hi != 0, hi, lo)
+        for mo in (2, 3):
+            tr = run_variant(df, u, u, f["h1_atr"].to_numpy(float), p.plan(swap=True), sp, sl, clock, "any", mo, False)
+            for w in (1.0, 0.5, 0.33):
+                rows.append(_row(f"16h 收窄訊號 1 份 + {lo_h}h 其他訊號 {w:g} 份，最多 {mo} 張", tr,
+                                 lambda t, w=w: np.where(hi[t["sig_i"].to_numpy()] != 0, 1.0, w)))
+                print("  ", rows[-1]["name"], rows[-1]["all_eff"], flush=True)
+    return pd.DataFrame(rows)
+
+
 def main():
     pd.set_option("display.width", 250)
     pd.set_option("display.max_columns", 40)
@@ -282,7 +349,15 @@ def main():
     show = ["name", "all_per_week", "all_avgR", "all_R_yr", "all_maxDD", "all_eff", "all_streak", "all_adds",
             "dev_eff", "val_eff", "test_eff", "dev_avgR", "val_avgR", "test_avgR"]
     print(res[show].to_string(index=False))
+    (ROOT / "data" / "cache").mkdir(parents=True, exist_ok=True)
     pd.to_pickle(trades, ROOT / "data" / "cache" / "efficient_trades.pkl")
+    if "--quick" not in sys.argv:
+        rob = robustness(df)
+        rob.to_csv(OUT / "XAUUSD_efficient_robustness.csv", index=False)
+        tie = tiered(df)
+        tie.to_csv(OUT / "XAUUSD_efficient_tiered.csv", index=False)
+        print(rob[show[:6] + show[8:11]].to_string(index=False))
+        print(tie[["name", "all_per_week", "all_R_yr", "all_maxDD", "all_eff", "dev_eff", "val_eff", "test_eff"]].to_string(index=False))
 
 
 if __name__ == "__main__":

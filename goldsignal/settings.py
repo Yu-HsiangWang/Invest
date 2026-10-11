@@ -5,6 +5,7 @@ import json
 from dataclasses import asdict, dataclass, field, fields
 from pathlib import Path
 
+from .active import norm_mode
 from .instruments import INSTRUMENTS
 
 
@@ -24,7 +25,8 @@ def _to_bool(v) -> bool:
 class Settings:
     account_balance: float = 2000.0      # USD
     day_mode: bool = True                # 當日平倉模式: 16:45 NY check + no late entries
-    active_mode: bool = False            # 積極模式: 12h breakouts, every signal its own position (max 2)
+    trade_mode: str = "normal"           # "normal" 一般設定 / "efficient" 高效積極模式 / "active" 積極模式 (goldsignal/active.py)
+    active_mode: bool = False            # old on/off switch for 積極模式, kept in step with trade_mode
     max_lots: float = 0.3                # cap on one position (lots)
     leverage: float = 100.0              # broker leverage (only affects margin)
     color_convention: str = "tw"         # "tw" = 紅漲綠跌 (Taiwan), "intl" = 綠漲紅跌
@@ -78,6 +80,13 @@ class Settings:
         Path(path).write_text(json.dumps(asdict(self), ensure_ascii=False, indent=2), encoding="utf-8")
 
     def update(self, data: dict) -> None:
+        data = dict(data)
+        if "trade_mode" in data:
+            data["trade_mode"] = norm_mode(data["trade_mode"])
+        elif "active_mode" in data:          # an old client or settings file with only the on/off switch
+            on = _to_bool(data["active_mode"])
+            data["trade_mode"] = "active" if on else ("normal" if self.trade_mode == "active" else self.trade_mode)
+        data.pop("active_mode", None)
         for f in fields(self):
             if f.name not in data or f.name == "my_positions":
                 continue
@@ -113,6 +122,7 @@ class Settings:
             except (TypeError, ValueError):
                 continue
             setattr(self, f.name, v)
+        self.active_mode = self.trade_mode == "active"
 
     def inst(self, key: str) -> dict:
         return self.instruments.get(key) or _default_instruments()[key]

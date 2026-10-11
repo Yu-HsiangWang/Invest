@@ -1076,9 +1076,11 @@ def _headline(core: dict, fmt, name: str) -> dict:
         pos = core.get("positions") or []
         if len(pos) > 1:
             stops = "、".join(fmt(x["stop"]) for x in pos)
-            return {"dir": d, "kind": "hold", "title": f"系統持有 {len(pos)} 張{'多' if d > 0 else '空'}單（積極模式）",
+            return {"dir": d, "kind": "hold", "title": f"系統持有 {len(pos)} 張{'多' if d > 0 else '空'}單（{core.get('mode_label') or '積極模式'}）",
                     "text": f"每張各自有停損（{stops}），碰到就出場；最多同時 {core.get('max_open', 2)} 張，不要自己再加碼、不要把停損拉遠。"}
-        extra = "積極模式下出現新訊號可以再開一張；" if core.get("active_mode") else "不要加碼、"
+        same = "同方向的" if core.get("trade_mode") == "efficient" else ""
+        extra = (f"{core.get('mode_label') or '積極模式'}下出現{same}新訊號可以再開一張；" if (core.get("max_open") or 1) > 1
+                 else "不要加碼、")
         return {"dir": d, "kind": "hold", "title": f"系統持有{'多' if d > 0 else '空'}單",
                 "text": f"停損（移動）在 {fmt(a['stop'])}，碰到就出場；{extra}不要把停損拉遠。"}
     if core.get("cooldown_until"):

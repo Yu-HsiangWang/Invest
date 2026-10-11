@@ -25,7 +25,7 @@ from .bars import resample
 from .datafeed import Dukascopy, SwissquoteQuote, to_m15
 from .instruments import INSTRUMENTS, Instrument
 from .news import NewsMonitor
-from .active import MAX_OPEN, active_params, run_multi
+from .active import MODE_LABEL, ModeRules, mode_rules, norm_mode, run_mode
 from .plans import eod_decision, lots_table, size_position
 from .settings import Settings
 
@@ -240,20 +240,26 @@ class Engine:
         return self.hub.settings
 
     @property
+    def trade_mode(self) -> str:
+        """一般設定 / 高效積極模式 / 積極模式 (goldsignal/active.py)."""
+        return norm_mode(getattr(self.settings, "trade_mode", "normal"))
+
+    @property
     def active_mode(self) -> bool:
-        """積極模式: shorter breakout channel, every signal its own position (goldsignal/active.py)."""
-        return bool(getattr(self.settings, "active_mode", False))
+        """積極模式 (12-hour breakouts, every signal its own position)."""
+        return self.trade_mode == "active"
+
+    @property
+    def rules(self) -> ModeRules:
+        """How this instrument is traded now: the mode's rules, including the day-mode rules when
+        當日平倉模式 is on; the normal rules use the 布林收窄濾網 when it is ticked for this
+        instrument (gold: on by default), the two faster modes set it themselves."""
+        sq = bool(self.iset.get("squeeze_filter", self.inst.squeeze_default))
+        return mode_rules(self.inst, self.trade_mode, bool(self.settings.day_mode), sq)
 
     @property
     def params(self) -> S.StrategyParams:
-        """Strategy parameters, including the day-mode rules when 當日平倉模式 is on and the
-        布林收窄濾網 when it is ticked for this instrument (gold: on by default). 積極模式 uses
-        the active-mode rules instead (no squeeze filter, 12-hour breakouts)."""
-        day = bool(self.settings.day_mode)
-        if self.active_mode:
-            return active_params(self.inst.strategy_params(day, squeeze=False))
-        sq = self.iset.get("squeeze_filter", self.inst.squeeze_default)
-        return self.inst.strategy_params(day, squeeze=bool(sq))
+        return self.rules.params
 
     @property
     def iset(self) -> dict:
@@ -334,25 +340,26 @@ class Engine:
                                        fomc_after_min=s.fomc_after_min)
 
     def _recompute(self, m15: pd.DataFrame):
-        p, inst = self.params, self.inst
+        mr, inst = self.rules, self.inst
+        p = mr.params
         h1_hist = getattr(self.src, "h1_hist", pd.DataFrame())
         feat = S.compute_features(m15, h1_hist if not h1_hist.empty else None, p)
         px = m15["open"].to_numpy(float)
         blackout = self._blackout(m15.index)
-        if self.active_mode:
+        if mr.multi:
             rules = S.rule_table(m15, feat, p, blackout)
-            trades = run_multi(m15, feat, p, px * inst.spread_pct, px * inst.slip_pct, blackout, swap=True,
-                               max_open=MAX_OPEN, rules=rules)
+            trades = run_mode(m15, feat, mr, px * inst.spread_pct, px * inst.slip_pct, blackout, swap=True, rules=rules)
         else:
             trades, feat, rules = S.run(m15, feat, p, px * inst.spread_pct, px * inst.slip_pct, blackout, swap=True)
         prev = self.core
-        core = self._build_core(m15, feat, rules, trades, blackout)
+        core = self._build_core(m15, feat, rules, trades, blackout, mr)
         with self.lock:
             self.m15, self.feat, self.trades, self.core = m15, feat, trades, core
         self._emit_transition_alerts(prev, core)
 
-    def _build_core(self, m15, f, t, trades, blackout) -> dict:
-        p, d = self.params, self.inst.decimals
+    def _build_core(self, m15, f, t, trades, blackout, mr: ModeRules | None = None) -> dict:
+        mr = mr or self.rules
+        p, d = mr.params, self.inst.decimals
         n = len(m15)
         last = m15.iloc[-1]
         fl = f.iloc[-1]
@@ -360,7 +367,7 @@ class Engine:
         bar_close_time = m15.index[-1] + pd.Timedelta(minutes=15)
         atr1 = float(fl["h1_atr"])
         state = "flat"
-        positions = []        # open system positions, oldest first (積極模式 can hold several)
+        positions = []        # open system positions, oldest first (the faster modes can hold several)
         if not trades.empty:
             for _, lt in trades[(trades["reason"] == "end") & (trades["exit_i"] == n - 1)].iterrows():
                 held_bars = n - 1 - int(lt["sig_i"])
@@ -375,15 +382,17 @@ class Engine:
             state = "long" if active["dir"] > 0 else "short"
         closed = trades[(trades["reason"] != "end") | (trades["exit_i"] < n - 1)] if not trades.empty else trades
         cooldown_until = None
-        if state == "flat" and not closed.empty and not self.active_mode:
-            ex_i = int(closed.iloc[-1]["exit_i"])
+        if state == "flat" and not closed.empty and mr.cooldown_when_flat:
+            ex_i = int(closed["exit_i"].max())     # with several positions the last one closed is not the last row
             if n - 1 < ex_i + p.cooldown_bars + 1:
                 cooldown_until = _iso(m15.index[min(ex_i + p.cooldown_bars + 1, n - 1)] + pd.Timedelta(minutes=15))
 
         new_signal = None
-        room = (len(positions) < MAX_OPEN) if self.active_mode else (state == "flat")
-        if room and cooldown_until is None and (tl["long_signal"] or tl["short_signal"]):
-            dr = 1 if tl["long_signal"] else -1
+        sig_dir = 1 if tl["long_signal"] else -1 if tl["short_signal"] else 0
+        room = (not mr.max_open or len(positions) < mr.max_open) if mr.multi else (state == "flat")
+        against = bool(sig_dir and mr.multi and mr.same_dir and positions and any(x["dir"] != sig_dir for x in positions))
+        if room and not against and cooldown_until is None and sig_dir:
+            dr = sig_dir
             c = float(last["close"])
             stop = c - dr * p.stop_atr_h1 * atr1
             new_signal = {"dir": dr, "time": _iso(bar_close_time), "ref_price": _f(c, d), "stop": _f(stop, d),
@@ -462,12 +471,15 @@ class Engine:
                              "entry": _f(r["entry"], d), "exit": None if is_open else _f(r["exit"], d), "R": None if is_open else _f(r["R"]),
                              "reason": "持倉中" if is_open else REASON_WORD.get(r["reason"], r["reason"])})
         blocked = None
-        if self.active_mode and not room and (tl["long_signal"] or tl["short_signal"]):
-            blocked = f"已經同時持有 {MAX_OPEN} 張系統單，這個新訊號不進場"
+        if mr.multi and sig_dir and not room:
+            blocked = f"已經同時持有 {mr.max_open} 張系統單，這個新訊號不進場"
+        elif against:
+            blocked = "這個新訊號和持倉方向相反，不進場（同一時間只做一個方向）"
         return {
             "bar_time": _iso(m15.index[-1]), "bar_close_time": _iso(bar_close_time),
             "state": state, "active": active, "positions": positions, "new_signal": new_signal, "cooldown_until": cooldown_until,
-            "active_mode": self.active_mode, "max_open": MAX_OPEN if self.active_mode else 1, "signal_blocked": blocked,
+            "trade_mode": mr.mode, "mode_label": mr.label, "multi": mr.multi,
+            "active_mode": mr.mode == "active", "max_open": mr.max_open, "signal_blocked": blocked,
             "bias": int(fl["trend_d1"]), "setup": setup, "mtf": mtf, "history": hist,
             "atr_h1": _f(atr1, d + 1), "last_close": _f(last["close"], d),
             "blackout_now": bool(blackout[-1]) if len(blackout) else False,
@@ -489,10 +501,16 @@ class Engine:
             word = "做多" if ns["dir"] > 0 else "做空"
             self._alert("signal", f"🔔 {name}{word}訊號", f"參考價 {ns['ref_price']}，停損 {ns['stop']}（風險 {ns['risk']}）。"
                         f"請在 {ns['valid_minutes']} 分鐘內、價格未超過 {ns['max_chase']} 前進場，否則放棄。", "signal")
-        if bool(prev.get("active_mode")) != bool(core.get("active_mode")) or prev.get("params") != core.get("params"):
+        def mode_of(c: dict) -> str:
+            return c.get("trade_mode") or ("active" if c.get("active_mode") else "normal")
+        if mode_of(prev) != mode_of(core) or prev.get("params") != core.get("params"):
             # the user switched modes / rules: positions were rebuilt with the new rules, nothing was stopped out
-            mode = "積極模式" if core.get("active_mode") else "一般設定"
+            mode = core.get("mode_label") or MODE_LABEL.get(mode_of(core), "一般設定")
             n_pos = len(core.get("positions") or [])
+            if prev.get("params") == core.get("params") and (prev.get("max_open") or 1) == (core.get("max_open") or 1):
+                # e.g. silver in 高效積極模式: the mode changed but this instrument's rules did not
+                self._alert("info", f"⚙ {name}：{mode}", f"{name}在這個模式下照一般設定交易，訊號與持倉都沒有改變。", "info")
+                return
             self._alert("info", f"⚙ {name}改用{mode}", (f"系統持倉已依新規則重新計算，目前 {n_pos} 張；請以交易單上的持倉與停損為準。"
                                                      if n_pos else "系統依新規則重新計算，目前沒有持倉。"), "info")
             return

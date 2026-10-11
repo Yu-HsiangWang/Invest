@@ -1,0 +1,991 @@
+{
+ "labels": {
+  "normal": "一般設定",
+  "efficient": "高效積極模式",
+  "active": "積極模式"
+ },
+ "rules": {
+  "normal": "一次一張；24 小時突破；黃金要布林收窄濾網，白銀不用。",
+  "efficient": "黃金：18 小時突破＋布林收窄濾網，持倉中出現同方向的新訊號可以再開一張（最多同時 2 張）；白銀：照一般設定。",
+  "active": "12 小時突破、不用收窄濾網、出場不用冷卻，每個新訊號都可以再開一張（同一商品最多同時 2 張）。"
+ },
+ "kaggle_gold": {
+  "normal": {
+   "periods": [
+    {
+     "label": "2005–2016",
+     "sub": "用來設計策略",
+     "n": 155,
+     "win%": 44.5,
+     "avgR": 1.157,
+     "totR": 179.4,
+     "PF": 3.56,
+     "maxDD_R": 6.6,
+     "avg_bars": 126.2,
+     "per_week": 0.25,
+     "max_losing_streak": 8
+    },
+    {
+     "label": "2017–2020",
+     "sub": "驗證",
+     "n": 71,
+     "win%": 38.0,
+     "avgR": 0.329,
+     "totR": 23.4,
+     "PF": 1.66,
+     "maxDD_R": 10.6,
+     "avg_bars": 105.9,
+     "per_week": 0.34,
+     "max_losing_streak": 8
+    },
+    {
+     "label": "2021–2025/3",
+     "sub": "測試",
+     "n": 79,
+     "win%": 35.4,
+     "avgR": 0.322,
+     "totR": 25.4,
+     "PF": 1.58,
+     "maxDD_R": 10.0,
+     "avg_bars": 106.7,
+     "per_week": 0.36,
+     "max_losing_streak": 9
+    }
+   ],
+   "all": {
+    "n": 305,
+    "win%": 40.7,
+    "avgR": 0.748,
+    "totR": 228.2,
+    "PF": 2.53,
+    "maxDD_R": 10.6,
+    "avg_bars": 116.4,
+    "per_week": 0.29,
+    "max_losing_streak": 9,
+    "R_yr": 11.3,
+    "eff": 1.07
+   }
+  },
+  "efficient": {
+   "periods": [
+    {
+     "label": "2005–2016",
+     "sub": "用來設計策略",
+     "n": 249,
+     "win%": 43.0,
+     "avgR": 1.16,
+     "totR": 288.8,
+     "PF": 3.5,
+     "maxDD_R": 10.6,
+     "avg_bars": 122.0,
+     "per_week": 0.4,
+     "max_losing_streak": 12
+    },
+    {
+     "label": "2017–2020",
+     "sub": "驗證",
+     "n": 120,
+     "win%": 34.2,
+     "avgR": 0.208,
+     "totR": 24.9,
+     "PF": 1.4,
+     "maxDD_R": 12.6,
+     "avg_bars": 102.2,
+     "per_week": 0.58,
+     "max_losing_streak": 10
+    },
+    {
+     "label": "2021–2025/3",
+     "sub": "測試",
+     "n": 139,
+     "win%": 32.4,
+     "avgR": 0.4,
+     "totR": 55.5,
+     "PF": 1.72,
+     "maxDD_R": 16.3,
+     "avg_bars": 103.7,
+     "per_week": 0.63,
+     "max_losing_streak": 14
+    }
+   ],
+   "all": {
+    "n": 508,
+    "win%": 38.0,
+    "avgR": 0.727,
+    "totR": 369.3,
+    "PF": 2.44,
+    "maxDD_R": 16.3,
+    "avg_bars": 112.3,
+    "per_week": 0.48,
+    "max_losing_streak": 14,
+    "R_yr": 18.3,
+    "eff": 1.12
+   }
+  },
+  "active": {
+   "periods": [
+    {
+     "label": "2005–2016",
+     "sub": "用來設計策略",
+     "n": 446,
+     "win%": 34.3,
+     "avgR": 0.631,
+     "totR": 281.3,
+     "PF": 2.23,
+     "maxDD_R": 20.3,
+     "avg_bars": 99.3,
+     "per_week": 0.71,
+     "max_losing_streak": 16
+    },
+    {
+     "label": "2017–2020",
+     "sub": "驗證",
+     "n": 194,
+     "win%": 30.4,
+     "avgR": 0.163,
+     "totR": 31.6,
+     "PF": 1.29,
+     "maxDD_R": 33.7,
+     "avg_bars": 93.5,
+     "per_week": 0.93,
+     "max_losing_streak": 16
+    },
+    {
+     "label": "2021–2025/3",
+     "sub": "測試",
+     "n": 202,
+     "win%": 32.2,
+     "avgR": 0.327,
+     "totR": 66.1,
+     "PF": 1.59,
+     "maxDD_R": 24.7,
+     "avg_bars": 96.6,
+     "per_week": 0.92,
+     "max_losing_streak": 13
+    }
+   ],
+   "all": {
+    "n": 842,
+    "win%": 32.9,
+    "avgR": 0.45,
+    "totR": 379.0,
+    "PF": 1.84,
+    "maxDD_R": 33.7,
+    "avg_bars": 97.3,
+    "per_week": 0.8,
+    "max_losing_streak": 16,
+    "R_yr": 18.7,
+    "eff": 0.55
+   }
+  }
+ },
+ "dukascopy": {
+  "XAUUSD": {
+   "normal": {
+    "2013/7–2016": {
+     "PF": 4.67,
+     "R_yr": 20.7,
+     "avgR": 1.683,
+     "eff": 4.2,
+     "maxDD": 4.9,
+     "n": 43,
+     "per_week": 0.24,
+     "streak": 4,
+     "totR": 72.4,
+     "win%": 48.8
+    },
+    "2017–2020": {
+     "PF": 1.58,
+     "R_yr": 5.5,
+     "avgR": 0.294,
+     "eff": 0.44,
+     "maxDD": 12.7,
+     "n": 75,
+     "per_week": 0.36,
+     "streak": 7,
+     "totR": 22.1,
+     "win%": 36.0
+    },
+    "2021–2025/3": {
+     "PF": 1.55,
+     "R_yr": 5.5,
+     "avgR": 0.301,
+     "eff": 0.55,
+     "maxDD": 10.0,
+     "n": 78,
+     "per_week": 0.35,
+     "streak": 8,
+     "totR": 23.5,
+     "win%": 35.9
+    },
+    "2025/4–2026/10": {
+     "PF": 1.27,
+     "R_yr": 3.3,
+     "avgR": 0.153,
+     "eff": 0.72,
+     "maxDD": 4.6,
+     "n": 33,
+     "per_week": 0.42,
+     "streak": 3,
+     "totR": 5.1,
+     "win%": 36.4
+    },
+    "all": {
+     "PF": 2.03,
+     "R_yr": 9.3,
+     "avgR": 0.537,
+     "eff": 0.73,
+     "maxDD": 12.7,
+     "n": 229,
+     "per_week": 0.33,
+     "streak": 8,
+     "totR": 123.0,
+     "win%": 38.4
+    }
+   },
+   "efficient": {
+    "2013/7–2016": {
+     "PF": 4.2,
+     "R_yr": 31.2,
+     "avgR": 1.559,
+     "eff": 2.6,
+     "maxDD": 12.0,
+     "n": 70,
+     "per_week": 0.38,
+     "streak": 6,
+     "totR": 109.1,
+     "win%": 44.3
+    },
+    "2017–2020": {
+     "PF": 1.38,
+     "R_yr": 6.5,
+     "avgR": 0.203,
+     "eff": 0.42,
+     "maxDD": 15.4,
+     "n": 127,
+     "per_week": 0.61,
+     "streak": 10,
+     "totR": 25.8,
+     "win%": 31.5
+    },
+    "2021–2025/3": {
+     "PF": 1.81,
+     "R_yr": 14.1,
+     "avgR": 0.442,
+     "eff": 0.98,
+     "maxDD": 14.4,
+     "n": 135,
+     "per_week": 0.61,
+     "streak": 11,
+     "totR": 59.7,
+     "win%": 34.1
+    },
+    "2025/4–2026/10": {
+     "PF": 1.3,
+     "R_yr": 6.3,
+     "avgR": 0.166,
+     "eff": 0.48,
+     "maxDD": 13.2,
+     "n": 58,
+     "per_week": 0.73,
+     "streak": 6,
+     "totR": 9.6,
+     "win%": 34.5
+    },
+    "all": {
+     "PF": 1.98,
+     "R_yr": 15.4,
+     "avgR": 0.524,
+     "eff": 1.0,
+     "maxDD": 15.4,
+     "n": 390,
+     "per_week": 0.56,
+     "streak": 11,
+     "totR": 204.2,
+     "win%": 35.1
+    }
+   },
+   "active": {
+    "2013/7–2016": {
+     "PF": 2.33,
+     "R_yr": 25.9,
+     "avgR": 0.736,
+     "eff": 1.76,
+     "maxDD": 14.7,
+     "n": 123,
+     "per_week": 0.67,
+     "streak": 9,
+     "totR": 90.6,
+     "win%": 33.3
+    },
+    "2017–2020": {
+     "PF": 1.35,
+     "R_yr": 9.5,
+     "avgR": 0.197,
+     "eff": 0.27,
+     "maxDD": 34.6,
+     "n": 193,
+     "per_week": 0.93,
+     "streak": 16,
+     "totR": 38.0,
+     "win%": 30.1
+    },
+    "2021–2025/3": {
+     "PF": 1.67,
+     "R_yr": 17.4,
+     "avgR": 0.365,
+     "eff": 1.01,
+     "maxDD": 17.3,
+     "n": 202,
+     "per_week": 0.91,
+     "streak": 14,
+     "totR": 73.8,
+     "win%": 33.7
+    },
+    "2025/4–2026/10": {
+     "PF": 1.05,
+     "R_yr": 1.5,
+     "avgR": 0.027,
+     "eff": 0.09,
+     "maxDD": 16.3,
+     "n": 84,
+     "per_week": 1.06,
+     "streak": 9,
+     "totR": 2.2,
+     "win%": 33.3
+    },
+    "all": {
+     "PF": 1.61,
+     "R_yr": 15.4,
+     "avgR": 0.34,
+     "eff": 0.45,
+     "maxDD": 34.6,
+     "n": 602,
+     "per_week": 0.87,
+     "streak": 16,
+     "totR": 204.6,
+     "win%": 32.4
+    }
+   }
+  },
+  "XAGUSD": {
+   "normal": {
+    "2013/7–2016": {
+     "PF": 1.1,
+     "R_yr": 1.3,
+     "avgR": 0.064,
+     "eff": 0.06,
+     "maxDD": 19.8,
+     "n": 69,
+     "per_week": 0.38,
+     "streak": 11,
+     "totR": 4.4,
+     "win%": 26.1
+    },
+    "2017–2020": {
+     "PF": 1.69,
+     "R_yr": 8.2,
+     "avgR": 0.417,
+     "eff": 0.52,
+     "maxDD": 15.8,
+     "n": 79,
+     "per_week": 0.38,
+     "streak": 16,
+     "totR": 32.9,
+     "win%": 25.3
+    },
+    "2021–2025/3": {
+     "PF": 1.12,
+     "R_yr": 1.6,
+     "avgR": 0.071,
+     "eff": 0.14,
+     "maxDD": 10.8,
+     "n": 93,
+     "per_week": 0.42,
+     "streak": 9,
+     "totR": 6.6,
+     "win%": 28.0
+    },
+    "2025/4–2026/10": {
+     "PF": 1.64,
+     "R_yr": 9.2,
+     "avgR": 0.348,
+     "eff": 1.53,
+     "maxDD": 6.0,
+     "n": 40,
+     "per_week": 0.5,
+     "streak": 9,
+     "totR": 13.9,
+     "win%": 30.0
+    },
+    "all": {
+     "PF": 1.34,
+     "R_yr": 4.4,
+     "avgR": 0.206,
+     "eff": 0.22,
+     "maxDD": 19.8,
+     "n": 281,
+     "per_week": 0.41,
+     "streak": 16,
+     "totR": 57.9,
+     "win%": 27.0
+    }
+   },
+   "efficient": {
+    "2013/7–2016": {
+     "PF": 1.1,
+     "R_yr": 1.3,
+     "avgR": 0.064,
+     "eff": 0.06,
+     "maxDD": 19.8,
+     "n": 69,
+     "per_week": 0.38,
+     "streak": 11,
+     "totR": 4.4,
+     "win%": 26.1
+    },
+    "2017–2020": {
+     "PF": 1.69,
+     "R_yr": 8.2,
+     "avgR": 0.417,
+     "eff": 0.52,
+     "maxDD": 15.8,
+     "n": 79,
+     "per_week": 0.38,
+     "streak": 16,
+     "totR": 32.9,
+     "win%": 25.3
+    },
+    "2021–2025/3": {
+     "PF": 1.12,
+     "R_yr": 1.6,
+     "avgR": 0.071,
+     "eff": 0.14,
+     "maxDD": 10.8,
+     "n": 93,
+     "per_week": 0.42,
+     "streak": 9,
+     "totR": 6.6,
+     "win%": 28.0
+    },
+    "2025/4–2026/10": {
+     "PF": 1.64,
+     "R_yr": 9.2,
+     "avgR": 0.348,
+     "eff": 1.53,
+     "maxDD": 6.0,
+     "n": 40,
+     "per_week": 0.5,
+     "streak": 9,
+     "totR": 13.9,
+     "win%": 30.0
+    },
+    "all": {
+     "PF": 1.34,
+     "R_yr": 4.4,
+     "avgR": 0.206,
+     "eff": 0.22,
+     "maxDD": 19.8,
+     "n": 281,
+     "per_week": 0.41,
+     "streak": 16,
+     "totR": 57.9,
+     "win%": 27.0
+    }
+   },
+   "active": {
+    "2013/7–2016": {
+     "PF": 0.86,
+     "R_yr": -4.0,
+     "avgR": -0.094,
+     "eff": -0.08,
+     "maxDD": 47.9,
+     "n": 150,
+     "per_week": 0.82,
+     "streak": 14,
+     "totR": -14.0,
+     "win%": 22.7
+    },
+    "2017–2020": {
+     "PF": 1.42,
+     "R_yr": 10.6,
+     "avgR": 0.258,
+     "eff": 0.28,
+     "maxDD": 38.5,
+     "n": 165,
+     "per_week": 0.79,
+     "streak": 29,
+     "totR": 42.6,
+     "win%": 23.0
+    },
+    "2021–2025/3": {
+     "PF": 0.97,
+     "R_yr": -0.9,
+     "avgR": -0.019,
+     "eff": -0.03,
+     "maxDD": 25.0,
+     "n": 189,
+     "per_week": 0.85,
+     "streak": 18,
+     "totR": -3.6,
+     "win%": 25.9
+    },
+    "2025/4–2026/10": {
+     "PF": 1.57,
+     "R_yr": 15.6,
+     "avgR": 0.308,
+     "eff": 1.51,
+     "maxDD": 10.3,
+     "n": 77,
+     "per_week": 0.97,
+     "streak": 12,
+     "totR": 23.7,
+     "win%": 32.5
+    },
+    "all": {
+     "PF": 1.14,
+     "R_yr": 3.7,
+     "avgR": 0.084,
+     "eff": 0.06,
+     "maxDD": 61.4,
+     "n": 581,
+     "per_week": 0.84,
+     "streak": 29,
+     "totR": 48.6,
+     "win%": 25.1
+    }
+   }
+  },
+  "both": {
+   "normal": {
+    "2013/7–2016": {
+     "PF": 2.2,
+     "R_yr": 21.9,
+     "avgR": 0.686,
+     "eff": 1.64,
+     "maxDD": 13.4,
+     "n": 112,
+     "per_week": 0.61,
+     "streak": 9,
+     "totR": 76.8,
+     "win%": 34.8
+    },
+    "2017–2020": {
+     "PF": 1.64,
+     "R_yr": 13.8,
+     "avgR": 0.357,
+     "eff": 0.73,
+     "maxDD": 18.8,
+     "n": 154,
+     "per_week": 0.74,
+     "streak": 14,
+     "totR": 55.0,
+     "win%": 30.5
+    },
+    "2021–2025/3": {
+     "PF": 1.31,
+     "R_yr": 7.1,
+     "avgR": 0.176,
+     "eff": 0.49,
+     "maxDD": 14.5,
+     "n": 171,
+     "per_week": 0.77,
+     "streak": 10,
+     "totR": 30.1,
+     "win%": 31.6
+    },
+    "2025/4–2026/10": {
+     "PF": 1.47,
+     "R_yr": 12.5,
+     "avgR": 0.26,
+     "eff": 1.69,
+     "maxDD": 7.4,
+     "n": 73,
+     "per_week": 0.92,
+     "streak": 12,
+     "totR": 19.0,
+     "win%": 32.9
+    },
+    "all": {
+     "PF": 1.63,
+     "R_yr": 13.6,
+     "avgR": 0.355,
+     "eff": 0.73,
+     "maxDD": 18.8,
+     "n": 510,
+     "per_week": 0.74,
+     "streak": 14,
+     "totR": 180.9,
+     "win%": 32.2
+    }
+   },
+   "efficient": {
+    "2013/7–2016": {
+     "PF": 2.45,
+     "R_yr": 32.4,
+     "avgR": 0.817,
+     "eff": 2.15,
+     "maxDD": 15.1,
+     "n": 139,
+     "per_week": 0.76,
+     "streak": 11,
+     "totR": 113.6,
+     "win%": 35.3
+    },
+    "2017–2020": {
+     "PF": 1.51,
+     "R_yr": 14.7,
+     "avgR": 0.285,
+     "eff": 0.67,
+     "maxDD": 21.8,
+     "n": 206,
+     "per_week": 0.99,
+     "streak": 17,
+     "totR": 58.7,
+     "win%": 29.1
+    },
+    "2021–2025/3": {
+     "PF": 1.52,
+     "R_yr": 15.6,
+     "avgR": 0.291,
+     "eff": 0.83,
+     "maxDD": 18.8,
+     "n": 228,
+     "per_week": 1.03,
+     "streak": 15,
+     "totR": 66.3,
+     "win%": 31.6
+    },
+    "2025/4–2026/10": {
+     "PF": 1.44,
+     "R_yr": 15.5,
+     "avgR": 0.241,
+     "eff": 1.49,
+     "maxDD": 10.4,
+     "n": 98,
+     "per_week": 1.23,
+     "streak": 14,
+     "totR": 23.6,
+     "win%": 32.7
+    },
+    "all": {
+     "PF": 1.7,
+     "R_yr": 19.7,
+     "avgR": 0.391,
+     "eff": 0.91,
+     "maxDD": 21.8,
+     "n": 671,
+     "per_week": 0.97,
+     "streak": 17,
+     "totR": 262.1,
+     "win%": 31.7
+    }
+   },
+   "active": {
+    "2013/7–2016": {
+     "PF": 1.46,
+     "R_yr": 21.9,
+     "avgR": 0.28,
+     "eff": 0.67,
+     "maxDD": 32.8,
+     "n": 273,
+     "per_week": 1.49,
+     "streak": 13,
+     "totR": 76.5,
+     "win%": 27.5
+    },
+    "2017–2020": {
+     "PF": 1.38,
+     "R_yr": 20.2,
+     "avgR": 0.225,
+     "eff": 0.45,
+     "maxDD": 44.7,
+     "n": 358,
+     "per_week": 1.72,
+     "streak": 26,
+     "totR": 80.5,
+     "win%": 26.8
+    },
+    "2021–2025/3": {
+     "PF": 1.32,
+     "R_yr": 16.5,
+     "avgR": 0.179,
+     "eff": 0.53,
+     "maxDD": 31.4,
+     "n": 391,
+     "per_week": 1.77,
+     "streak": 20,
+     "totR": 70.1,
+     "win%": 29.9
+    },
+    "2025/4–2026/10": {
+     "PF": 1.3,
+     "R_yr": 17.0,
+     "avgR": 0.161,
+     "eff": 0.99,
+     "maxDD": 17.3,
+     "n": 161,
+     "per_week": 2.03,
+     "streak": 20,
+     "totR": 25.9,
+     "win%": 32.9
+    },
+    "all": {
+     "PF": 1.37,
+     "R_yr": 19.1,
+     "avgR": 0.214,
+     "eff": 0.43,
+     "maxDD": 44.7,
+     "n": 1183,
+     "per_week": 1.71,
+     "streak": 26,
+     "totR": 253.1,
+     "win%": 28.8
+    }
+   }
+  }
+ },
+ "periods": [
+  "2013/7–2016",
+  "2017–2020",
+  "2021–2025/3",
+  "2025/4–2026/10",
+  "all"
+ ],
+ "money": {
+  "gold": {
+   "normal": {
+    "hist_maxdd_usd": 361,
+    "lots": {
+     "XAUUSD": 0.01
+    },
+    "med_dd": 6.2,
+    "med_ret": 10.6,
+    "n_hist": 229,
+    "p5_ret": -10.2,
+    "p95_ret": 47.9,
+    "p_dd30": 0.0,
+    "p_dd50": 0.0,
+    "p_loss": 22.9,
+    "per_week": 0.33,
+    "stop_usd_median": {
+     "XAUUSD": 28.51
+    },
+    "trades_per_year": 17
+   },
+   "efficient": {
+    "hist_maxdd_usd": 473,
+    "lots": {
+     "XAUUSD": 0.01
+    },
+    "med_dd": 9.3,
+    "med_ret": 17.4,
+    "n_hist": 390,
+    "p5_ret": -15.3,
+    "p95_ret": 82.6,
+    "p_dd30": 0.3,
+    "p_dd50": 0.0,
+    "p_loss": 22.7,
+    "per_week": 0.56,
+    "stop_usd_median": {
+     "XAUUSD": 30.65
+    },
+    "trades_per_year": 29
+   },
+   "active": {
+    "hist_maxdd_usd": 1091,
+    "lots": {
+     "XAUUSD": 0.01
+    },
+    "med_dd": 13.6,
+    "med_ret": 18.4,
+    "n_hist": 602,
+    "p5_ret": -22.5,
+    "p95_ret": 90.2,
+    "p_dd30": 5.2,
+    "p_dd50": 0.1,
+    "p_loss": 25.7,
+    "per_week": 0.86,
+    "stop_usd_median": {
+     "XAUUSD": 31.52
+    },
+    "trades_per_year": 45
+   }
+  },
+  "both": {
+   "normal": {
+    "hist_maxdd_usd": 805,
+    "lots": {
+     "XAGUSD": 0.01,
+     "XAUUSD": 0.01
+    },
+    "med_dd": 15.7,
+    "med_ret": 20.0,
+    "n_hist": 510,
+    "p5_ret": -27.4,
+    "p95_ret": 96.1,
+    "p_dd30": 9.9,
+    "p_dd50": 0.5,
+    "p_loss": 27.4,
+    "per_week": 0.73,
+    "stop_usd_median": {
+     "XAGUSD": 0.99,
+     "XAUUSD": 28.51
+    },
+    "trades_per_year": 38
+   },
+   "efficient": {
+    "hist_maxdd_usd": 909,
+    "lots": {
+     "XAGUSD": 0.01,
+     "XAUUSD": 0.01
+    },
+    "med_dd": 17.5,
+    "med_ret": 28.8,
+    "n_hist": 671,
+    "p5_ret": -29.7,
+    "p95_ret": 121.4,
+    "p_dd30": 15.2,
+    "p_dd50": 1.3,
+    "p_loss": 24.7,
+    "per_week": 0.98,
+    "stop_usd_median": {
+     "XAGUSD": 0.99,
+     "XAUUSD": 30.65
+    },
+    "trades_per_year": 51
+   },
+   "active": {
+    "hist_maxdd_usd": 2357,
+    "lots": {
+     "XAGUSD": 0.01,
+     "XAUUSD": 0.01
+    },
+    "med_dd": 29.5,
+    "med_ret": 25.6,
+    "n_hist": 1183,
+    "p5_ret": -56.1,
+    "p95_ret": 152.8,
+    "p_dd30": 48.8,
+    "p_dd50": 16.3,
+    "p_loss": 32.8,
+    "per_week": 1.71,
+    "stop_usd_median": {
+     "XAGUSD": 1.0,
+     "XAUUSD": 31.52
+    },
+    "trades_per_year": 89
+   }
+  },
+  "silver": {
+   "normal": {
+    "hist_maxdd_usd": 981,
+    "lots": {
+     "XAGUSD": 0.01
+    },
+    "med_dd": 15.0,
+    "med_ret": 5.7,
+    "n_hist": 281,
+    "p5_ret": -28.1,
+    "p95_ret": 68.0,
+    "p_dd30": 6.7,
+    "p_dd50": 0.0,
+    "p_loss": 41.0,
+    "per_week": 0.4,
+    "stop_usd_median": {
+     "XAGUSD": 0.99
+    },
+    "trades_per_year": 21
+   },
+   "efficient": {
+    "hist_maxdd_usd": 981,
+    "lots": {
+     "XAGUSD": 0.01
+    },
+    "med_dd": 15.0,
+    "med_ret": 5.7,
+    "n_hist": 281,
+    "p5_ret": -28.1,
+    "p95_ret": 68.0,
+    "p_dd30": 6.7,
+    "p_dd50": 0.0,
+    "p_loss": 41.0,
+    "per_week": 0.4,
+    "stop_usd_median": {
+     "XAGUSD": 0.99
+    },
+    "trades_per_year": 21
+   },
+   "active": {
+    "hist_maxdd_usd": 3069,
+    "lots": {
+     "XAGUSD": 0.01
+    },
+    "med_dd": 28.4,
+    "med_ret": 2.1,
+    "n_hist": 581,
+    "p5_ret": -56.5,
+    "p95_ret": 103.4,
+    "p_dd30": 46.2,
+    "p_dd50": 13.6,
+    "p_loss": 48.0,
+    "per_week": 0.84,
+    "stop_usd_median": {
+     "XAGUSD": 1.0
+    },
+    "trades_per_year": 44
+   }
+  },
+  "gold_x2": {
+   "normal": {
+    "hist_maxdd_usd": 723,
+    "lots": {
+     "XAUUSD": 0.02
+    },
+    "med_dd": 11.7,
+    "med_ret": 21.1,
+    "n_hist": 229,
+    "p5_ret": -20.4,
+    "p95_ret": 95.7,
+    "p_dd30": 2.7,
+    "p_dd50": 0.0,
+    "p_loss": 22.9,
+    "per_week": 0.33,
+    "stop_usd_median": {
+     "XAUUSD": 28.51
+    },
+    "trades_per_year": 17
+   },
+   "efficient": {
+    "hist_maxdd_usd": 946,
+    "lots": {
+     "XAUUSD": 0.02
+    },
+    "med_dd": 17.1,
+    "med_ret": 34.7,
+    "n_hist": 390,
+    "p5_ret": -30.5,
+    "p95_ret": 165.2,
+    "p_dd30": 15.4,
+    "p_dd50": 1.5,
+    "p_loss": 22.7,
+    "per_week": 0.56,
+    "stop_usd_median": {
+     "XAUUSD": 30.65
+    },
+    "trades_per_year": 29
+   }
+  }
+ },
+ "balance": 2000,
+ "prices": {
+  "XAGUSD": 60.636,
+  "XAUUSD": 4190.145
+ },
+ "how": {
+  "kaggle": "黃金券商 15 分 K 2005–2025/3，儀表板實際使用的程式（當日平倉模式）。",
+  "dukascopy": "Dukascopy 1-minute BID candles aggregated to 15m (2013-2026), exact live 15m rules in day mode (research/efficient_active.py run_variant), trades entered 2013-07-01..2026-10-09. Costs: gold spread 0.012 %, silver 0.06 %, slippage per fill, overnight fees. eff = R per year / max drawdown (R).",
+  "money": "One-year block bootstrap (5-trade blocks, 20,000 paths) of the 15m trades above, $2,000 account, lots per signal as given (0.01 lot = gold 1 oz / silver 50 oz), stop distances drawn from each instrument's trades of the last 12 months at the last price; hist_maxdd_usd = worst drop of the actual 2013-2026 sequence at today's median stop."
+ },
+ "caption": "三種模式的停損、移動停損、16:45 檢查都一樣，只差在什麼時候開新單。已扣點差、滑價與隔夜費。"
+}

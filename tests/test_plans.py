@@ -167,3 +167,55 @@ def test_settings_file_types_are_parsed(tmp_path):
     path.write_text(json.dumps({"active_mode": "false", "day_mode": "1", "account_balance": "5000"}), encoding="utf-8")
     st = Settings.load(path)
     assert st.active_mode is False and st.day_mode is True and st.account_balance == 5000.0
+    assert st.trade_mode == "normal"
+
+
+def test_trade_mode_setting_and_old_switch(tmp_path):
+    import json
+    from goldsignal.settings import Settings
+    path = tmp_path / "settings.json"
+    path.write_text(json.dumps({"active_mode": True}), encoding="utf-8")     # a file from the version with the on/off switch
+    st = Settings.load(path)
+    assert st.trade_mode == "active" and st.active_mode is True
+    st.update({"trade_mode": "efficient"})
+    assert st.trade_mode == "efficient" and st.active_mode is False
+    st.update({"active_mode": False})                                       # an old client must not undo 高效積極模式
+    assert st.trade_mode == "efficient"
+    st.update({"trade_mode": "bogus"})
+    assert st.trade_mode == "normal"
+    st.update({"trade_mode": "efficient"})
+    st.save(path)
+    assert Settings.load(path).trade_mode == "efficient"
+
+
+def test_mode_rules_per_instrument():
+    from goldsignal.active import mode_rules
+    from goldsignal.instruments import INSTRUMENTS
+    gold, silver = INSTRUMENTS["XAUUSD"], INSTRUMENTS["XAGUSD"]
+    g = mode_rules(gold, "efficient", True, False)            # the gold squeeze setting does not matter here
+    assert (g.params.breakout_hours, g.params.squeeze_bars, g.max_open, g.same_dir, g.cooldown_when_flat) == (18, 16, 2, True, True)
+    assert g.params.day_cutoff_ny == gold.day_cutoff_ny and g.multi and g.label == "高效積極模式"
+    s_ = mode_rules(silver, "efficient", True, False)         # silver keeps its normal rules
+    assert s_.params == silver.strategy_params(True, squeeze=False) and s_.max_open == 1 and not s_.multi
+    a = mode_rules(gold, "active", True, True)
+    assert (a.params.breakout_hours, a.params.squeeze_bars, a.max_open, a.same_dir, a.cooldown_when_flat) == (12, 0, 2, False, False)
+    n = mode_rules(gold, "nonsense", True, True)
+    assert n.mode == "normal" and n.params == gold.strategy_params(True, squeeze=True)
+
+
+def test_run_multi_with_one_position_equals_the_normal_rules():
+    """max_open=1 + cooldown after an exit is exactly strategy.run; same_dir blocks opposite add-ons."""
+    from goldsignal.active import run_multi
+    df = synthetic_m15(9000)
+    p = replace(S.StrategyParams(), use_h4=False, adx_max=100.0, ext_max=99.0, day_cutoff_ny=12.0, eod_keep_r=0.25,
+                breakout_hours=12)
+    f = S.compute_features(df, params=p)
+    sp, sl = np.full(len(df), 0.2), np.full(len(df), 0.05)
+    ref, _, _ = S.run(df, f, p, sp, sl, swap=False)
+    one = run_multi(df, f, p, sp, sl, swap=False, max_open=1, cooldown_when_flat=True, same_dir=True)
+    assert len(ref) > 3 and list(ref["sig_i"]) == list(one["sig_i"]) and np.allclose(ref["R"], one["R"])
+    two = run_multi(df, f, p, sp, sl, swap=False, max_open=2, cooldown_when_flat=True, same_dir=True)
+    for r in two.itertuples():                                 # an add-on always has the open position's direction
+        others = two[(two["sig_i"] < r.sig_i) & (two["exit_i"] >= r.sig_i + 1)]
+        assert (others["dir"] == r.dir).all()
+    assert len(two) >= len(one)
