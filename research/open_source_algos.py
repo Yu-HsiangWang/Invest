@@ -1,4 +1,4 @@
-"""Open-source / published trading algorithms applied to gold 15m (docs/RESEARCH.md section 13).
+"""Open-source / published trading algorithms applied to gold 15m (docs/RESEARCH.md section 12).
 
 The user asked whether an open-source quant algorithm could raise BOTH the return and the number
 of trades. Every candidate below is a published, widely used algorithm (TradingView scripts,

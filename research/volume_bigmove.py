@@ -1,5 +1,5 @@
 """Two ideas from the literature survey not covered by research/open_source_algos.py
-(docs/RESEARCH.md section 13):
+(docs/RESEARCH.md section 12):
 
   rvol     time-of-day relative tick volume: volume of the signal bar / median volume of the same
            15m slot over the last 20 days (removes the London/NY-open profile that a plain

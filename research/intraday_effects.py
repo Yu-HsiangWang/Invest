@@ -1,4 +1,4 @@
-"""Published intraday effects applied to gold 15m (docs/RESEARCH.md section 13):
+"""Published intraday effects applied to gold 15m (docs/RESEARCH.md section 12):
 
   noise   "Beat the Market" intraday momentum (Zarattini, Barbon & Aziz 2024; open-source
           TradingView ports "Out of the Noise", "Concretum Bands"): for every time-of-day slot the

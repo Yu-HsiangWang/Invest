@@ -1,4 +1,4 @@
-"""Machine-learning candidates for research/open_source_algos.py (docs/RESEARCH.md section 13):
+"""Machine-learning candidates for research/open_source_algos.py (docs/RESEARCH.md section 12):
 
   knn   Lorentzian Classification (jdehorty, TradingView's most-used ML script): kNN over the last
         2000 bars with a Lorentzian distance on RSI / WaveTrend / CCI / ADX features, predicting the

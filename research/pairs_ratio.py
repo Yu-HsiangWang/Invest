@@ -1,4 +1,4 @@
-"""Gold / silver ratio pairs trading (statistical arbitrage), docs/RESEARCH.md section 13.
+"""Gold / silver ratio pairs trading (statistical arbitrage), docs/RESEARCH.md section 12.
 
 The classic open-source "pairs" algorithm: z-score of the log gold/silver ratio against its rolling
 mean; when the ratio is stretched, sell the expensive metal and buy the cheap one in equal dollar

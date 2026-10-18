@@ -1,6 +1,6 @@
 """Follow-up to research/open_source_algos.py: is the SECOND-position slot of 高效積極模式 worth
 feeding with more triggers (the union of the open-source triggers, or the system's own faster
-channels), and does a 3rd slot help? (docs/RESEARCH.md section 13)
+channels), and does a 3rd slot help? (docs/RESEARCH.md section 12)
 
     python research/open_source_union.py
 """
