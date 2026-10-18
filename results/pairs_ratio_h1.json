@@ -1,0 +1,575 @@
+{
+ "how": "research/pairs_ratio.py run in the browser (Pyodide) on Dukascopy hourly BID candles 2013-01..2026-09 (81,409 aligned bars). Gold/silver log-ratio z-score pairs; P&L in % of one leg's notional and in USD for 0.01 lot of each (gold 1 oz, silver 50 oz); costs: spreads 0.012 %/0.06 %, slippage 0.005 %/0.01 % per fill, overnight fees on both legs. Condensed copy of the browser output (results of all 15 configurations).",
+ "configs": {
+  "window 1000h, entry |z|>2.0, exit z→0.0, stop 4.0": {
+   "all": {
+    "n": 100,
+    "per_week": 0.14,
+    "win%": 54,
+    "avg_pct": -1.084,
+    "tot_pct": -108.4,
+    "maxDD_pct": 127.1,
+    "sharpe": -0.58,
+    "tot_usd": -2224,
+    "maxDD_usd": 2356,
+    "avg_hours": 439.3
+   },
+   "2013/7–2016": {
+    "n": 29,
+    "avg_pct": 0.158,
+    "tot_pct": 4.6,
+    "maxDD_pct": 19.1
+   },
+   "2017–2020": {
+    "n": 24,
+    "avg_pct": -2.745,
+    "tot_pct": -65.9,
+    "maxDD_pct": 67.1
+   },
+   "2021–2025/3": {
+    "n": 34,
+    "avg_pct": -0.547,
+    "tot_pct": -18.6,
+    "maxDD_pct": 29.2
+   },
+   "2025/4–2026/10": {
+    "n": 13,
+    "avg_pct": -2.19,
+    "tot_pct": -28.5,
+    "maxDD_pct": 35
+   }
+  },
+  "window 120h, entry |z|>2.0, exit z→0.0, stop 4.0": {
+   "all": {
+    "n": 716,
+    "per_week": 1.03,
+    "win%": 59.2,
+    "avg_pct": -0.306,
+    "tot_pct": -219.2,
+    "maxDD_pct": 230.6,
+    "sharpe": -1.06,
+    "tot_usd": -3479,
+    "maxDD_usd": 3781,
+    "avg_hours": 62
+   },
+   "2013/7–2016": {
+    "n": 197,
+    "avg_pct": -0.187,
+    "tot_pct": -36.9,
+    "maxDD_pct": 41.7
+   },
+   "2017–2020": {
+    "n": 221,
+    "avg_pct": -0.304,
+    "tot_pct": -67.2,
+    "maxDD_pct": 76.6
+   },
+   "2021–2025/3": {
+    "n": 227,
+    "avg_pct": -0.285,
+    "tot_pct": -64.7,
+    "maxDD_pct": 84
+   },
+   "2025/4–2026/10": {
+    "n": 71,
+    "avg_pct": -0.711,
+    "tot_pct": -50.5,
+    "maxDD_pct": 67.1
+   }
+  },
+  "window 120h, entry |z|>2.0, exit z→0.0, stop 4.0, 當日平倉": {
+   "all": {
+    "n": 1179,
+    "per_week": 1.7,
+    "win%": 39.4,
+    "avg_pct": -0.187,
+    "tot_pct": -220.8,
+    "maxDD_pct": 237.2,
+    "sharpe": -1.83,
+    "tot_usd": -3808,
+    "maxDD_usd": 4371,
+    "avg_hours": 8.9
+   },
+   "2013/7–2016": {
+    "n": 320,
+    "avg_pct": -0.157,
+    "tot_pct": -50.3,
+    "maxDD_pct": 54.8
+   },
+   "2017–2020": {
+    "n": 347,
+    "avg_pct": -0.197,
+    "tot_pct": -68.5,
+    "maxDD_pct": 70.5
+   },
+   "2021–2025/3": {
+    "n": 394,
+    "avg_pct": -0.158,
+    "tot_pct": -62.3,
+    "maxDD_pct": 65
+   },
+   "2025/4–2026/10": {
+    "n": 118,
+    "avg_pct": -0.337,
+    "tot_pct": -39.7,
+    "maxDD_pct": 52.9
+   }
+  },
+  "window 240h, entry |z|>1.5, exit z→0.0, stop 3.5": {
+   "all": {
+    "n": 531,
+    "per_week": 0.77,
+    "win%": 59.1,
+    "avg_pct": -0.303,
+    "tot_pct": -161,
+    "maxDD_pct": 189.7,
+    "sharpe": -0.7,
+    "tot_usd": -2571,
+    "maxDD_usd": 3425,
+    "avg_hours": 87.1
+   },
+   "2013/7–2016": {
+    "n": 138,
+    "avg_pct": -0.142,
+    "tot_pct": -19.6,
+    "maxDD_pct": 24.7
+   },
+   "2017–2020": {
+    "n": 162,
+    "avg_pct": -0.413,
+    "tot_pct": -66.9,
+    "maxDD_pct": 80.9
+   },
+   "2021–2025/3": {
+    "n": 171,
+    "avg_pct": -0.247,
+    "tot_pct": -42.2,
+    "maxDD_pct": 52.9
+   },
+   "2025/4–2026/10": {
+    "n": 60,
+    "avg_pct": -0.539,
+    "tot_pct": -32.4,
+    "maxDD_pct": 65.2
+   }
+  },
+  "window 240h, entry |z|>2.0, exit z→0.0, stop 4.0": {
+   "all": {
+    "n": 402,
+    "per_week": 0.58,
+    "win%": 60.2,
+    "avg_pct": -0.315,
+    "tot_pct": -126.6,
+    "maxDD_pct": 161.4,
+    "sharpe": -0.57,
+    "tot_usd": -986,
+    "maxDD_usd": 2322,
+    "avg_hours": 103.7
+   },
+   "2013/7–2016": {
+    "n": 107,
+    "avg_pct": -0.198,
+    "tot_pct": -21.2,
+    "maxDD_pct": 24.1
+   },
+   "2017–2020": {
+    "n": 124,
+    "avg_pct": -0.642,
+    "tot_pct": -79.6,
+    "maxDD_pct": 82.1
+   },
+   "2021–2025/3": {
+    "n": 124,
+    "avg_pct": -0.203,
+    "tot_pct": -25.2,
+    "maxDD_pct": 38.6
+   },
+   "2025/4–2026/10": {
+    "n": 47,
+    "avg_pct": -0.013,
+    "tot_pct": -0.6,
+    "maxDD_pct": 44.9
+   }
+  },
+  "window 240h, entry |z|>2.0, exit z→0.0, stop 4.0, max 120h": {
+   "all": {
+    "n": 457,
+    "per_week": 0.66,
+    "win%": 55.8,
+    "avg_pct": -0.29,
+    "tot_pct": -132.6,
+    "maxDD_pct": 160.3,
+    "sharpe": -0.73,
+    "tot_usd": -1122,
+    "maxDD_usd": 2083,
+    "avg_hours": 73.7
+   },
+   "2013/7–2016": {
+    "n": 124,
+    "avg_pct": -0.258,
+    "tot_pct": -31.9,
+    "maxDD_pct": 36.8
+   },
+   "2017–2020": {
+    "n": 137,
+    "avg_pct": -0.602,
+    "tot_pct": -82.5,
+    "maxDD_pct": 85
+   },
+   "2021–2025/3": {
+    "n": 144,
+    "avg_pct": -0.08,
+    "tot_pct": -11.5,
+    "maxDD_pct": 30.7
+   },
+   "2025/4–2026/10": {
+    "n": 52,
+    "avg_pct": -0.126,
+    "tot_pct": -6.6,
+    "maxDD_pct": 42.9
+   }
+  },
+  "window 240h, entry |z|>2.0, exit z→0.0, stop 4.0, max 48h": {
+   "all": {
+    "n": 577,
+    "per_week": 0.83,
+    "win%": 49.9,
+    "avg_pct": -0.214,
+    "tot_pct": -123.7,
+    "maxDD_pct": 152.9,
+    "sharpe": -0.76,
+    "tot_usd": -827,
+    "maxDD_usd": 1873,
+    "avg_hours": 40.1
+   },
+   "2013/7–2016": {
+    "n": 153,
+    "avg_pct": -0.172,
+    "tot_pct": -26.3,
+    "maxDD_pct": 29.1
+   },
+   "2017–2020": {
+    "n": 177,
+    "avg_pct": -0.481,
+    "tot_pct": -85.2,
+    "maxDD_pct": 90.1
+   },
+   "2021–2025/3": {
+    "n": 180,
+    "avg_pct": -0.122,
+    "tot_pct": -22,
+    "maxDD_pct": 34.2
+   },
+   "2025/4–2026/10": {
+    "n": 67,
+    "avg_pct": 0.146,
+    "tot_pct": 9.8,
+    "maxDD_pct": 23.2
+   }
+  },
+  "window 240h, entry |z|>2.0, exit z→0.0, stop 4.0, 當日平倉": {
+   "all": {
+    "n": 806,
+    "per_week": 1.16,
+    "win%": 39.5,
+    "avg_pct": -0.132,
+    "tot_pct": -106.6,
+    "maxDD_pct": 129.3,
+    "sharpe": -1.13,
+    "tot_usd": -881,
+    "maxDD_usd": 1710,
+    "avg_hours": 9
+   },
+   "2013/7–2016": {
+    "n": 235,
+    "avg_pct": -0.165,
+    "tot_pct": -38.9,
+    "maxDD_pct": 40.2
+   },
+   "2017–2020": {
+    "n": 246,
+    "avg_pct": -0.225,
+    "tot_pct": -55.3,
+    "maxDD_pct": 55.8
+   },
+   "2021–2025/3": {
+    "n": 246,
+    "avg_pct": -0.085,
+    "tot_pct": -20.9,
+    "maxDD_pct": 26.5
+   },
+   "2025/4–2026/10": {
+    "n": 79,
+    "avg_pct": 0.108,
+    "tot_pct": 8.5,
+    "maxDD_pct": 16.7
+   }
+  },
+  "window 240h, entry |z|>2.0, exit z→0.5, stop 4.0": {
+   "all": {
+    "n": 450,
+    "per_week": 0.65,
+    "win%": 59.6,
+    "avg_pct": -0.328,
+    "tot_pct": -147.7,
+    "maxDD_pct": 167.5,
+    "sharpe": -0.75,
+    "tot_usd": -1032,
+    "maxDD_usd": 1962,
+    "avg_hours": 74.4
+   },
+   "2013/7–2016": {
+    "n": 121,
+    "avg_pct": -0.272,
+    "tot_pct": -33,
+    "maxDD_pct": 35.7
+   },
+   "2017–2020": {
+    "n": 137,
+    "avg_pct": -0.588,
+    "tot_pct": -80.5,
+    "maxDD_pct": 87.4
+   },
+   "2021–2025/3": {
+    "n": 140,
+    "avg_pct": -0.204,
+    "tot_pct": -28.6,
+    "maxDD_pct": 37.2
+   },
+   "2025/4–2026/10": {
+    "n": 52,
+    "avg_pct": -0.108,
+    "tot_pct": -5.6,
+    "maxDD_pct": 32.7
+   }
+  },
+  "window 240h, entry |z|>2.5, exit z→0.0, stop 4.5": {
+   "all": {
+    "n": 266,
+    "per_week": 0.38,
+    "win%": 59.4,
+    "avg_pct": -0.543,
+    "tot_pct": -144.6,
+    "maxDD_pct": 161.1,
+    "sharpe": -0.68,
+    "tot_usd": -2001,
+    "maxDD_usd": 2489,
+    "avg_hours": 132
+   },
+   "2013/7–2016": {
+    "n": 68,
+    "avg_pct": -0.385,
+    "tot_pct": -26.2,
+    "maxDD_pct": 28
+   },
+   "2017–2020": {
+    "n": 88,
+    "avg_pct": -0.757,
+    "tot_pct": -66.6,
+    "maxDD_pct": 76.4
+   },
+   "2021–2025/3": {
+    "n": 83,
+    "avg_pct": -0.234,
+    "tot_pct": -19.4,
+    "maxDD_pct": 37.8
+   },
+   "2025/4–2026/10": {
+    "n": 27,
+    "avg_pct": -1.198,
+    "tot_pct": -32.3,
+    "maxDD_pct": 47.4
+   }
+  },
+  "window 24h, entry |z|>2.0, exit z→0.0, stop 4.0, 當日平倉": {
+   "all": {
+    "n": 2670,
+    "per_week": 3.86,
+    "win%": 40.6,
+    "avg_pct": -0.154,
+    "tot_pct": -410.5,
+    "maxDD_pct": 422.3,
+    "sharpe": -2.62,
+    "tot_usd": -6152,
+    "maxDD_usd": 6476,
+    "avg_hours": 7.2
+   },
+   "2013/7–2016": {
+    "n": 714,
+    "avg_pct": -0.133,
+    "tot_pct": -94.9,
+    "maxDD_pct": 97.3
+   },
+   "2017–2020": {
+    "n": 821,
+    "avg_pct": -0.163,
+    "tot_pct": -134.1,
+    "maxDD_pct": 136.2
+   },
+   "2021–2025/3": {
+    "n": 868,
+    "avg_pct": -0.157,
+    "tot_pct": -136.1,
+    "maxDD_pct": 137
+   },
+   "2025/4–2026/10": {
+    "n": 267,
+    "avg_pct": -0.17,
+    "tot_pct": -45.4,
+    "maxDD_pct": 56.3
+   }
+  },
+  "window 480h, entry |z|>2.0, exit z→0.0, stop 4.0": {
+   "all": {
+    "n": 202,
+    "per_week": 0.29,
+    "win%": 57.4,
+    "avg_pct": -0.569,
+    "tot_pct": -115,
+    "maxDD_pct": 128.6,
+    "sharpe": -0.56,
+    "tot_usd": -1434,
+    "maxDD_usd": 1855,
+    "avg_hours": 201.5
+   },
+   "2013/7–2016": {
+    "n": 54,
+    "avg_pct": -0.38,
+    "tot_pct": -20.5,
+    "maxDD_pct": 24.8
+   },
+   "2017–2020": {
+    "n": 65,
+    "avg_pct": -0.934,
+    "tot_pct": -60.7,
+    "maxDD_pct": 74.8
+   },
+   "2021–2025/3": {
+    "n": 63,
+    "avg_pct": -0.114,
+    "tot_pct": -7.2,
+    "maxDD_pct": 30.9
+   },
+   "2025/4–2026/10": {
+    "n": 20,
+    "avg_pct": -1.329,
+    "tot_pct": -26.6,
+    "maxDD_pct": 40.2
+   }
+  },
+  "window 480h, entry |z|>2.0, exit z→0.0, stop 4.0, 當日平倉": {
+   "all": {
+    "n": 531,
+    "per_week": 0.77,
+    "win%": 37.1,
+    "avg_pct": -0.194,
+    "tot_pct": -103.1,
+    "maxDD_pct": 117.2,
+    "sharpe": -1.25,
+    "tot_usd": -1510,
+    "maxDD_usd": 1861,
+    "avg_hours": 9.4
+   },
+   "2013/7–2016": {
+    "n": 134,
+    "avg_pct": -0.16,
+    "tot_pct": -21.5,
+    "maxDD_pct": 27.2
+   },
+   "2017–2020": {
+    "n": 159,
+    "avg_pct": -0.243,
+    "tot_pct": -38.7,
+    "maxDD_pct": 40
+   },
+   "2021–2025/3": {
+    "n": 175,
+    "avg_pct": -0.132,
+    "tot_pct": -23.2,
+    "maxDD_pct": 27.9
+   },
+   "2025/4–2026/10": {
+    "n": 63,
+    "avg_pct": -0.314,
+    "tot_pct": -19.8,
+    "maxDD_pct": 29
+   }
+  },
+  "window 48h, entry |z|>1.5, exit z→0.0, stop 3.5, 當日平倉": {
+   "all": {
+    "n": 2663,
+    "per_week": 3.84,
+    "win%": 40,
+    "avg_pct": -0.158,
+    "tot_pct": -420.8,
+    "maxDD_pct": 432,
+    "sharpe": -2.94,
+    "tot_usd": -6015,
+    "maxDD_usd": 6369,
+    "avg_hours": 7.6
+   },
+   "2013/7–2016": {
+    "n": 713,
+    "avg_pct": -0.166,
+    "tot_pct": -118.7,
+    "maxDD_pct": 120.8
+   },
+   "2017–2020": {
+    "n": 815,
+    "avg_pct": -0.152,
+    "tot_pct": -124.2,
+    "maxDD_pct": 127
+   },
+   "2021–2025/3": {
+    "n": 864,
+    "avg_pct": -0.144,
+    "tot_pct": -124.3,
+    "maxDD_pct": 126
+   },
+   "2025/4–2026/10": {
+    "n": 271,
+    "avg_pct": -0.198,
+    "tot_pct": -53.7,
+    "maxDD_pct": 63.9
+   }
+  },
+  "window 48h, entry |z|>2.0, exit z→0.0, stop 4.0, 當日平倉": {
+   "all": {
+    "n": 1836,
+    "per_week": 2.65,
+    "win%": 39.3,
+    "avg_pct": -0.157,
+    "tot_pct": -288.9,
+    "maxDD_pct": 308.7,
+    "sharpe": -2.21,
+    "tot_usd": -4406,
+    "maxDD_usd": 5133,
+    "avg_hours": 7.7
+   },
+   "2013/7–2016": {
+    "n": 484,
+    "avg_pct": -0.162,
+    "tot_pct": -78.6,
+    "maxDD_pct": 80.5
+   },
+   "2017–2020": {
+    "n": 569,
+    "avg_pct": -0.164,
+    "tot_pct": -93.1,
+    "maxDD_pct": 95.3
+   },
+   "2021–2025/3": {
+    "n": 594,
+    "avg_pct": -0.141,
+    "tot_pct": -83.7,
+    "maxDD_pct": 85.1
+   },
+   "2025/4–2026/10": {
+    "n": 189,
+    "avg_pct": -0.177,
+    "tot_pct": -33.4,
+    "maxDD_pct": 52.1
+   }
+  }
+ }
+}
