@@ -198,7 +198,10 @@ def test_mode_rules_per_instrument():
     s_ = mode_rules(silver, "efficient", True, False)         # silver keeps its normal rules
     assert s_.params == silver.strategy_params(True, squeeze=False) and s_.max_open == 1 and not s_.multi
     a = mode_rules(gold, "active", True, True)
-    assert (a.params.breakout_hours, a.params.squeeze_bars, a.max_open, a.same_dir, a.cooldown_when_flat) == (12, 0, 2, False, False)
+    assert (a.params.breakout_hours, a.params.squeeze_bars, a.max_open, a.same_dir, a.cooldown_when_flat, a.entry) == (18, 16, 2, True, True, "stop")
+    assert a.stop_entry and a.label == "積極模式"
+    sa = mode_rules(silver, "active", True, False)
+    assert sa.entry == "close" and sa.max_open == 1 and sa.params == silver.strategy_params(True, squeeze=False)
     n = mode_rules(gold, "nonsense", True, True)
     assert n.mode == "normal" and n.params == gold.strategy_params(True, squeeze=True)
 
@@ -219,3 +222,38 @@ def test_run_multi_with_one_position_equals_the_normal_rules():
         others = two[(two["sig_i"] < r.sig_i) & (two["exit_i"] >= r.sig_i + 1)]
         assert (others["dir"] == r.dir).all()
     assert len(two) >= len(one)
+
+
+def test_stop_entry_fills_and_pending_order_agree():
+    """積極模式: every position is filled at the channel edge (or the open after a gap) on a bar whose
+    previous close satisfied the rules; the pending order computed at bar t predicts the fill at t+1."""
+    from goldsignal.active import mode_rules, pending_order, run_stop, stop_entry_candidates
+    from goldsignal.instruments import INSTRUMENTS
+    df = synthetic_m15(9000)
+    gold = INSTRUMENTS["XAUUSD"]
+    r = mode_rules(gold, "active", True, True)
+    p = replace(r.params, use_h4=False, adx_max=100.0, ext_max=99.0, squeeze_bars=0)
+    f = S.compute_features(df, params=p)
+    t = S.rule_table(df, f, p)
+    sig, fills = stop_entry_candidates(df, f, t)
+    idx = np.flatnonzero(sig)
+    assert len(idx) > 10
+    hi, lo = f["chan_hi"].to_numpy(), f["chan_lo"].to_numpy()
+    for i in idx[:50]:
+        j = i + 1
+        lvl = hi[j] if sig[i] > 0 else lo[j]
+        assert (df["high"].iloc[j] >= lvl) if sig[i] > 0 else (df["low"].iloc[j] <= lvl)
+        assert fills[j] == (max(df["open"].iloc[j], lvl) if sig[i] > 0 else min(df["open"].iloc[j], lvl))
+        assert bool(t["long_setup"].iloc[i] if sig[i] > 0 else t["short_setup"].iloc[i])
+        # the pending order computed from the bars up to i says the same thing
+        po = pending_order(df.iloc[: i + 1], f.iloc[: i + 1], t.iloc[: i + 1], p)
+        assert po is not None and po["dir"] == sig[i] and np.isclose(po["level"], lvl)
+    sp, sl = np.full(len(df), 0.2), np.full(len(df), 0.05)
+    tr = run_stop(df, f, p, sp, sl, swap=False, max_open=2)
+    assert len(tr) > 5
+    for row in tr.itertuples():
+        j = int(row.sig_i) + 1
+        assert np.isclose(row.entry, fills[j] + (sp[j] + sl[j] if row.dir > 0 else -sl[j]))
+    # no pending order when the last close is already beyond the level
+    k = int(np.flatnonzero(t["long_break"].to_numpy())[-1])
+    assert pending_order(df.iloc[: k + 1], f.iloc[: k + 1], t.iloc[: k + 1], p) is None or df["close"].iloc[k] <= hi[k]

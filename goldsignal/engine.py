@@ -25,7 +25,7 @@ from .bars import resample
 from .datafeed import Dukascopy, SwissquoteQuote, to_m15
 from .instruments import INSTRUMENTS, Instrument
 from .news import NewsMonitor
-from .active import MODE_LABEL, ModeRules, mode_rules, norm_mode, run_mode
+from .active import MODE_LABEL, ModeRules, mode_rules, norm_mode, pending_order, run_mode
 from .plans import eod_decision, lots_table, size_position
 from .settings import Settings
 
@@ -357,6 +357,17 @@ class Engine:
             self.m15, self.feat, self.trades, self.core = m15, feat, trades, core
         self._emit_transition_alerts(prev, core)
 
+    @staticmethod
+    def _next_bar_timing_ok(last_bar_time: pd.Timestamp, p: S.StrategyParams) -> bool:
+        """The timing rule (Friday cutoff, day-mode cutoff) for the bar after `last_bar_time`."""
+        ny = (last_bar_time + pd.Timedelta(minutes=15)).tz_convert("America/New_York")   # the next bar's open
+        h, dow = (ny.hour + ny.minute / 60.0 + 0.25) % 24, ny.dayofweek                   # as strategy.compute_features
+        if dow > 4 or (dow == 4 and h > p.friday_cutoff_ny):
+            return False
+        if p.day_cutoff_ny is not None and p.day_cutoff_ny <= h < 17.0:
+            return False
+        return True
+
     def _build_core(self, m15, f, t, trades, blackout, mr: ModeRules | None = None) -> dict:
         mr = mr or self.rules
         p, d = mr.params, self.inst.decimals
@@ -388,9 +399,19 @@ class Engine:
                 cooldown_until = _iso(m15.index[min(ex_i + p.cooldown_bars + 1, n - 1)] + pd.Timedelta(minutes=15))
 
         new_signal = None
+        pending = None
         sig_dir = 1 if tl["long_signal"] else -1 if tl["short_signal"] else 0
         room = (not mr.max_open or len(positions) < mr.max_open) if mr.multi else (state == "flat")
         against = bool(sig_dir and mr.multi and mr.same_dir and positions and any(x["dir"] != sig_dir for x in positions))
+        if mr.stop_entry:
+            # 積極模式: no close-breakout signal; a stop order rests at the channel edge for the next bar
+            po = pending_order(m15, f, t, p)
+            po_against = bool(po and mr.same_dir and positions and any(x["dir"] != po["dir"] for x in positions))
+            if po and room and not po_against and cooldown_until is None and self._next_bar_timing_ok(m15.index[-1], p):
+                pending = {"dir": po["dir"], "level": _f(po["level"], d), "stop": _f(po["stop"], d), "risk": _f(po["risk"], d),
+                           "until": _iso(bar_close_time + pd.Timedelta(minutes=15)), "max_chase": _f(po["level"] + po["dir"] * 0.5 * atr1, d)}
+                state = "pending_long" if po["dir"] > 0 else "pending_short"
+            sig_dir = 0
         if room and not against and cooldown_until is None and sig_dir:
             dr = sig_dir
             c = float(last["close"])
@@ -475,10 +496,15 @@ class Engine:
             blocked = f"已經同時持有 {mr.max_open} 張系統單，這個新訊號不進場"
         elif against:
             blocked = "這個新訊號和持倉方向相反，不進場（同一時間只做一個方向）"
+        elif mr.stop_entry and pending is None and positions and room:
+            po = pending_order(m15, f, t, p)
+            if po and any(x["dir"] != po["dir"] for x in positions):
+                blocked = "條件到齊的方向和持倉相反，不掛單（同一時間只做一個方向）"
         return {
             "bar_time": _iso(m15.index[-1]), "bar_close_time": _iso(bar_close_time),
-            "state": state, "active": active, "positions": positions, "new_signal": new_signal, "cooldown_until": cooldown_until,
-            "trade_mode": mr.mode, "mode_label": mr.label, "multi": mr.multi,
+            "state": state, "active": active, "positions": positions, "new_signal": new_signal, "pending": pending,
+            "cooldown_until": cooldown_until,
+            "trade_mode": mr.mode, "mode_label": mr.label, "multi": mr.multi, "stop_entry": mr.stop_entry,
             "active_mode": mr.mode == "active", "max_open": mr.max_open, "signal_blocked": blocked,
             "bias": int(fl["trend_d1"]), "setup": setup, "mtf": mtf, "history": hist,
             "atr_h1": _f(atr1, d + 1), "last_close": _f(last["close"], d),
@@ -501,6 +527,19 @@ class Engine:
             word = "做多" if ns["dir"] > 0 else "做空"
             self._alert("signal", f"🔔 {name}{word}訊號", f"參考價 {ns['ref_price']}，停損 {ns['stop']}（風險 {ns['risk']}）。"
                         f"請在 {ns['valid_minutes']} 分鐘內、價格未超過 {ns['max_chase']} 前進場，否則放棄。", "signal")
+        po, ppo = core.get("pending"), prev.get("pending")
+        if core.get("stop_entry"):
+            atr = core.get("atr_h1") or 1.0
+            if po and (not ppo or ppo["dir"] != po["dir"]):
+                word = "買進" if po["dir"] > 0 else "賣出"
+                self._alert("pending", f"📌 {name}掛{word}停損單", f"在 {po['level']} 掛{word}停損單，停損 {po['stop']}（風險 {po['risk']}）。"
+                            f"每 15 分鐘會重新確認；條件消失時會通知你取消。", "signal")
+            elif po and ppo and abs(po["level"] - ppo["level"]) >= 0.25 * atr:
+                self._alert("pending", f"📌 {name}掛單價更新", f"請把掛單改到 {po['level']}、停損 {po['stop']}。", "info")
+            elif ppo and not po:
+                filled = any(x["entry_time"] not in {y["entry_time"] for y in (prev.get("positions") or [])} for x in (core.get("positions") or []))
+                if not filled:
+                    self._alert("pending", f"↩ {name}取消掛單", "條件已經消失，請取消還沒成交的掛單。", "info")
         def mode_of(c: dict) -> str:
             return c.get("trade_mode") or ("active" if c.get("active_mode") else "normal")
         if mode_of(prev) != mode_of(core) or prev.get("params") != core.get("params"):
@@ -517,6 +556,12 @@ class Engine:
         prev_pos = {x["entry_time"]: x for x in (prev.get("positions") or ([prev["active"]] if prev.get("active") else []))}
         cur_pos = {x["entry_time"]: x for x in (core.get("positions") or [])}
         many = len(prev_pos) > 1 or len(cur_pos) > 1
+        if core.get("stop_entry"):
+            for key, x in cur_pos.items():
+                if key not in prev_pos:
+                    word = "多單" if x["dir"] > 0 else "空單"
+                    self._alert("fill", f"✅ {name}停損單成交（{word}）", f"系統以 {x['entry']} 進場，停損 {x['stop']}。"
+                                f"請確認 Mitrade 的掛單已成交並設好停損；之後照交易單上的「目前停損」移動。", "signal")
         moved = {}
         for key, pa in prev_pos.items():
             if key in cur_pos:
@@ -689,7 +734,8 @@ class Engine:
         if atr1:
             spread = float(price["spread"]) if price and price.get("spread") else 0.0
             ns = core.get("new_signal")
-            stop_dist = abs(ns["ref_price"] - ns["stop"]) if ns else self.params.stop_atr_h1 * atr1
+            po = core.get("pending")
+            stop_dist = abs(ns["ref_price"] - ns["stop"]) if ns else (po["risk"] if po else self.params.stop_atr_h1 * atr1)
             px = price["bid"] if price else (core.get("last_close") or 0) + iset["price_offset"]
             oz, min_lot = iset["oz_per_lot"], iset["min_lot"] or 0.01
             sz = size_position(s.account_balance, iset["risk_pct"], stop_dist, px, oz, min_lot, s.max_lots, s.leverage, spread)
@@ -841,6 +887,7 @@ class Engine:
         out["markers"] = sorted(marks, key=lambda m: m["time"])
         a = core.get("active") if core else None
         pos = (core.get("positions") or ([a] if a else [])) if core else []
+        po = core.get("pending") if core else None
         if pos:
             many = len(pos) > 1
             out["lines"] = []
@@ -851,6 +898,12 @@ class Engine:
             if ns:
                 out["lines"] += [{"price": _f(ns["ref_price"] + off, d), "title": "新訊號", "kind": "entry"},
                                  {"price": _f(ns["stop"] + off, d), "title": "新停損", "kind": "stop", "dir": ns["dir"]}]
+            if po:
+                out["lines"] += [{"price": _f(po["level"] + off, d), "title": "掛單價", "kind": "trigger", "dir": po["dir"]},
+                                 {"price": _f(po["stop"] + off, d), "title": "掛單停損", "kind": "stop", "dir": po["dir"]}]
+        elif po:
+            out["lines"] = [{"price": _f(po["level"] + off, d), "title": "掛買進停損單" if po["dir"] > 0 else "掛賣出停損單", "kind": "trigger", "dir": po["dir"]},
+                            {"price": _f(po["stop"] + off, d), "title": "停損", "kind": "stop", "dir": po["dir"]}]
         elif ns:
             out["lines"] = [{"price": _f(ns["ref_price"] + off, d), "title": "訊號價", "kind": "entry"},
                             {"price": _f(ns["stop"] + off, d), "title": "停損", "kind": "stop", "dir": ns["dir"]}]

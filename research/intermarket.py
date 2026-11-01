@@ -1,4 +1,4 @@
-"""Intermarket filters for the gold / silver signals (docs/RESEARCH.md section 12.5): the US dollar
+"""Intermarket filters for the gold / silver signals (docs/RESEARCH.md section 12.3): the US dollar
 index, the S&P 500, the 10-year T-note future and the other metal, as daily-trend conditions on
 the 15m signals. Gold is usually said to move against the dollar and with silver; the question
 is whether those relations improve the system's trades after costs.

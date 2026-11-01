@@ -110,13 +110,20 @@ def test_live_engine_end_to_end(fake_api, tmp_path, sym):
     assert ("squeeze" in keys) == (sym == "XAUUSD")                                   # 布林收窄濾網: gold only
     hub.update_settings({"instruments": {sym: {"squeeze_filter": sym != "XAUUSD"}}})
     assert eng.params.squeeze_bars == (0 if sym == "XAUUSD" else 16)
-    # 積極模式: 12-hour breakouts, no squeeze filter, several positions allowed
+    # 積極模式: gold enters with a stop order at the 18h channel edge (squeeze filter on), up to 2 positions
     hub.update_settings({"active_mode": True})
-    assert eng.active_mode and eng.params.breakout_hours == 12 and eng.params.squeeze_bars == 0
+    assert eng.active_mode
     eng._tick()
     snap = hub.state(sym)
-    assert snap["active_mode"] is True and snap["max_open"] == 2 and isinstance(snap["positions"], list)
-    assert snap["cooldown_until"] is None
+    assert snap["active_mode"] is True and snap["trade_mode"] == "active" and isinstance(snap["positions"], list)
+    if sym == "XAUUSD":
+        assert eng.params.breakout_hours == 18 and eng.params.squeeze_bars == 16 and snap["max_open"] == 2 and snap["stop_entry"]
+        assert snap["new_signal"] is None and snap["state"] in ("flat", "long", "short", "pending_long", "pending_short")
+        if snap.get("pending"):
+            po = snap["pending"]
+            assert po["risk"] > 0 and (po["level"] > po["stop"]) == (po["dir"] > 0) and snap["sizing"]["stop_dist"] >= po["risk"]
+    else:
+        assert eng.params.breakout_hours == 24 and snap["max_open"] == 1 and not snap["stop_entry"]
     assert eng.candles("15m", 300)["ta"]["headline"]["title"]
     hub.update_settings({"active_mode": False})
     assert eng.params.breakout_hours == 24

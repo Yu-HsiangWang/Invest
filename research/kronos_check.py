@@ -1,5 +1,5 @@
 """Does Kronos (Shi et al. 2025, "a foundation model for the language of financial markets",
-github.com/shiyu-coder/Kronos, AAAI 2026) help the gold system? (docs/RESEARCH.md section 12.3)
+github.com/shiyu-coder/Kronos, AAAI 2026) help the gold system? (docs/RESEARCH.md section 12.1)
 
 Kronos is a decoder-only transformer pre-trained on K-lines from 45 exchanges. Given the last
 `lookback` OHLCV bars it samples the next `pred_len` bars (open/high/low/close/volume); the

@@ -1,5 +1,5 @@
 """Second-vendor check of the stop-order entry (research/entry_mechanics.py) on Dukascopy 15m
-gold and silver 2013/7-2026/10, with the $2,000 money simulation (docs/RESEARCH.md section 12.4).
+gold and silver 2013/7-2026/10, with the $2,000 money simulation (docs/RESEARCH.md section 12.2).
 
 Variants (fixed before running):
   gold   : close-breakout baselines (normal / 高效積極 / 積極) and stop entries on the 18h and

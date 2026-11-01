@@ -1,5 +1,5 @@
 """Things not yet tested that could raise the profit per trade or the trade count of 高效積極模式
-(docs/RESEARCH.md section 12.4): direction asymmetry, the day's range at the signal, and the
+(docs/RESEARCH.md section 12.2): direction asymmetry, the day's range at the signal, and the
 entry mechanics themselves (stop order at the level instead of waiting for the 15m close;
 a limit order on the retest of the level).
 

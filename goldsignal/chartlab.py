@@ -1070,6 +1070,13 @@ def _headline(core: dict, fmt, name: str) -> dict:
         return {"dir": d, "kind": "signal", "title": f"現在可以{'做多' if d > 0 else '做空'}",
                 "text": f"{name}{'做多' if d > 0 else '做空'}訊號成立：參考價 {fmt(ns['ref_price'])}，停損 {fmt(ns['stop'])}。"
                         f"價格超過 {fmt(ns['max_chase'])} 就不要追。"}
+    if st in ("pending_long", "pending_short"):
+        po = core["pending"]
+        d = po["dir"]
+        n_pos = len(core.get("positions") or [])
+        return {"dir": d, "kind": "signal", "title": f"掛{'買進' if d > 0 else '賣出'}停損單（{'第 2 張' if n_pos else '積極模式'}）",
+                "text": f"在 {fmt(po['level'])} 掛{'買進' if d > 0 else '賣出'}停損單，停損設 {fmt(po['stop'])}；碰到就會自動進場。"
+                        f"每 15 分鐘重新確認一次，條件消失時會通知你取消。"}
     if st in ("long", "short"):
         a = core["active"]
         d = a["dir"]
@@ -1090,6 +1097,9 @@ def _headline(core: dict, fmt, name: str) -> dict:
     setup = (core.get("setup") or {}).get(side) if side else None
     if setup and setup.get("ready"):
         d = 1 if side == "long" else -1
+        if core.get("stop_entry"):
+            return {"dir": d, "kind": "ready", "title": f"偏{'多' if d > 0 else '空'}，但現在不掛單",
+                    "text": f"大方向一致向{'上' if d > 0 else '下'}，但{'收盤已經在通道外' if (setup.get('distance') or 0) < 0 else '還有條件沒到齊'}，這根不掛單；下一根收盤再看。"}
         return {"dir": d, "kind": "ready", "title": f"偏{'多' if d > 0 else '空'}，等{'突破' if d > 0 else '跌破'}",
                 "text": f"大方向一致向{'上' if d > 0 else '下'}；15 分 K 收盤{'站上' if d > 0 else '跌破'} {fmt(setup['trigger'])} 才{'做多' if d > 0 else '做空'}，在那之前先不要進場。"}
     if setup and setup.get("missing") == ["squeeze"]:

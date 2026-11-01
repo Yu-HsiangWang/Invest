@@ -3,12 +3,15 @@
 一般設定 (normal) - one position at a time, 24-hour breakouts; gold also needs the
 Bollinger-squeeze filter (布林收窄濾網), silver does not.
 
-積極模式 (active, docs/RESEARCH.md section 10) - nothing that trades gold 5-10 times a week kept a
-positive expectancy after costs (grids, channel fades, dip buying, opening-range and session
-trades all lost or broke even), so this mode loosens the system itself: a 12-hour channel, no
-squeeze filter, every new signal its own position (no cooldown), at most MAX_OPEN per
-instrument. About twice the trades of the normal settings, but a much lower profit per trade
-and roughly 2-3 times the drawdown; on 2013-2026 data the silver part barely made money.
+積極模式 (active, docs/RESEARCH.md section 12.2) - the 高效積極 rules for gold, but entered with a
+STOP ORDER resting at the channel edge instead of waiting for a 15-minute close beyond it: while
+the trend / ADX / extension / timing / squeeze rules hold at a bar's close and that close is still
+inside the channel, a buy-stop (sell-stop) sits at the 18-hour high (low), stop-loss at that
+close minus (plus) 2 x ATR(1h); it is filled the moment the next bar touches the level (at the
+level, or at the open after a gap). Same trades per week as the first 積極模式 (12-hour channel, no
+squeeze filter, 2005-2025 and 2013-2026) but a higher profit per trade and a third less
+drawdown in every period on both data sets. Silver keeps its normal rules (stop entries did not
+help silver). The first 積極模式's rules remain available to research scripts (active_params).
 
 高效積極模式 (efficient, docs/RESEARCH.md section 11) - more trades WITHOUT diluting the edge:
 gold keeps the squeeze filter but uses an 18-hour channel and may hold a second position when a
@@ -30,13 +33,14 @@ import pandas as pd
 from .plans import Clock, simulate_plan
 from .strategy import SQUEEZE_BARS, StrategyParams, rule_table, signals_from_rules
 
-ACTIVE_BREAKOUT_HOURS = 12
+ACTIVE_BREAKOUT_HOURS = 12      # the first 積極模式 (research only)
 MAX_OPEN = 2
 
 MODES = ("normal", "efficient", "active")
 MODE_LABEL = {"normal": "一般設定", "efficient": "高效積極模式", "active": "積極模式"}
-# 高效積極模式, per instrument; an instrument that is not listed keeps its normal rules
-EFFICIENT = {"XAUUSD": {"breakout_hours": 18, "max_open": 2}}
+# 高效積極模式 / 積極模式, per instrument; an instrument that is not listed keeps its normal rules
+EFFICIENT = {"XAUUSD": {"breakout_hours": 18, "max_open": 2, "entry": "close"}}
+ACTIVE = {"XAUUSD": {"breakout_hours": 18, "max_open": 2, "entry": "stop"}}
 
 
 @dataclass(frozen=True)
@@ -47,10 +51,15 @@ class ModeRules:
     max_open: int = 1               # positions that may be open at the same time
     cooldown_when_flat: bool = True  # wait cooldown_bars after an exit before a new first position
     same_dir: bool = True           # an extra position only in the direction of the open ones
+    entry: str = "close"            # "close": 15m close beyond the channel; "stop": stop order at the channel edge
 
     @property
     def multi(self) -> bool:
         return self.max_open != 1
+
+    @property
+    def stop_entry(self) -> bool:
+        return self.entry == "stop"
 
     @property
     def label(self) -> str:
@@ -71,21 +80,68 @@ def mode_rules(inst, mode: str, day_mode: bool = True, squeeze: bool | None = No
     """The rules for instrument `inst` (goldsignal.instruments.Instrument) in `mode`. `squeeze`
     is the user's 布林收窄濾網 setting for this instrument, used by the normal rules."""
     mode = norm_mode(mode)
-    if mode == "active":
-        return ModeRules("active", active_params(inst.strategy_params(day_mode, squeeze=False)), MAX_OPEN,
-                         cooldown_when_flat=False, same_dir=False)
-    cfg = EFFICIENT.get(inst.key) if mode == "efficient" else None
+    cfg = {"efficient": EFFICIENT, "active": ACTIVE}.get(mode, {}).get(inst.key)
     if cfg:
         p = replace(inst.strategy_params(day_mode, squeeze=False), breakout_hours=int(cfg["breakout_hours"]),
                     squeeze_bars=SQUEEZE_BARS)
-        return ModeRules("efficient", p, int(cfg["max_open"]), cooldown_when_flat=True, same_dir=True)
+        return ModeRules(mode, p, int(cfg["max_open"]), cooldown_when_flat=True, same_dir=True, entry=cfg.get("entry", "close"))
     return ModeRules(mode, inst.strategy_params(day_mode, squeeze=squeeze), 1)
+
+
+def stop_entry_candidates(m15: pd.DataFrame, f: pd.DataFrame, t: pd.DataFrame) -> tuple[np.ndarray, np.ndarray]:
+    """Stop-order entries (積極模式). Returns (sig, fills): sig[i] = +1/-1 at the bar BEFORE the fill
+    bar (so the simulator, which fills at the next bar, keeps its stop = close[i] -/+ 2 ATR), and
+    fills[i+1] = the price paid at the fill bar: the channel edge as of that bar (= the high/low of
+    the previous `breakout_hours`), or the open if the bar opened beyond it. A bar fills a long when
+    its high reaches the level, the previous close was at or inside the level, and the trend / ADX /
+    extension / timing rules and the squeeze filter held at the previous close."""
+    n = len(m15)
+    hi, lo = f["chan_hi"].to_numpy(float), f["chan_lo"].to_numpy(float)
+    h, l, o, c = (m15[k].to_numpy(float) for k in ("high", "low", "open", "close"))
+    c_prev = np.r_[np.nan, c[:-1]]
+    setup = np.where(t["long_setup"].to_numpy(bool), 1, np.where(t["short_setup"].to_numpy(bool), -1, 0))
+    setup_prev = np.r_[0, setup[:-1]]
+    sq_prev = np.r_[False, t["squeeze_ok"].to_numpy(bool)[:-1]]
+    timing = t["timing_ok"].to_numpy(bool)
+    with np.errstate(invalid="ignore"):
+        long_touch = (h >= hi) & (c_prev <= np.r_[np.nan, hi[:-1]]) & (setup_prev == 1) & sq_prev & timing
+        short_touch = (l <= lo) & (c_prev >= np.r_[np.nan, lo[:-1]]) & (setup_prev == -1) & sq_prev & timing
+    sig = np.zeros(n, dtype=np.int64)
+    fills = np.full(n, np.nan)
+    idx = np.flatnonzero(np.nan_to_num(long_touch) | np.nan_to_num(short_touch))
+    idx = idx[(idx >= 1) & (idx < n)]
+    d = np.where(np.nan_to_num(long_touch)[idx], 1, -1)
+    sig[idx - 1] = d
+    fills[idx] = np.where(d > 0, np.maximum(o[idx], hi[idx]), np.minimum(o[idx], lo[idx]))
+    return sig, fills
+
+
+def pending_order(m15: pd.DataFrame, f: pd.DataFrame, t: pd.DataFrame, p: StrategyParams) -> dict | None:
+    """The stop order to rest for the NEXT bar, given the last closed bar: direction, level (the
+    high/low of the last `breakout_hours`), stop-loss (last close -/+ stop_atr x ATR(1h)). None when
+    the rules do not hold at the last close or the close is already beyond the level."""
+    tl, fl, last = t.iloc[-1], f.iloc[-1], m15.iloc[-1]
+    nb = int(p.breakout_hours * 4)
+    if len(m15) < nb + 1 or not bool(tl["squeeze_ok"]):
+        return None
+    if bool(tl["long_setup"]):
+        d, level = 1, float(m15["high"].iloc[-nb:].max())
+        if float(last["close"]) > level:
+            return None
+    elif bool(tl["short_setup"]):
+        d, level = -1, float(m15["low"].iloc[-nb:].min())
+        if float(last["close"]) < level:
+            return None
+    else:
+        return None
+    stop = float(last["close"]) - d * p.stop_atr_h1 * float(fl["h1_atr"])
+    return {"dir": d, "level": level, "stop": stop, "risk": abs(level - stop)}
 
 
 def run_multi(m15: pd.DataFrame, f: pd.DataFrame, p: StrategyParams, spread, slip, blackout=None,
               swap: bool = True, max_open: int = MAX_OPEN, clock: Clock | None = None,
               rules: pd.DataFrame | None = None, cooldown_when_flat: bool = False,
-              same_dir: bool = False) -> pd.DataFrame:
+              same_dir: bool = False, sig: np.ndarray | None = None) -> pd.DataFrame:
     """Every signal opens its own position (managed exactly like a normal system trade) unless
     `max_open` positions are already open (0 = no limit). With `cooldown_when_flat`, a signal that
     would open the first position must wait p.cooldown_bars after the last exit (as in the normal
@@ -93,8 +149,9 @@ def run_multi(m15: pd.DataFrame, f: pd.DataFrame, p: StrategyParams, spread, sli
     Returns one row per position, sorted by entry; the still-open ones have reason 'end' and
     exit_i == last bar (as in strategy.run)."""
     n = len(m15)
-    t = rules if rules is not None else rule_table(m15, f, p, blackout)
-    sig = signals_from_rules(t)
+    if sig is None:
+        t = rules if rules is not None else rule_table(m15, f, p, blackout)
+        sig = signals_from_rules(t)
     atr1 = f["h1_atr"].to_numpy(float)
     sp = np.full(n, float(spread)) if np.isscalar(spread) else np.asarray(spread, float)
     sl = np.full(n, float(slip)) if np.isscalar(slip) else np.asarray(slip, float)
@@ -135,8 +192,28 @@ def run_mode(m15: pd.DataFrame, f: pd.DataFrame, r: ModeRules, spread, slip, bla
              rules: pd.DataFrame | None = None, clock: Clock | None = None) -> pd.DataFrame:
     """Back-test / live trades of one instrument in one mode (same output as strategy.run's trades)."""
     from . import strategy as S
+    if r.stop_entry:
+        return run_stop(m15, f, r.params, spread, slip, blackout, swap=swap, max_open=r.max_open, clock=clock,
+                        rules=rules, cooldown_when_flat=r.cooldown_when_flat, same_dir=r.same_dir)
     if not r.multi:
         tr, _, _ = S.run(m15, f, r.params, spread, slip, blackout, swap=swap)
         return tr
     return run_multi(m15, f, r.params, spread, slip, blackout, swap=swap, max_open=r.max_open, clock=clock,
                      rules=rules, cooldown_when_flat=r.cooldown_when_flat, same_dir=r.same_dir)
+
+
+def run_stop(m15: pd.DataFrame, f: pd.DataFrame, p: StrategyParams, spread, slip, blackout=None, swap: bool = True,
+             max_open: int = MAX_OPEN, clock: Clock | None = None, rules: pd.DataFrame | None = None,
+             cooldown_when_flat: bool = True, same_dir: bool = True) -> pd.DataFrame:
+    """積極模式: positions opened by stop orders at the channel edge (stop_entry_candidates), managed
+    like every other position. The simulator takes the entry from the fill bar's open, so a copy
+    of the bars with those opens replaced by the fill prices is simulated (only entry bars change)."""
+    t = rules if rules is not None else rule_table(m15, f, p, blackout)
+    sig, fills = stop_entry_candidates(m15, f, t)
+    df = m15.copy()
+    o = df["open"].to_numpy(float).copy()
+    m = ~np.isnan(fills)
+    o[m] = fills[m]
+    df["open"] = o
+    return run_multi(df, f, p, spread, slip, blackout, swap=swap, max_open=max_open, clock=clock, rules=t,
+                     cooldown_when_flat=cooldown_when_flat, same_dir=same_dir, sig=sig)

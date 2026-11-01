@@ -28,7 +28,7 @@
   const dirCls = (d) => d > 0 ? "up-c" : (d < 0 ? "down-c" : "");
   const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   const css = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
-  const STATE_WORD = { flat: "觀望", long: "持多", short: "持空", signal_long: "做多訊號", signal_short: "做空訊號" };
+  const STATE_WORD = { flat: "觀望", long: "持多", short: "持空", signal_long: "做多訊號", signal_short: "做空訊號", pending_long: "掛多單", pending_short: "掛空單" };
 
   // ------------------------------------------------------------ api
   async function api(path, opts) {
@@ -352,7 +352,22 @@
       notes.push(`<p class="warn">📅 ${s.calendar.next_high.minutes} 分鐘後公布 ${esc(s.calendar.next_high.title)}（高影響）</p>`);
     const closed = s.market && !s.market.open && s.mode !== "replay";
     const st = s.state;
-    if (st === "signal_long" || st === "signal_short") {
+    if ((st === "pending_long" || st === "pending_short") && s.pending) {
+      const po = s.pending, d = po.dir, nPos = (s.positions || []).length;
+      setStamp(d > 0 ? "掛多" : "掛空", d > 0 ? "up-outline" : "down-outline", "pend" + d + po.level);
+      H.textContent = `${inst.name}：掛${d > 0 ? "買進" : "賣出"}停損單${nPos ? "（第 2 張）" : ""}`;
+      Sub.textContent = `條件已到齊，碰到 ${fmt(po.level)} 就自動進場；${tHM(po.until)} 下一根收盤會重新確認`;
+      F.innerHTML = field("掛單方向", `<span class="${dirCls(d)}">${d > 0 ? "買進停損單（Buy Stop）" : "賣出停損單（Sell Stop）"}</span>`)
+        + field("掛單價（18小時高低點）", fmt(po.level), "", true)
+        + field("停損價（和掛單一起設）", fmt(po.stop), "", true)
+        + field("建議手數", lotsTxt, lotsExtra)
+        + field("1R =", `$${fmt(po.risk)}`, "掛單價到停損的距離")
+        + field("停利", "不設固定停利", "成交後用移動停損出場");
+      if (sz.skip) notes.push(`<p class="warn">以你目前的本金，這筆連最小手數的風險都太高，建議不要掛。</p>`);
+      else notes.push(`<p>在 Mitrade 掛一張 <b>${d > 0 ? "買進" : "賣出"}停損單</b>：價格 <b>${fmt(po.level)}</b>、${lotsTxt}、停損 <b>${fmt(po.stop)}</b>、不設停利。成交後回來看「目前停損」，只往有利方向移動。</p>`);
+      notes.push(`<p>每 15 分鐘會重新確認：掛單價有變會通知你改單，條件消失會通知你取消；成交後會通知你。${nPos ? `這是第 ${nPos + 1} 張（最多同時 ${s.max_open} 張）。` : ""}</p>`);
+      if (nPos) notes.push(`<p>目前的系統持倉：</p>${positionsTable(s)}`);
+    } else if (st === "signal_long" || st === "signal_short") {
       const ns = s.new_signal, d = ns.dir;
       setStamp(d > 0 ? "做多" : "做空", d > 0 ? "up" : "down", "sig" + ns.time);
       H.textContent = `${inst.name}${d > 0 ? "做多" : "做空"}訊號：可以進場`;
@@ -391,7 +406,7 @@
         + field("1R =", `$${fmt(a.risk)}`, "每盎司價格距離")
         + eodField(s, d);
       notes.push(`<p>把 Mitrade 的停損改成 <b>${fmt(a.stop)}</b>。停損只會往有利方向移動，碰到就出場——不要把停損拉遠。</p>`);
-      if (s.multi) notes.push(`<p>${esc(modeName(s))}：持有中如果又出現${s.trade_mode === "efficient" ? "同方向的" : ""}新訊號，可以再開一張（最多同時 ${s.max_open} 張）。</p>`);
+      if (s.multi) notes.push(`<p>${esc(modeName(s))}：持有中如果又出現同方向的${s.stop_entry ? "掛單條件" : "新訊號"}，可以再開一張（最多同時 ${s.max_open} 張）。</p>`);
       if (s.signal_blocked) notes.push(`<p class="warn">${esc(s.signal_blocked)}。</p>`);
       const e = s.eod && s.eod.system;
       if (e && !e.keep && s.eod.minutes <= 60) notes.push(`<p class="warn">⏰ ${s.eod.minutes} 分鐘後（美東 ${s.eod.time_ny}）收盤前檢查：目前 ${sgn(e.R_now, 2)}R，屆時${notYet(e.keep_r)}就請平倉。</p>`);
@@ -425,6 +440,7 @@
         + field("若觸發：建議手數", lotsTxt, lotsExtra);
       notes.push(`<p>系統只順著日線方向交易；條件到齊後，等 15 分 K 收盤突破才出訊號，並會跳出通知。</p>`);
       if (s.multi && s.trade_mode === "efficient") notes.push(`<p>目前是<b>高效積極模式</b>：突破週期 ${(s.params || {}).breakout_hours || 18} 小時、仍要布林收窄；持倉中出現同方向的新訊號可以再開一張（最多同時 ${s.max_open} 張）。</p>`);
+      else if (s.multi && s.stop_entry) notes.push(`<p>目前是<b>積極模式</b>：條件到齊時會請你在 18 小時高低點掛停損單，碰到就自動進場（不用等 15 分 K 收盤）；同方向最多同時 ${s.max_open} 張。</p>`);
       else if (s.multi) notes.push(`<p>目前是<b>${esc(modeName(s))}</b>：突破週期 ${(s.params || {}).breakout_hours || 12} 小時、每個新訊號都可以再開一張（最多同時 ${s.max_open} 張）。</p>`);
       else if (s.trade_mode === "efficient") notes.push(`<p>高效積極模式下，${esc(inst.name || "")}照一般設定交易（加快的版本回測效率反而變差）。</p>`);
     }
@@ -567,7 +583,7 @@
     const b = du.both || {};
     const ef = (k) => (b[k] && b[k].all ? b[k].all : null);
     const effTxt = ef("normal") && ef("efficient") && ef("active")
-      ? `<p class="cap">黃金＋白銀一年平均賺：一般 ${fmt(ef("normal").R_yr, 1)}R、高效積極 ${fmt(ef("efficient").R_yr, 1)}R、積極 ${fmt(ef("active").R_yr, 1)}R；最大回撤 ${fmt(ef("normal").maxDD, 1)}R／${fmt(ef("efficient").maxDD, 1)}R／${fmt(ef("active").maxDD, 1)}R。高效積極模式一年賺的和積極模式差不多，回撤只有一半；每筆平均和一般設定差不多。</p>` : "";
+      ? `<p class="cap">黃金＋白銀一年平均賺：一般 ${fmt(ef("normal").R_yr, 1)}R、高效積極 ${fmt(ef("efficient").R_yr, 1)}R、積極 ${fmt(ef("active").R_yr, 1)}R；最大回撤 ${fmt(ef("normal").maxDD, 1)}R／${fmt(ef("efficient").maxDD, 1)}R／${fmt(ef("active").maxDD, 1)}R；每週 ${fmt(ef("normal").per_week, 2)}／${fmt(ef("efficient").per_week, 2)}／${fmt(ef("active").per_week, 2)} 筆。積極模式（掛停損單進場）單最多、一年賺最多，每筆平均最低、回撤和高效積極差不多。</p>` : "";
     const mo = m.money || {};
     let money = "";
     if (mo.both && mo.gold) {
@@ -576,11 +592,10 @@
       const sets = [["只做黃金", mo.gold], ["黃金＋白銀", mo.both]];
       const body = sets.map(([nm, g]) => modes.map((k) => mrow(`${nm}・${esc(m.labels[k])}`, g[k], k)).join("")).join("");
       const g2 = mo.gold_x2 || {};
-      const x2 = g2.efficient ? mrow("只做黃金・高效積極・每個訊號 0.02 手", g2.efficient, "") + mrow("只做黃金・一般設定・每個訊號 0.02 手", g2.normal, "") : "";
-      const st = ((mo.both.normal || {}).stop_usd_median) || {};
+      const x2 = g2.efficient ? mrow("只做黃金・高效積極・每個訊號 0.02 手", g2.efficient, "") + (g2.active ? mrow("只做黃金・積極模式・每個訊號 0.02 手", g2.active, "") : "") + mrow("只做黃金・一般設定・每個訊號 0.02 手", g2.normal, "") : "";
       money = `<h3 class="bt-h3">本金 $${fmt(m.balance || 2000, 0)}、每個訊號 0.01 手，一年後會怎樣？</h3>
         <table class="money"><thead><tr><th>做法</th><th>一般</th><th>運氣差</th><th>跌三成</th><th>腰斬</th></tr></thead><tbody>${body}${x2}</tbody></table>
-        <p class="cap">「一般」＝中位數、「運氣差」＝最差 5% 的一年、「跌三成／腰斬」＝一年內帳戶從高點回落 30%／50% 的機率（橘字＝跌三成的機率 ≥ 10%、紅字＝腰斬的機率 ≥ 10%）。用 2013/7–2026/10 的 15 分 K 交易結果隨機重抽 20,000 次；停損用最近一年的水準（黃金 0.01 手約 $${fmt(st.XAUUSD || 30, 0)}、白銀 0.01 手約 $${fmt((st.XAGUSD || 1) * 50, 0)}）。白銀 0.01 手就是 50 盎司、而且長期優勢較小，是積極模式回撤大的主因。</p>`;
+        <p class="cap">「一般」＝中位數、「運氣差」＝最差 5% 的一年、「跌三成／腰斬」＝一年內帳戶從高點回落 30%／50% 的機率（橘字＝跌三成的機率 ≥ 10%、紅字＝腰斬的機率 ≥ 10%）。用 2013/7–2026/10 的 15 分 K 交易結果隨機重抽 20,000 次；停損用最近一年的水準。白銀 0.01 手就是 50 盎司、而且長期優勢較小，是黃金＋白銀回撤比只做黃金大的主因。</p>`;
     }
     const rules = m.rules || {};
     const rl = modes.map((k) => `<li><b>${esc(m.labels[k])}</b>：${esc(rules[k] || "")}</li>`).join("");
@@ -700,7 +715,7 @@
   const MODE_NOTES = {
     normal: "一次一張、24 小時突破，黃金要布林收窄濾網。黃金＋白銀合計每週約 0.7 筆（2013–2026 回測），最大回撤約 19R。",
     efficient: "黃金改用 18 小時突破（一律要布林收窄），持倉中出現同方向的新訊號可以再開第 2 張；白銀照一般設定。黃金＋白銀每週約 1 筆：一年賺的和積極模式差不多、最大回撤約一半，每筆平均和一般設定差不多（本金 $2,000、每個訊號 0.01 手：一年內約 15% 機率回撤超過三成）。",
-    active: "12 小時突破、不用收窄濾網、出場不用冷卻，每個新訊號都可以再開一張（同一商品最多 2 張）。每週約 1.7 筆，但每筆平均最低，白銀這部分 2013–2025 幾乎沒賺；一年內約一半機率回撤超過三成。",
+    active: "黃金用和高效積極一樣的條件（18 小時通道＋布林收窄），但不等 15 分 K 收盤突破，而是條件到齊時就在 18 小時高低點掛停損單，碰到就進場（同方向最多 2 張）；白銀照一般設定。黃金＋白銀每週約 1.3 筆：一年賺的比高效積極多約兩成、最大回撤差不多；2005–2026 兩份資料的每一段都比舊的積極模式好。本金 $2,000、每個訊號 0.01 手：一年內約 13% 機率回撤超過三成。",
   };
   function modeNote() {
     const el = $("#trade-mode");
