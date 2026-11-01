@@ -124,18 +124,36 @@ def pending_order(m15: pd.DataFrame, f: pd.DataFrame, t: pd.DataFrame, p: Strate
     nb = int(p.breakout_hours * 4)
     if len(m15) < nb + 1 or not bool(tl["squeeze_ok"]):
         return None
+    # "still inside": the close must not have broken the channel as of THIS bar (chan_hi/lo exclude
+    # the bar itself) - the same test stop_entry_candidates applies to the previous close
     if bool(tl["long_setup"]):
         d, level = 1, float(m15["high"].iloc[-nb:].max())
-        if float(last["close"]) > level:
+        if not (float(last["close"]) <= float(fl["chan_hi"])):
             return None
     elif bool(tl["short_setup"]):
         d, level = -1, float(m15["low"].iloc[-nb:].min())
-        if float(last["close"]) < level:
+        if not (float(last["close"]) >= float(fl["chan_lo"])):
             return None
     else:
         return None
     stop = float(last["close"]) - d * p.stop_atr_h1 * float(fl["h1_atr"])
     return {"dir": d, "level": level, "stop": stop, "risk": abs(level - stop)}
+
+
+def pending_reason(m15: pd.DataFrame, f: pd.DataFrame, t: pd.DataFrame, p: StrategyParams) -> str | None:
+    """Why there is no stop order although the trend rules hold (None when they do not hold)."""
+    tl, fl, last = t.iloc[-1], f.iloc[-1], m15.iloc[-1]
+    if bool(tl["long_setup"]):
+        if float(last["close"]) > float(fl["chan_hi"]):
+            return "收盤已經在通道外"
+    elif bool(tl["short_setup"]):
+        if float(last["close"]) < float(fl["chan_lo"]):
+            return "收盤已經在通道外"
+    else:
+        return None
+    if not bool(tl["squeeze_ok"]):
+        return "波動還沒收斂"
+    return None
 
 
 def run_multi(m15: pd.DataFrame, f: pd.DataFrame, p: StrategyParams, spread, slip, blackout=None,

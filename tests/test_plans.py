@@ -254,6 +254,12 @@ def test_stop_entry_fills_and_pending_order_agree():
     for row in tr.itertuples():
         j = int(row.sig_i) + 1
         assert np.isclose(row.entry, fills[j] + (sp[j] + sl[j] if row.dir > 0 else -sl[j]))
-    # no pending order when the last close is already beyond the level
-    k = int(np.flatnonzero(t["long_break"].to_numpy())[-1])
-    assert pending_order(df.iloc[: k + 1], f.iloc[: k + 1], t.iloc[: k + 1], p) is None or df["close"].iloc[k] <= hi[k]
+    # no pending order on a bar whose close already broke the channel (the back-test never fills those)
+    broke = np.flatnonzero((t["long_break"] & t["long_setup"]).to_numpy() | (t["short_break"] & t["short_setup"]).to_numpy())
+    assert len(broke) > 3
+    for k in broke[-20:]:
+        assert pending_order(df.iloc[: k + 1], f.iloc[: k + 1], t.iloc[: k + 1], p) is None
+    # ... and never on a bar the candidates skip because the previous close was outside
+    outside = np.flatnonzero(((df["close"] > f["chan_hi"]) & t["long_setup"]).to_numpy())
+    for k in outside[-20:]:
+        assert pending_order(df.iloc[: k + 1], f.iloc[: k + 1], t.iloc[: k + 1], p) is None

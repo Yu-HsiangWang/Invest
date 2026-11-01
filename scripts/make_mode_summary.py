@@ -42,8 +42,13 @@ MFIELDS = ["trades_per_year", "med_ret", "p5_ret", "p_dd30", "p_dd50", "hist_max
 
 
 def expand(block: dict) -> dict:
-    """{period: [n, per_week, ...]} -> {period: {field: value}} (None rows stay None)."""
-    return {per: (dict(zip(FIELDS, row)) if row else {"n": 0}) for per, row in block.items()}
+    """{period: [n, per_week, ...]} (the browser run's compact rows) or {period: {field: value}}
+    (research/stop_entry_dukascopy.py run locally) -> {period: {field: value}}."""
+    return {per: (row if isinstance(row, dict) else dict(zip(FIELDS, row)) if row else {"n": 0}) for per, row in block.items()}
+
+
+def money_row(row) -> dict:
+    return row if isinstance(row, dict) else dict(zip(MFIELDS, row))
 
 RULES = {
     "normal": "一次一張；24 小時突破；黃金要布林收窄濾網，白銀不用。",
@@ -81,7 +86,8 @@ def gold_kaggle() -> dict:
 
 def main():
     duka = json.loads((ROOT / "results" / "stop_entry_dukascopy.json").read_text(encoding="utf-8"))
-    src = {"XAUUSD": duka["gold"], "XAGUSD": duka["silver"], "both": duka["both"]}
+    inst = duka.get("instruments") or {"XAUUSD": duka["gold"], "XAGUSD": duka["silver"]}
+    src = {"XAUUSD": inst["XAUUSD"], "XAGUSD": inst["XAGUSD"], "both": duka["both"]}
     periods = list(next(iter(duka["gold"].values())).keys())
     res = {
         "labels": MODE_LABEL,
@@ -89,7 +95,7 @@ def main():
         "kaggle_gold": gold_kaggle(),
         "dukascopy": {k: {m: expand(src[k][v]) for m, v in sel.items()} for k, sel in DUKA.items()},
         "periods": periods,
-        "money": {k: {m: dict(zip(MFIELDS, duka["money"][v])) for m, v in sel.items()} for k, sel in MONEY.items()},
+        "money": {k: {m: money_row(duka["money"][v]) for m, v in sel.items()} for k, sel in MONEY.items()},
         "balance": 2000,
         "how": {"kaggle": "黃金券商 15 分 K 2005–2025/3，儀表板實際使用的程式（當日平倉模式）。",
                 "dukascopy": duka["how"], "money": "本金 $2,000、每個訊號 0.01 手（黃金 1 盎司、白銀 50 盎司），2013/7–2026/10 的交易以 5 筆一塊重抽 20,000 個一年；停損用最近一年的水準。"},

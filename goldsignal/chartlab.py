@@ -1098,8 +1098,9 @@ def _headline(core: dict, fmt, name: str) -> dict:
     if setup and setup.get("ready"):
         d = 1 if side == "long" else -1
         if core.get("stop_entry"):
+            why = core.get("no_order") or "還有條件沒到齊"
             return {"dir": d, "kind": "ready", "title": f"偏{'多' if d > 0 else '空'}，但現在不掛單",
-                    "text": f"大方向一致向{'上' if d > 0 else '下'}，但{'收盤已經在通道外' if (setup.get('distance') or 0) < 0 else '還有條件沒到齊'}，這根不掛單；下一根收盤再看。"}
+                    "text": f"大方向一致向{'上' if d > 0 else '下'}，但{why}，這根不掛單；下一根收盤再看。"}
         return {"dir": d, "kind": "ready", "title": f"偏{'多' if d > 0 else '空'}，等{'突破' if d > 0 else '跌破'}",
                 "text": f"大方向一致向{'上' if d > 0 else '下'}；15 分 K 收盤{'站上' if d > 0 else '跌破'} {fmt(setup['trigger'])} 才{'做多' if d > 0 else '做空'}，在那之前先不要進場。"}
     if setup and setup.get("missing") == ["squeeze"]:

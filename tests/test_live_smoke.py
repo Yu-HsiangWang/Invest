@@ -157,6 +157,44 @@ def test_live_engine_end_to_end(fake_api, tmp_path, sym):
     eng._emit_transition_alerts({"active_mode": True, "params": {}, "positions": pos, "active": pos[-1]},
                                 {"active_mode": True, "params": {}, "positions": moved, "active": moved[-1], "history": [], "atr_h1": 1.0})
     assert [a["kind"] for a in list(hub.alerts)[n0:]] == ["stop_move"]
+    # 積極模式 alerts: place / fill / second order / cancel / drift / mode switch
+    def po(level, stop=99.0, d=1):
+        return {"dir": d, "level": level, "stop": stop, "risk": level - stop, "until": "x", "max_chase": level + 1}
+    base = {"trade_mode": "active", "stop_entry": True, "params": {"breakout_hours": 18}, "max_open": 2, "atr_h1": 1.0,
+            "bar_time": "2026-09-01T01:00:00Z", "history": []}
+    p1 = {"entry_time": "2026-09-01T01:00:00Z", "dir": 1, "entry": 101.0, "stop": 99.0}
+    eng._pending_sent = None
+    n0 = len(hub.alerts)
+    eng._emit_transition_alerts(dict(base, positions=[], pending=None), dict(base, positions=[], pending=po(101.0)))
+    assert [a["kind"] for a in list(hub.alerts)[n0:]] == ["pending"]                     # placed
+    n0 = len(hub.alerts)
+    eng._emit_transition_alerts(dict(base, positions=[], pending=po(101.0)), dict(base, positions=[], pending=po(101.1)))
+    assert list(hub.alerts)[n0:] == []                                                     # small drift: nothing
+    n0 = len(hub.alerts)
+    eng._emit_transition_alerts(dict(base, positions=[], pending=po(101.1)), dict(base, positions=[], pending=po(101.3)))
+    assert [a["kind"] for a in list(hub.alerts)[n0:]] == ["pending"]                     # drift vs the LAST TOLD level (101.0) >= 0.25 ATR
+    n0 = len(hub.alerts)
+    eng._emit_transition_alerts(dict(base, positions=[], pending=po(101.3)), dict(base, positions=[p1], pending=po(102.0)))
+    kinds = [a["kind"] for a in list(hub.alerts)[n0:]]
+    assert kinds.count("fill") == 1 and kinds.count("pending") == 1 and not any("取消" in a["title"] for a in list(hub.alerts)[n0:])  # fill + 2nd order, no cancel
+    n0 = len(hub.alerts)
+    eng._emit_transition_alerts(dict(base, positions=[p1], pending=po(102.0)), dict(base, positions=[p1], pending=None))
+    assert [a["title"][:1] for a in list(hub.alerts)[n0:]] == ["↩"]                      # cancelled
+    n0 = len(hub.alerts)
+    eng._emit_transition_alerts(dict(base, positions=[], pending=po(101.0)),
+                                dict(base, positions=[], pending=None, history=[{"entry_time": base["bar_time"], "exit_time": "2026-09-01T01:15:00Z", "dir": 1, "entry": 101.0, "exit": 99.0, "R": -1.0}]))
+    al = list(hub.alerts)[n0:]
+    assert len(al) == 1 and al[0]["kind"] == "fill" and "同一根" in al[0]["title"]        # filled and stopped within the bar: no cancel
+    n0 = len(hub.alerts)
+    eng._emit_transition_alerts({"trade_mode": "efficient", "stop_entry": False, "params": base["params"], "max_open": 2, "positions": [], "pending": None},
+                                dict(base, positions=[], pending=po(101.0)))
+    al = list(hub.alerts)[n0:]
+    assert len(al) == 1 and al[0]["kind"] == "info" and "積極模式" in al[0]["title"] and "101.0" in al[0]["body"]   # one alert, names the order
+    n0 = len(hub.alerts)
+    eng._emit_transition_alerts(dict(base, positions=[], pending=po(101.0)),
+                                {"trade_mode": "efficient", "stop_entry": False, "params": base["params"], "max_open": 2, "positions": [], "pending": None, "history": []})
+    al = list(hub.alerts)[n0:]
+    assert len(al) == 1 and "取消" in al[0]["body"]                                       # leaving the mode: cancel the resting order
     for tf in ("5m", "15m", "1h", "4h", "1D"):
         c = eng.candles(tf, 300)
         assert "ta" in c and c["ta"]["headline"]["title"]

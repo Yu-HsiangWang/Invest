@@ -358,7 +358,7 @@
       H.textContent = `${inst.name}：掛${d > 0 ? "買進" : "賣出"}停損單${nPos ? "（第 2 張）" : ""}`;
       Sub.textContent = `條件已到齊，碰到 ${fmt(po.level)} 就自動進場；${tHM(po.until)} 下一根收盤會重新確認`;
       F.innerHTML = field("掛單方向", `<span class="${dirCls(d)}">${d > 0 ? "買進停損單（Buy Stop）" : "賣出停損單（Sell Stop）"}</span>`)
-        + field("掛單價（18小時高低點）", fmt(po.level), "", true)
+        + field(`掛單價（${(s.params || {}).breakout_hours || 18}小時高低點）`, fmt(po.level), "", true)
         + field("停損價（和掛單一起設）", fmt(po.stop), "", true)
         + field("建議手數", lotsTxt, lotsExtra)
         + field("1R =", `$${fmt(po.risk)}`, "掛單價到停損的距離")
@@ -408,6 +408,7 @@
       notes.push(`<p>把 Mitrade 的停損改成 <b>${fmt(a.stop)}</b>。停損只會往有利方向移動，碰到就出場——不要把停損拉遠。</p>`);
       if (s.multi) notes.push(`<p>${esc(modeName(s))}：持有中如果又出現同方向的${s.stop_entry ? "掛單條件" : "新訊號"}，可以再開一張（最多同時 ${s.max_open} 張）。</p>`);
       if (s.signal_blocked) notes.push(`<p class="warn">${esc(s.signal_blocked)}。</p>`);
+      else if (s.stop_entry && s.no_order) notes.push(`<p>趨勢條件到齊但這根不掛第 2 張：${esc(s.no_order)}。</p>`);
       const e = s.eod && s.eod.system;
       if (e && !e.keep && s.eod.minutes <= 60) notes.push(`<p class="warn">⏰ ${s.eod.minutes} 分鐘後（美東 ${s.eod.time_ny}）收盤前檢查：目前 ${sgn(e.R_now, 2)}R，屆時${notYet(e.keep_r)}就請平倉。</p>`);
     } else if (closed) {
@@ -421,6 +422,10 @@
       if (s.cooldown_until) {
         setStamp("冷卻", "neutral", "cool");
         H.textContent = "剛出場，冷卻中"; Sub.textContent = `${tHM(s.cooldown_until)} 之前不出新訊號`;
+      } else if (setup && setup.ready && s.stop_entry) {
+        setStamp(sideKey === "long" ? "偏多" : "偏空", sideKey === "long" ? "up-outline" : "down-outline", "ready" + sideKey);
+        H.textContent = sideKey === "long" ? "趨勢一致向上，這根不掛單" : "趨勢一致向下，這根不掛單";
+        Sub.textContent = `${s.no_order ? esc(s.no_order) + "；" : ""}下一根收盤再看`;
       } else if (setup && setup.ready) {
         setStamp(sideKey === "long" ? "等多" : "等空", sideKey === "long" ? "up-outline" : "down-outline", "ready" + sideKey);
         H.textContent = sideKey === "long" ? "趨勢一致向上，等待突破" : "趨勢一致向下，等待跌破";
@@ -436,13 +441,15 @@
       }
       F.innerHTML = field("日線方向", `<span class="${dirCls(bias)}">${biasWord(bias)}</span>`)
         + field(sideKey === "short" ? `跌破價（${(s.params || {}).breakout_hours || 24}小時低點）` : `突破價（${(s.params || {}).breakout_hours || 24}小時高點）`, setup ? fmt(setup.trigger) : "—", setup ? `距最新收盤 ${fmt(Math.abs(setup.distance))}` : "")
-        + field("若觸發：停損距離", sz.stop_dist ? `$${fmt(sz.stop_dist)}` : "—", "2 × 1小時ATR")
+        + field("若觸發：停損距離", sz.stop_dist ? `$${fmt(sz.stop_dist)}` : "—", s.stop_entry ? "掛單價到停損" : "2 × 1小時ATR")
         + field("若觸發：建議手數", lotsTxt, lotsExtra);
-      notes.push(`<p>系統只順著日線方向交易；條件到齊後，等 15 分 K 收盤突破才出訊號，並會跳出通知。</p>`);
-      if (s.multi && s.trade_mode === "efficient") notes.push(`<p>目前是<b>高效積極模式</b>：突破週期 ${(s.params || {}).breakout_hours || 18} 小時、仍要布林收窄；持倉中出現同方向的新訊號可以再開一張（最多同時 ${s.max_open} 張）。</p>`);
-      else if (s.multi && s.stop_entry) notes.push(`<p>目前是<b>積極模式</b>：條件到齊時會請你在 18 小時高低點掛停損單，碰到就自動進場（不用等 15 分 K 收盤）；同方向最多同時 ${s.max_open} 張。</p>`);
-      else if (s.multi) notes.push(`<p>目前是<b>${esc(modeName(s))}</b>：突破週期 ${(s.params || {}).breakout_hours || 12} 小時、每個新訊號都可以再開一張（最多同時 ${s.max_open} 張）。</p>`);
-      else if (s.trade_mode === "efficient") notes.push(`<p>高效積極模式下，${esc(inst.name || "")}照一般設定交易（加快的版本回測效率反而變差）。</p>`);
+      const bh = (s.params || {}).breakout_hours || 24;
+      if (s.stop_entry) notes.push(`<p>系統只順著日線方向交易；條件到齊、而且收盤還在 ${bh} 小時通道內時，會請你在通道高低點掛停損單，碰到就自動進場（不用等 15 分 K 收盤），並會跳出通知。</p>`);
+      else notes.push(`<p>系統只順著日線方向交易；條件到齊後，等 15 分 K 收盤突破才出訊號，並會跳出通知。</p>`);
+      if (s.multi && s.trade_mode === "efficient") notes.push(`<p>目前是<b>高效積極模式</b>：突破週期 ${bh} 小時、仍要布林收窄；持倉中出現同方向的新訊號可以再開一張（最多同時 ${s.max_open} 張）。</p>`);
+      else if (s.multi && s.stop_entry) notes.push(`<p>目前是<b>積極模式</b>：突破週期 ${bh} 小時、仍要布林收窄；同方向最多同時 ${s.max_open} 張。</p>`);
+      else if (s.multi) notes.push(`<p>目前是<b>${esc(modeName(s))}</b>：突破週期 ${bh} 小時、每個新訊號都可以再開一張（最多同時 ${s.max_open} 張）。</p>`);
+      else if (s.trade_mode === "efficient" || s.trade_mode === "active") notes.push(`<p>${esc(modeName(s))}下，${esc(inst.name || "")}照一般設定交易（加快的版本回測效率反而變差）。</p>`);
     }
     if (inst.note) notes.push(`<p class="warn">${esc(inst.note)}</p>`);
     const nh = s.news && s.news.aggregate;
@@ -691,7 +698,7 @@
         <label>每 1 手 = 幾盎司 <input data-k="oz_per_lot" type="number" step="1" min="1"><small>請在 Mitrade ${nm}商品資訊確認（常見為 ${oz}）。</small></label>
         <label class="check"><input data-k="confirmed" type="checkbox"> 我已在 Mitrade 確認過合約大小</label>
         <label class="check"><input data-k="squeeze_filter" type="checkbox"> 布林收窄濾網（只做「先收斂、再突破」的訊號）</label>
-        <small>${k === "XAUUSD" ? "建議開啟：回測總獲利差不多、最大回撤少約四成。（只影響一般設定；高效積極模式一律使用、積極模式一律不用。）" : "白銀回測效果不一致，預設關閉。（積極模式一律不用。）"}</small>
+        <small>${k === "XAUUSD" ? "建議開啟：回測總獲利差不多、最大回撤少約四成。（只影響一般設定；高效積極模式和積極模式一律使用。）" : "白銀回測效果不一致，預設關閉。（三種模式都照這個設定。）"}</small>
         <label>最小手數 <input data-k="min_lot" type="number" step="0.01" min="0.01"></label>
         <label>價格校正（加到本程式報價上）<input data-k="price_offset" type="number" step="0.001"><small>若 Mitrade 報價比這裡高 0.30，就填 0.30。</small></label>
       </fieldset>`;

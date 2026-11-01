@@ -25,7 +25,7 @@ from .bars import resample
 from .datafeed import Dukascopy, SwissquoteQuote, to_m15
 from .instruments import INSTRUMENTS, Instrument
 from .news import NewsMonitor
-from .active import MODE_LABEL, ModeRules, mode_rules, norm_mode, pending_order, run_mode
+from .active import MODE_LABEL, ModeRules, mode_rules, norm_mode, pending_order, pending_reason, run_mode
 from .plans import eod_decision, lots_table, size_position
 from .settings import Settings
 
@@ -233,6 +233,7 @@ class Engine:
         self._last_boundary = None
         self._last_inter = 0.0
         self._sent: set = set()
+        self._pending_sent: dict | None = None     # the stop order the user was last told to place (積極模式)
         self._stop = threading.Event()
 
     @property
@@ -246,14 +247,14 @@ class Engine:
 
     @property
     def active_mode(self) -> bool:
-        """積極模式 (12-hour breakouts, every signal its own position)."""
+        """積極模式 (stop-order entries at the channel edge for gold, goldsignal/active.py)."""
         return self.trade_mode == "active"
 
     @property
     def rules(self) -> ModeRules:
         """How this instrument is traded now: the mode's rules, including the day-mode rules when
         當日平倉模式 is on; the normal rules use the 布林收窄濾網 when it is ticked for this
-        instrument (gold: on by default), the two faster modes set it themselves."""
+        instrument (gold: on by default), the two faster modes set it themselves (gold: always on)."""
         sq = bool(self.iset.get("squeeze_filter", self.inst.squeeze_default))
         return mode_rules(self.inst, self.trade_mode, bool(self.settings.day_mode), sq)
 
@@ -399,19 +400,29 @@ class Engine:
                 cooldown_until = _iso(m15.index[min(ex_i + p.cooldown_bars + 1, n - 1)] + pd.Timedelta(minutes=15))
 
         new_signal = None
-        pending = None
+        pending, no_order = None, None
         sig_dir = 1 if tl["long_signal"] else -1 if tl["short_signal"] else 0
         room = (not mr.max_open or len(positions) < mr.max_open) if mr.multi else (state == "flat")
-        against = bool(sig_dir and mr.multi and mr.same_dir and positions and any(x["dir"] != sig_dir for x in positions))
         if mr.stop_entry:
             # 積極模式: no close-breakout signal; a stop order rests at the channel edge for the next bar
-            po = pending_order(m15, f, t, p)
-            po_against = bool(po and mr.same_dir and positions and any(x["dir"] != po["dir"] for x in positions))
-            if po and room and not po_against and cooldown_until is None and self._next_bar_timing_ok(m15.index[-1], p):
-                pending = {"dir": po["dir"], "level": _f(po["level"], d), "stop": _f(po["stop"], d), "risk": _f(po["risk"], d),
-                           "until": _iso(bar_close_time + pd.Timedelta(minutes=15)), "max_chase": _f(po["level"] + po["dir"] * 0.5 * atr1, d)}
-                state = "pending_long" if po["dir"] > 0 else "pending_short"
             sig_dir = 0
+            po = pending_order(m15, f, t, p)
+            if po:
+                if not room:
+                    no_order = f"已經同時持有 {mr.max_open} 張系統單，不再掛單"
+                elif mr.same_dir and positions and any(x["dir"] != po["dir"] for x in positions):
+                    no_order = "條件到齊的方向和持倉相反，不掛單（同一時間只做一個方向）"
+                elif cooldown_until is not None:
+                    no_order = "剛出場，冷卻中，不掛單"
+                elif not self._next_bar_timing_ok(m15.index[-1], p):
+                    no_order = "下一根已經過了可進場的時段，不掛單"
+                else:
+                    pending = {"dir": po["dir"], "level": _f(po["level"], d), "stop": _f(po["stop"], d), "risk": _f(po["risk"], d),
+                               "until": _iso(bar_close_time + pd.Timedelta(minutes=15)), "max_chase": _f(po["level"] + po["dir"] * 0.5 * atr1, d)}
+                    state = "pending_long" if po["dir"] > 0 else "pending_short"
+            else:
+                no_order = pending_reason(m15, f, t, p)      # None unless the trend rules hold
+        against = bool(sig_dir and mr.multi and mr.same_dir and positions and any(x["dir"] != sig_dir for x in positions))
         if room and not against and cooldown_until is None and sig_dir:
             dr = sig_dir
             c = float(last["close"])
@@ -424,7 +435,7 @@ class Engine:
         sq_ok, sq_detail = True, ""
         if p.squeeze_bars > 0:   # 布林收窄濾網: while waiting, the window that the NEXT bar will use;
             bwp = f["m15_bw_pct"]  # on a signal / breakout bar, the window this bar was judged with
-            this_bar = bool(new_signal) or bool(tl["long_break"]) or bool(tl["short_break"])
+            this_bar = bool(new_signal) or bool(tl["long_break"]) or bool(tl["short_break"]) or mr.stop_entry
             win = bwp.iloc[-p.squeeze_bars - 1:-1] if this_bar else bwp.iloc[-p.squeeze_bars:]
             lo_pct = float(win.min()) if win.notna().any() else float("nan")
             sq_ok = bool(lo_pct <= p.squeeze_pct)
@@ -492,18 +503,16 @@ class Engine:
                              "entry": _f(r["entry"], d), "exit": None if is_open else _f(r["exit"], d), "R": None if is_open else _f(r["R"]),
                              "reason": "持倉中" if is_open else REASON_WORD.get(r["reason"], r["reason"])})
         blocked = None
-        if mr.multi and sig_dir and not room:
+        if mr.stop_entry:
+            blocked = no_order if (positions and no_order and no_order.startswith(("已經", "條件到齊"))) else None
+        elif mr.multi and sig_dir and not room:
             blocked = f"已經同時持有 {mr.max_open} 張系統單，這個新訊號不進場"
         elif against:
             blocked = "這個新訊號和持倉方向相反，不進場（同一時間只做一個方向）"
-        elif mr.stop_entry and pending is None and positions and room:
-            po = pending_order(m15, f, t, p)
-            if po and any(x["dir"] != po["dir"] for x in positions):
-                blocked = "條件到齊的方向和持倉相反，不掛單（同一時間只做一個方向）"
         return {
             "bar_time": _iso(m15.index[-1]), "bar_close_time": _iso(bar_close_time),
             "state": state, "active": active, "positions": positions, "new_signal": new_signal, "pending": pending,
-            "cooldown_until": cooldown_until,
+            "no_order": no_order, "cooldown_until": cooldown_until,
             "trade_mode": mr.mode, "mode_label": mr.label, "multi": mr.multi, "stop_entry": mr.stop_entry,
             "active_mode": mr.mode == "active", "max_open": mr.max_open, "signal_blocked": blocked,
             "bias": int(fl["trend_d1"]), "setup": setup, "mtf": mtf, "history": hist,
@@ -528,40 +537,62 @@ class Engine:
             self._alert("signal", f"🔔 {name}{word}訊號", f"參考價 {ns['ref_price']}，停損 {ns['stop']}（風險 {ns['risk']}）。"
                         f"請在 {ns['valid_minutes']} 分鐘內、價格未超過 {ns['max_chase']} 前進場，否則放棄。", "signal")
         po, ppo = core.get("pending"), prev.get("pending")
-        if core.get("stop_entry"):
+        prev_keys = {x["entry_time"] for x in (prev.get("positions") or ([prev["active"]] if prev.get("active") else []))}
+        new_fills = [x for x in (core.get("positions") or []) if x["entry_time"] not in prev_keys]
+        # a stop order filled and stopped out within the same bar never shows up in positions
+        same_bar = [h for h in (core.get("history") or []) if h.get("entry_time") == core.get("bar_time") and h.get("exit_time")
+                    and h["entry_time"] not in prev_keys] if core.get("stop_entry") else []
+        if core.get("stop_entry") and prev.get("stop_entry"):
             atr = core.get("atr_h1") or 1.0
-            if po and (not ppo or ppo["dir"] != po["dir"]):
+            ref = self._pending_sent or ppo           # the order the user was last told to place
+            if po and (not ref or ref["dir"] != po["dir"] or new_fills or same_bar):
                 word = "買進" if po["dir"] > 0 else "賣出"
-                self._alert("pending", f"📌 {name}掛{word}停損單", f"在 {po['level']} 掛{word}停損單，停損 {po['stop']}（風險 {po['risk']}）。"
+                nth = f"（第 {len(core.get('positions') or []) + 1} 張）" if core.get("positions") else ""
+                pre = "先取消原本的掛單，再" if (ref and ref["dir"] != po["dir"] and not new_fills) else ""
+                self._alert("pending", f"📌 {name}掛{word}停損單{nth}", f"{pre}在 {po['level']} 掛{word}停損單，停損 {po['stop']}（風險 {po['risk']}）。"
                             f"每 15 分鐘會重新確認；條件消失時會通知你取消。", "signal")
-            elif po and ppo and abs(po["level"] - ppo["level"]) >= 0.25 * atr:
+                self._pending_sent = dict(po)
+            elif po and ref and (abs(po["level"] - ref["level"]) >= 0.25 * atr or abs(po["stop"] - ref["stop"]) >= 0.5 * atr):
                 self._alert("pending", f"📌 {name}掛單價更新", f"請把掛單改到 {po['level']}、停損 {po['stop']}。", "info")
+                self._pending_sent = dict(po)
             elif ppo and not po:
-                filled = any(x["entry_time"] not in {y["entry_time"] for y in (prev.get("positions") or [])} for x in (core.get("positions") or []))
-                if not filled:
+                if not new_fills and not same_bar:
                     self._alert("pending", f"↩ {name}取消掛單", "條件已經消失，請取消還沒成交的掛單。", "info")
+                self._pending_sent = None
+            elif not po:
+                self._pending_sent = None
+        for h in same_bar:
+            word = "多單" if h["dir"] > 0 else "空單"
+            self._alert("fill", f"✅ {name}停損單成交後同一根就出場（{word}）", f"以 {h['entry']} 進場、{h['exit']} 出場，結果 {h['R']:+.2f}R。"
+                        "請確認 Mitrade 的那張單已經平倉。", "exit")
         def mode_of(c: dict) -> str:
             return c.get("trade_mode") or ("active" if c.get("active_mode") else "normal")
-        if mode_of(prev) != mode_of(core) or prev.get("params") != core.get("params"):
+        if mode_of(prev) != mode_of(core) or prev.get("params") != core.get("params") \
+                or bool(prev.get("stop_entry")) != bool(core.get("stop_entry")):
             # the user switched modes / rules: positions were rebuilt with the new rules, nothing was stopped out
             mode = core.get("mode_label") or MODE_LABEL.get(mode_of(core), "一般設定")
             n_pos = len(core.get("positions") or [])
-            if prev.get("params") == core.get("params") and (prev.get("max_open") or 1) == (core.get("max_open") or 1):
+            cancel = "請先取消還沒成交的掛單。" if prev.get("pending") and not core.get("pending") else ""
+            self._pending_sent = dict(core["pending"]) if core.get("pending") else None
+            if prev.get("params") == core.get("params") and (prev.get("max_open") or 1) == (core.get("max_open") or 1) \
+                    and bool(prev.get("stop_entry")) == bool(core.get("stop_entry")):
                 # e.g. silver in 高效積極模式: the mode changed but this instrument's rules did not
                 self._alert("info", f"⚙ {name}：{mode}", f"{name}在這個模式下照一般設定交易，訊號與持倉都沒有改變。", "info")
                 return
-            self._alert("info", f"⚙ {name}改用{mode}", (f"系統持倉已依新規則重新計算，目前 {n_pos} 張；請以交易單上的持倉與停損為準。"
-                                                     if n_pos else "系統依新規則重新計算，目前沒有持倉。"), "info")
+            body = (f"系統持倉已依新規則重新計算，目前 {n_pos} 張；請以交易單上的持倉與停損為準。" if n_pos else "系統依新規則重新計算，目前沒有持倉。")
+            if core.get("pending"):
+                po = core["pending"]
+                body += f"現在要在 {po['level']} 掛{'買進' if po['dir'] > 0 else '賣出'}停損單（停損 {po['stop']}）。"
+            self._alert("info", f"⚙ {name}改用{mode}", cancel + body, "info")
             return
         prev_pos = {x["entry_time"]: x for x in (prev.get("positions") or ([prev["active"]] if prev.get("active") else []))}
         cur_pos = {x["entry_time"]: x for x in (core.get("positions") or [])}
         many = len(prev_pos) > 1 or len(cur_pos) > 1
         if core.get("stop_entry"):
-            for key, x in cur_pos.items():
-                if key not in prev_pos:
-                    word = "多單" if x["dir"] > 0 else "空單"
-                    self._alert("fill", f"✅ {name}停損單成交（{word}）", f"系統以 {x['entry']} 進場，停損 {x['stop']}。"
-                                f"請確認 Mitrade 的掛單已成交並設好停損；之後照交易單上的「目前停損」移動。", "signal")
+            for x in new_fills:
+                word = "多單" if x["dir"] > 0 else "空單"
+                self._alert("fill", f"✅ {name}停損單成交（{word}）", f"系統以 {x['entry']} 進場，停損 {x['stop']}。"
+                            f"請確認 Mitrade 的掛單已成交並設好停損；之後照交易單上的「目前停損」移動。", "signal")
         moved = {}
         for key, pa in prev_pos.items():
             if key in cur_pos:
