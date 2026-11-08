@@ -88,3 +88,16 @@ def test_congress_summary_cluster(tmp_path):
     s = feed.summary("NVDA", 90)
     assert s["buys"] == 4 and s["buyers"] == 4 and s["cluster"] is True and s["sells"] == 0
     assert feed.summary("AAPL")["buys"] == 0
+
+
+def test_t86_parse(tmp_path):
+    from stocksignal.data.twse import TWSELegacy
+    js = {"stat": "OK", "fields": ["證券代號", "證券名稱", "外陸資買進股數(不含外資自營商)", "外陸資賣出股數(不含外資自營商)", "外陸資買賣超股數(不含外資自營商)",
+                                   "外資自營商買進股數", "外資自營商賣出股數", "外資自營商買賣超股數", "投信買進股數", "投信賣出股數", "投信買賣超股數", "自營商買賣超股數",
+                                   "自營商買進股數(自行買賣)", "自營商賣出股數(自行買賣)", "自營商買賣超股數(自行買賣)", "自營商買進股數(避險)", "自營商賣出股數(避險)",
+                                   "自營商買賣超股數(避險)", "三大法人買賣超股數"],
+          "data": [["2330", "台積電", "1,000", "500", "500", "0", "0", "0", "100", "50", "50", "10", "5", "0", "5", "5", "0", "5", "560"]]}
+    t = TWSELegacy(tmp_path)
+    t._get = lambda path, params: js
+    r = t.t86_day(pd.Timestamp("2026-11-06")).to_dict("records")[0]
+    assert (r["foreign"], r["trust"], r["dealer"], r["total"]) == (500, 50, 10, 560)

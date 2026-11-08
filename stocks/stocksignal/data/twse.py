@@ -302,12 +302,12 @@ class TWSELegacy:
                     return c
             return None
         c_code = col("證券代號")
-        c_f = next((c for c in df.columns if ("外陸資買賣超" in c or "外資買賣超" in c) and "自營商" not in c), None)
+        c_f = next((c for c in df.columns if ("外陸資買賣超" in c or "外資買賣超" in c) and not c.startswith("外資自營商")), None)
         c_fd = col("外資自營商買賣超")
         c_t = col("投信買賣超")
         c_d = next((c for c in df.columns if c.strip() == "自營商買賣超股數"), None)
         c_tot = col("三大法人買賣超")
-        if not (c_code and c_tot):
+        if not (c_code and c_tot and c_f):
             return pd.DataFrame()
         out = pd.DataFrame({"date": day, "code": df[c_code].astype(str).str.strip(),
                             "foreign": df[c_f].map(_num) + (df[c_fd].map(_num).fillna(0) if c_fd else 0),
