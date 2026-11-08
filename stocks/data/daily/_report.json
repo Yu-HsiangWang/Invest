@@ -1,0 +1,4085 @@
+{
+ "0050.TW": {
+  "status": "ok",
+  "start": "2003-06-30",
+  "end": "2026-11-06",
+  "rows": 5751,
+  "sources": {
+   "twse_raw_adj": 3312,
+   "yennanliu": 2431,
+   "culolom_close": 8
+  },
+  "yennanliu~twse_raw_adj": {
+   "overlap_days": 2078,
+   "ret_corr": 0.9908,
+   "mean_abs_diff_bp": 2.56
+  },
+  "twse_raw_adj~culolom_close": {
+   "overlap_days": 4005,
+   "ret_corr": 0.8653,
+   "mean_abs_diff_bp": 5.02
+  },
+  "tw_ex_dates_detected": 26,
+  "tw_mult_sources": {
+   "modern": 22,
+   "yahoo_step": 0,
+   "yield": 0,
+   "mkt_gap": 4
+  },
+  "tw_ex_dates": [
+   {
+    "date": "2017-02-08",
+    "prev_close": 73.30000305175781,
+    "close": 71.75,
+    "mult": 1.0237,
+    "how": "modern"
+   },
+   {
+    "date": "2018-01-29",
+    "prev_close": 87.5,
+    "close": 85.55000305175781,
+    "mult": 1.0258,
+    "how": "modern"
+   },
+   {
+    "date": "2019-01-22",
+    "prev_close": 76.5,
+    "close": 74.05000305175781,
+    "mult": 1.031,
+    "how": "modern"
+   },
+   {
+    "date": "2020-01-31",
+    "prev_close": 92.15,
+    "close": 89.95,
+    "mult": 1.0325,
+    "how": "modern"
+   },
+   {
+    "date": "2020-07-21",
+    "prev_close": 97.05,
+    "close": 98.7,
+    "mult": 1.0073,
+    "how": "modern"
+   },
+   {
+    "date": "2021-01-22",
+    "prev_close": 143.0,
+    "close": 137.45,
+    "mult": 1.0218,
+    "how": "modern"
+   },
+   {
+    "date": "2021-07-21",
+    "prev_close": 137.2,
+    "close": 136.7,
+    "mult": 1.0026,
+    "how": "modern"
+   },
+   {
+    "date": "2022-01-21",
+    "prev_close": 149.1,
+    "close": 142.65,
+    "mult": 1.0219,
+    "how": "modern"
+   },
+   {
+    "date": "2022-07-18",
+    "prev_close": 115.5,
+    "close": 114.2,
+    "mult": 1.0158,
+    "how": "modern"
+   },
+   {
+    "date": "2023-01-30",
+    "prev_close": 118.1,
+    "close": 120.7,
+    "mult": 1.0225,
+    "how": "modern"
+   },
+   {
+    "date": "2023-07-18",
+    "prev_close": 132.0,
+    "close": 129.85,
+    "mult": 1.0146,
+    "how": "modern"
+   },
+   {
+    "date": "2024-01-17",
+    "prev_close": 131.65,
+    "close": 127.45,
+    "mult": 1.0233,
+    "how": "modern"
+   },
+   {
+    "date": "2024-07-16",
+    "prev_close": 196.7,
+    "close": 196.85,
+    "mult": 1.0051,
+    "how": "modern"
+   },
+   {
+    "date": "2025-01-17",
+    "prev_close": 198.05,
+    "close": 196.3,
+    "mult": 1.0138,
+    "how": "modern"
+   }
+  ]
+ },
+ "006208.TW": {
+  "status": "ok",
+  "start": "2012-06-22",
+  "end": "2026-11-06",
+  "rows": 3512,
+  "sources": {
+   "twse_raw_adj": 2911,
+   "culolom_close": 601
+  },
+  "twse_raw_adj~culolom_close": {
+   "overlap_days": 2909,
+   "ret_corr": 0.9989,
+   "mean_abs_diff_bp": 0.24
+  },
+  "tw_ex_dates_detected": 60,
+  "tw_mult_sources": {
+   "modern": 57,
+   "yahoo_step": 0,
+   "yield": 0,
+   "mkt_gap": 1
+  },
+  "tw_ex_dates": [
+   {
+    "date": "2017-09-05",
+    "prev_close": 49.5,
+    "close": 48.66999816894531,
+    "mult": 1.0,
+    "how": "modern"
+   },
+   {
+    "date": "2017-11-30",
+    "prev_close": 49.130001068115234,
+    "close": 47.29999923706055,
+    "mult": 1.0348,
+    "how": "modern"
+   },
+   {
+    "date": "2018-11-29",
+    "prev_close": 44.61000061035156,
+    "close": 42.900001525878906,
+    "mult": 1.0469,
+    "how": "modern"
+   },
+   {
+    "date": "2019-11-20",
+    "prev_close": 53.09999847412109,
+    "close": 51.75,
+    "mult": 1.0219,
+    "how": "modern"
+   },
+   {
+    "date": "2020-07-21",
+    "prev_close": 55.5,
+    "close": 56.3,
+    "mult": 1.0087,
+    "how": "modern"
+   },
+   {
+    "date": "2020-11-17",
+    "prev_close": 64.5,
+    "close": 63.7,
+    "mult": 1.018,
+    "how": "modern"
+   },
+   {
+    "date": "2021-07-16",
+    "prev_close": 81.25,
+    "close": 80.15,
+    "mult": 1.0039,
+    "how": "modern"
+   },
+   {
+    "date": "2021-11-16",
+    "prev_close": 80.9,
+    "close": 79.55,
+    "mult": 1.0207,
+    "how": "modern"
+   },
+   {
+    "date": "2022-07-18",
+    "prev_close": 66.8,
+    "close": 65.75,
+    "mult": 1.019,
+    "how": "modern"
+   },
+   {
+    "date": "2022-11-16",
+    "prev_close": 65.8,
+    "close": 64.7,
+    "mult": 1.0159,
+    "how": "modern"
+   },
+   {
+    "date": "2023-07-18",
+    "prev_close": 76.45,
+    "close": 75.0,
+    "mult": 1.018,
+    "how": "modern"
+   },
+   {
+    "date": "2023-11-16",
+    "prev_close": 75.3,
+    "close": 74.6,
+    "mult": 1.0116,
+    "how": "modern"
+   },
+   {
+    "date": "2024-07-16",
+    "prev_close": 115.4,
+    "close": 115.2,
+    "mult": 1.0068,
+    "how": "modern"
+   },
+   {
+    "date": "2024-11-18",
+    "prev_close": 112.3,
+    "close": 110.4,
+    "mult": 1.0081,
+    "how": "modern"
+   }
+  ]
+ },
+ "0056.TW": {
+  "status": "ok",
+  "start": "2007-12-26",
+  "end": "2025-05-28",
+  "rows": 4269,
+  "sources": {
+   "twse_raw_adj": 4269
+  },
+  "tw_ex_dates_detected": 24,
+  "tw_mult_sources": {
+   "modern": 0,
+   "yahoo_step": 0,
+   "yield": 0,
+   "mkt_gap": 24
+  },
+  "tw_ex_dates": [
+   {
+    "date": "2018-02-12",
+    "prev_close": 25.5,
+    "close": 25.149999618530277,
+    "mult": 1.0187,
+    "how": "mkt_gap"
+   },
+   {
+    "date": "2018-10-23",
+    "prev_close": 25.809999465942383,
+    "close": 24.1299991607666,
+    "mult": 1.0483,
+    "how": "mkt_gap"
+   },
+   {
+    "date": "2019-10-23",
+    "prev_close": 29.030000686645508,
+    "close": 27.540000915527344,
+    "mult": 1.0511,
+    "how": "mkt_gap"
+   },
+   {
+    "date": "2020-10-28",
+    "prev_close": 29.69,
+    "close": 28.19,
+    "mult": 1.0466,
+    "how": "mkt_gap"
+   },
+   {
+    "date": "2021-10-22",
+    "prev_close": 32.4,
+    "close": 30.84,
+    "mult": 1.0505,
+    "how": "mkt_gap"
+   },
+   {
+    "date": "2022-10-19",
+    "prev_close": 25.84,
+    "close": 23.95,
+    "mult": 1.0668,
+    "how": "mkt_gap"
+   },
+   {
+    "date": "2023-07-18",
+    "prev_close": 35.94,
+    "close": 35.11,
+    "mult": 1.0174,
+    "how": "mkt_gap"
+   },
+   {
+    "date": "2023-10-19",
+    "prev_close": 34.9,
+    "close": 33.65,
+    "mult": 1.0379,
+    "how": "mkt_gap"
+   },
+   {
+    "date": "2024-01-17",
+    "prev_close": 36.37,
+    "close": 35.19,
+    "mult": 1.0225,
+    "how": "mkt_gap"
+   },
+   {
+    "date": "2024-04-18",
+    "prev_close": 38.94,
+    "close": 38.18,
+    "mult": 1.0243,
+    "how": "mkt_gap"
+   },
+   {
+    "date": "2024-07-16",
+    "prev_close": 42.37,
+    "close": 41.3,
+    "mult": 1.031,
+    "how": "mkt_gap"
+   },
+   {
+    "date": "2024-10-17",
+    "prev_close": 39.02,
+    "close": 38.12,
+    "mult": 1.0255,
+    "how": "mkt_gap"
+   },
+   {
+    "date": "2025-01-17",
+    "prev_close": 36.39,
+    "close": 35.35,
+    "mult": 1.0349,
+    "how": "mkt_gap"
+   },
+   {
+    "date": "2025-04-23",
+    "prev_close": 31.98,
+    "close": 31.62,
+    "mult": 1.0569,
+    "how": "mkt_gap"
+   }
+  ]
+ },
+ "00878.TW": {
+  "status": "ok",
+  "start": "2020-07-10",
+  "end": "2026-11-06",
+  "rows": 1540,
+  "sources": {
+   "twse_raw_adj": 1179,
+   "culolom_close": 361
+  },
+  "twse_raw_adj~culolom_close": {
+   "overlap_days": 1180,
+   "ret_corr": 1.0,
+   "mean_abs_diff_bp": 0.04
+  },
+  "tw_ex_dates_detected": 19,
+  "tw_mult_sources": {
+   "modern": 19,
+   "yahoo_step": 0,
+   "yield": 0,
+   "mkt_gap": 0
+  },
+  "tw_ex_dates": [
+   {
+    "date": "2022-02-22",
+    "prev_close": 19.75,
+    "close": 19.36,
+    "mult": 1.0154,
+    "how": "modern"
+   },
+   {
+    "date": "2022-05-18",
+    "prev_close": 17.89,
+    "close": 17.74,
+    "mult": 1.0182,
+    "how": "modern"
+   },
+   {
+    "date": "2022-08-16",
+    "prev_close": 17.33,
+    "close": 17.12,
+    "mult": 1.0164,
+    "how": "modern"
+   },
+   {
+    "date": "2022-11-16",
+    "prev_close": 16.77,
+    "close": 16.42,
+    "mult": 1.017,
+    "how": "modern"
+   },
+   {
+    "date": "2023-02-16",
+    "prev_close": 17.16,
+    "close": 17.03,
+    "mult": 1.016,
+    "how": "modern"
+   },
+   {
+    "date": "2023-05-17",
+    "prev_close": 17.97,
+    "close": 17.84,
+    "mult": 1.0153,
+    "how": "modern"
+   },
+   {
+    "date": "2023-08-16",
+    "prev_close": 21.43,
+    "close": 21.27,
+    "mult": 1.0166,
+    "how": "modern"
+   },
+   {
+    "date": "2023-11-16",
+    "prev_close": 20.69,
+    "close": 20.26,
+    "mult": 1.0172,
+    "how": "modern"
+   },
+   {
+    "date": "2024-02-27",
+    "prev_close": 22.41,
+    "close": 21.85,
+    "mult": 1.0182,
+    "how": "modern"
+   },
+   {
+    "date": "2024-05-17",
+    "prev_close": 23.57,
+    "close": 22.99,
+    "mult": 1.0221,
+    "how": "modern"
+   },
+   {
+    "date": "2024-08-16",
+    "prev_close": 23.13,
+    "close": 22.86,
+    "mult": 1.0244,
+    "how": "modern"
+   },
+   {
+    "date": "2024-11-18",
+    "prev_close": 22.73,
+    "close": 22.06,
+    "mult": 1.0248,
+    "how": "modern"
+   },
+   {
+    "date": "2025-02-20",
+    "prev_close": 22.96,
+    "close": 22.45,
+    "mult": 1.0223,
+    "how": "modern"
+   },
+   {
+    "date": "2025-05-19",
+    "prev_close": 21.26,
+    "close": 20.61,
+    "mult": 1.0226,
+    "how": "modern"
+   }
+  ]
+ },
+ "00919.TW": {
+  "status": "ok",
+  "start": "2022-10-20",
+  "end": "2025-05-28",
+  "rows": 626,
+  "sources": {
+   "twse_raw_adj": 626
+  },
+  "tw_ex_dates_detected": 8,
+  "tw_mult_sources": {
+   "modern": 0,
+   "yahoo_step": 0,
+   "yield": 0,
+   "mkt_gap": 8
+  },
+  "tw_ex_dates": [
+   {
+    "date": "2023-06-16",
+    "prev_close": 20.32,
+    "close": 19.7,
+    "mult": 1.0287,
+    "how": "mkt_gap"
+   },
+   {
+    "date": "2023-09-18",
+    "prev_close": 21.89,
+    "close": 21.15,
+    "mult": 1.0214,
+    "how": "mkt_gap"
+   },
+   {
+    "date": "2023-12-18",
+    "prev_close": 22.85,
+    "close": 22.39,
+    "mult": 1.0193,
+    "how": "mkt_gap"
+   },
+   {
+    "date": "2024-03-18",
+    "prev_close": 25.83,
+    "close": 25.46,
+    "mult": 1.0247,
+    "how": "mkt_gap"
+   },
+   {
+    "date": "2024-06-24",
+    "prev_close": 26.94,
+    "close": 25.9,
+    "mult": 1.0205,
+    "how": "mkt_gap"
+   },
+   {
+    "date": "2024-09-23",
+    "prev_close": 24.18,
+    "close": 23.61,
+    "mult": 1.03,
+    "how": "mkt_gap"
+   },
+   {
+    "date": "2024-12-20",
+    "prev_close": 23.97,
+    "close": 23.2,
+    "mult": 1.0142,
+    "how": "mkt_gap"
+   },
+   {
+    "date": "2025-03-18",
+    "prev_close": 23.74,
+    "close": 23.09,
+    "mult": 1.0353,
+    "how": "mkt_gap"
+   }
+  ]
+ },
+ "00881.TW": {
+  "status": "ok",
+  "start": "2020-12-10",
+  "end": "2025-05-28",
+  "rows": 1080,
+  "sources": {
+   "twse_raw_adj": 1080
+  },
+  "tw_ex_dates_detected": 8,
+  "tw_mult_sources": {
+   "modern": 0,
+   "yahoo_step": 0,
+   "yield": 0,
+   "mkt_gap": 6
+  },
+  "tw_ex_dates": [
+   {
+    "date": "2021-08-17",
+    "prev_close": 17.58,
+    "close": 16.95,
+    "mult": 1.025,
+    "how": "mkt_gap"
+   },
+   {
+    "date": "2022-01-18",
+    "prev_close": 19.06,
+    "close": 18.42,
+    "mult": 1.0265,
+    "how": "mkt_gap"
+   },
+   {
+    "date": "2022-08-16",
+    "prev_close": 15.22,
+    "close": 14.98,
+    "mult": 1.0162,
+    "how": "mkt_gap"
+   },
+   {
+    "date": "2023-01-30",
+    "prev_close": 14.41,
+    "close": 14.67,
+    "mult": 1.0192,
+    "how": "mkt_gap"
+   },
+   {
+    "date": "2023-08-16",
+    "prev_close": 17.25,
+    "close": 16.92,
+    "mult": 1.019,
+    "how": "mkt_gap"
+   },
+   {
+    "date": "2024-01-17",
+    "prev_close": 17.94,
+    "close": 16.97,
+    "mult": null,
+    "how": "skipped"
+   },
+   {
+    "date": "2024-08-16",
+    "prev_close": 23.92,
+    "close": 23.43,
+    "mult": null,
+    "how": "skipped"
+   },
+   {
+    "date": "2025-01-17",
+    "prev_close": 24.61,
+    "close": 23.94,
+    "mult": 1.0335,
+    "how": "mkt_gap"
+   }
+  ]
+ },
+ "00891.TW": {
+  "status": "ok",
+  "start": "2021-05-28",
+  "end": "2025-05-28",
+  "rows": 971,
+  "sources": {
+   "twse_raw_adj": 971
+  },
+  "tw_ex_dates_detected": 15,
+  "tw_mult_sources": {
+   "modern": 0,
+   "yahoo_step": 0,
+   "yield": 0,
+   "mkt_gap": 12
+  },
+  "tw_ex_dates": [
+   {
+    "date": "2021-11-16",
+    "prev_close": 16.97,
+    "close": 16.76,
+    "mult": 1.0159,
+    "how": "mkt_gap"
+   },
+   {
+    "date": "2022-02-22",
+    "prev_close": 16.41,
+    "close": 15.92,
+    "mult": 1.0165,
+    "how": "mkt_gap"
+   },
+   {
+    "date": "2022-08-16",
+    "prev_close": 12.33,
+    "close": 12.09,
+    "mult": 1.0201,
+    "how": "mkt_gap"
+   },
+   {
+    "date": "2022-11-16",
+    "prev_close": 11.86,
+    "close": 11.83,
+    "mult": null,
+    "how": "skipped"
+   },
+   {
+    "date": "2023-02-16",
+    "prev_close": 12.71,
+    "close": 12.76,
+    "mult": 1.0037,
+    "how": "mkt_gap"
+   },
+   {
+    "date": "2023-05-17",
+    "prev_close": 12.53,
+    "close": 12.54,
+    "mult": 1.0152,
+    "how": "mkt_gap"
+   },
+   {
+    "date": "2023-08-16",
+    "prev_close": 13.18,
+    "close": 12.91,
+    "mult": 1.0204,
+    "how": "mkt_gap"
+   },
+   {
+    "date": "2023-11-16",
+    "prev_close": 15.44,
+    "close": 15.09,
+    "mult": 1.0257,
+    "how": "mkt_gap"
+   },
+   {
+    "date": "2024-02-27",
+    "prev_close": 17.77,
+    "close": 17.44,
+    "mult": 1.0139,
+    "how": "mkt_gap"
+   },
+   {
+    "date": "2024-05-17",
+    "prev_close": 18.11,
+    "close": 17.66,
+    "mult": 1.0233,
+    "how": "mkt_gap"
+   },
+   {
+    "date": "2024-08-16",
+    "prev_close": 18.26,
+    "close": 18.33,
+    "mult": 1.0168,
+    "how": "mkt_gap"
+   },
+   {
+    "date": "2024-11-18",
+    "prev_close": 18.06,
+    "close": 17.25,
+    "mult": null,
+    "how": "skipped"
+   },
+   {
+    "date": "2025-02-18",
+    "prev_close": 18.83,
+    "close": 18.5,
+    "mult": 1.0248,
+    "how": "mkt_gap"
+   },
+   {
+    "date": "2025-05-19",
+    "prev_close": 16.91,
+    "close": 16.12,
+    "mult": null,
+    "how": "skipped"
+   }
+  ]
+ },
+ "00830.TW": {
+  "status": "ok",
+  "start": "2020-01-02",
+  "end": "2025-05-28",
+  "rows": 1309,
+  "sources": {
+   "twse_raw_adj": 1309
+  },
+  "tw_ex_dates_detected": 5,
+  "tw_mult_sources": {
+   "modern": 0,
+   "yahoo_step": 0,
+   "yield": 0,
+   "mkt_gap": 3
+  },
+  "tw_ex_dates": [
+   {
+    "date": "2021-01-19",
+    "prev_close": 26.55,
+    "close": 26.6,
+    "mult": 1.0151,
+    "how": "mkt_gap"
+   },
+   {
+    "date": "2022-01-18",
+    "prev_close": 34.61,
+    "close": 31.02,
+    "mult": 1.1069,
+    "how": "mkt_gap"
+   },
+   {
+    "date": "2023-01-30",
+    "prev_close": 24.6,
+    "close": 25.54,
+    "mult": null,
+    "how": "skipped"
+   },
+   {
+    "date": "2024-01-17",
+    "prev_close": 37.07,
+    "close": 36.29,
+    "mult": 1.0106,
+    "how": "mkt_gap"
+   },
+   {
+    "date": "2025-01-17",
+    "prev_close": 47.78,
+    "close": 44.25,
+    "mult": null,
+    "how": "skipped"
+   }
+  ]
+ },
+ "00662.TW": {
+  "status": "ok",
+  "start": "2016-06-03",
+  "end": "2026-11-06",
+  "rows": 2535,
+  "sources": {
+   "twse_raw_adj": 1308,
+   "culolom_close": 1227
+  },
+  "twse_raw_adj~culolom_close": {
+   "overlap_days": 1309,
+   "ret_corr": 0.9998,
+   "mean_abs_diff_bp": 0.14
+  },
+  "tw_ex_dates_detected": 0,
+  "tw_mult_sources": {
+   "modern": 0,
+   "yahoo_step": 0,
+   "yield": 0,
+   "mkt_gap": 0
+  },
+  "tw_ex_dates": []
+ },
+ "00757.TW": {
+  "status": "ok",
+  "start": "2020-01-02",
+  "end": "2025-05-28",
+  "rows": 1309,
+  "sources": {
+   "twse_raw_adj": 1309
+  },
+  "tw_ex_dates_detected": 0,
+  "tw_mult_sources": {
+   "modern": 0,
+   "yahoo_step": 0,
+   "yield": 0,
+   "mkt_gap": 0
+  },
+  "tw_ex_dates": []
+ },
+ "2330.TW": {
+  "status": "ok",
+  "start": "2000-01-04",
+  "end": "2026-11-06",
+  "rows": 6727,
+  "sources": {
+   "twse_raw_adj": 4203,
+   "yennanliu": 2430,
+   "culolom_close": 94
+  },
+  "yennanliu~twse_raw_adj": {
+   "overlap_days": 2226,
+   "ret_corr": 0.9968,
+   "mean_abs_diff_bp": 1.14
+  },
+  "twse_raw_adj~culolom_close": {
+   "overlap_days": 6375,
+   "ret_corr": 0.9896,
+   "mean_abs_diff_bp": 2.22
+  },
+  "tw_ex_dates_detected": 44,
+  "tw_mult_sources": {
+   "modern": 44,
+   "yahoo_step": 0,
+   "yield": 0,
+   "mkt_gap": 0
+  },
+  "tw_ex_dates": [
+   {
+    "date": "2022-06-16",
+    "prev_close": 509.0,
+    "close": 508.0,
+    "mult": 1.0054,
+    "how": "modern"
+   },
+   {
+    "date": "2022-09-15",
+    "prev_close": 480.0,
+    "close": 476.5,
+    "mult": 1.0058,
+    "how": "modern"
+   },
+   {
+    "date": "2023-03-16",
+    "prev_close": 511.0,
+    "close": 505.0,
+    "mult": 1.0054,
+    "how": "modern"
+   },
+   {
+    "date": "2023-06-15",
+    "prev_close": 590.0,
+    "close": 591.0,
+    "mult": 1.0047,
+    "how": "modern"
+   },
+   {
+    "date": "2023-09-14",
+    "prev_close": 541.0,
+    "close": 550.0,
+    "mult": 1.0056,
+    "how": "modern"
+   },
+   {
+    "date": "2023-12-14",
+    "prev_close": 577.0,
+    "close": 582.0,
+    "mult": 1.0052,
+    "how": "modern"
+   },
+   {
+    "date": "2024-03-18",
+    "prev_close": 753.0,
+    "close": 764.0,
+    "mult": 1.0047,
+    "how": "modern"
+   },
+   {
+    "date": "2024-06-13",
+    "prev_close": 909.0,
+    "close": 919.0,
+    "mult": 1.0039,
+    "how": "modern"
+   },
+   {
+    "date": "2024-09-12",
+    "prev_close": 901.0,
+    "close": 940.0,
+    "mult": 1.0045,
+    "how": "modern"
+   },
+   {
+    "date": "2024-12-12",
+    "prev_close": 1045.0,
+    "close": 1060.0,
+    "mult": 1.0038,
+    "how": "modern"
+   },
+   {
+    "date": "2025-03-18",
+    "prev_close": 970.0,
+    "close": 971.0,
+    "mult": 1.0047,
+    "how": "modern"
+   },
+   {
+    "date": "2025-06-12",
+    "prev_close": 1065.0,
+    "close": 1045.0,
+    "mult": 1.0042,
+    "how": "modern"
+   },
+   {
+    "date": "2025-09-16",
+    "prev_close": 1255.0,
+    "close": 1280.0,
+    "mult": 1.004,
+    "how": "modern"
+   },
+   {
+    "date": "2025-12-11",
+    "prev_close": 1505.0,
+    "close": 1470.0,
+    "mult": 1.0033,
+    "how": "modern"
+   }
+  ]
+ },
+ "2454.TW": {
+  "status": "ok",
+  "start": "2001-07-23",
+  "end": "2025-12-31",
+  "rows": 6021,
+  "sources": {
+   "twse_raw_adj": 6021
+  },
+  "tw_ex_dates_detected": 28,
+  "tw_mult_sources": {
+   "modern": 0,
+   "yahoo_step": 20,
+   "yield": 5,
+   "mkt_gap": 3
+  },
+  "tw_ex_dates": [
+   {
+    "date": "2015-07-15",
+    "prev_close": 389.0,
+    "close": 373.0,
+    "mult": 1.0599,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2016-05-16",
+    "prev_close": 200.0,
+    "close": 201.5,
+    "mult": 1.0,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2016-07-15",
+    "prev_close": 246.0,
+    "close": 239.5,
+    "mult": 1.0468,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2017-07-06",
+    "prev_close": 265.0,
+    "close": 253.0,
+    "mult": 1.0311,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2018-07-09",
+    "prev_close": 285.0,
+    "close": 272.5,
+    "mult": 1.0364,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2019-07-08",
+    "prev_close": 321.0,
+    "close": 314.0,
+    "mult": 1.0288,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2020-07-06",
+    "prev_close": 585.0,
+    "close": 589.0,
+    "mult": 1.0183,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2021-07-06",
+    "prev_close": 957.0,
+    "close": 922.0,
+    "mult": 1.0205,
+    "how": "yield"
+   },
+   {
+    "date": "2022-06-23",
+    "prev_close": 807.0,
+    "close": 689.0,
+    "mult": 1.1582,
+    "how": "mkt_gap_corporate_action"
+   },
+   {
+    "date": "2023-06-20",
+    "prev_close": 785.0,
+    "close": 691.0,
+    "mult": 1.1301,
+    "how": "mkt_gap_corporate_action"
+   },
+   {
+    "date": "2024-01-04",
+    "prev_close": 953.0,
+    "close": 928.0,
+    "mult": 1.0427,
+    "how": "yield"
+   },
+   {
+    "date": "2024-07-04",
+    "prev_close": 1405.0,
+    "close": 1375.0,
+    "mult": 1.0204,
+    "how": "yield"
+   },
+   {
+    "date": "2025-01-02",
+    "prev_close": 1415.0,
+    "close": 1350.0,
+    "mult": 1.0138,
+    "how": "yield"
+   },
+   {
+    "date": "2025-07-03",
+    "prev_close": 1295.0,
+    "close": 1270.0,
+    "mult": 1.0144,
+    "how": "yield"
+   }
+  ]
+ },
+ "2303.TW": {
+  "status": "ok",
+  "start": "2000-01-04",
+  "end": "2025-12-31",
+  "rows": 6413,
+  "sources": {
+   "twse_raw_adj": 6413
+  },
+  "tw_ex_dates_detected": 27,
+  "tw_mult_sources": {
+   "modern": 0,
+   "yahoo_step": 22,
+   "yield": 4,
+   "mkt_gap": 1
+  },
+  "tw_ex_dates": [
+   {
+    "date": "2013-07-08",
+    "prev_close": 14.8,
+    "close": 14.1,
+    "mult": 1.0282,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2014-07-07",
+    "prev_close": 16.5,
+    "close": 15.95,
+    "mult": 1.0312,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2015-07-14",
+    "prev_close": 12.55,
+    "close": 12.15,
+    "mult": 1.0458,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2016-07-12",
+    "prev_close": 12.95,
+    "close": 12.45,
+    "mult": 1.0456,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2017-07-11",
+    "prev_close": 14.3,
+    "close": 14.1,
+    "mult": 1.0362,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2018-07-02",
+    "prev_close": 16.95,
+    "close": 18.2,
+    "mult": 1.0,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2018-07-10",
+    "prev_close": 17.65,
+    "close": 17.0,
+    "mult": 1.042,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2019-07-16",
+    "prev_close": 14.9,
+    "close": 14.0,
+    "mult": 1.0412,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2020-07-15",
+    "prev_close": 16.8,
+    "close": 16.0,
+    "mult": 1.0503,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2021-07-22",
+    "prev_close": 50.8,
+    "close": 52.0,
+    "mult": 1.0318,
+    "how": "yield"
+   },
+   {
+    "date": "2022-06-22",
+    "prev_close": 49.3,
+    "close": 44.1,
+    "mult": 1.0908,
+    "how": "mkt_gap_corporate_action"
+   },
+   {
+    "date": "2023-06-27",
+    "prev_close": 53.3,
+    "close": 49.05,
+    "mult": 1.0792,
+    "how": "yield"
+   },
+   {
+    "date": "2024-07-02",
+    "prev_close": 56.9,
+    "close": 52.7,
+    "mult": 1.0603,
+    "how": "yield"
+   },
+   {
+    "date": "2025-06-24",
+    "prev_close": 47.0,
+    "close": 45.35,
+    "mult": 1.0324,
+    "how": "yield"
+   }
+  ]
+ },
+ "3711.TW": {
+  "status": "ok",
+  "start": "2018-04-30",
+  "end": "2025-12-31",
+  "rows": 1872,
+  "sources": {
+   "twse_raw_adj": 1872
+  },
+  "tw_ex_dates_detected": 8,
+  "tw_mult_sources": {
+   "modern": 0,
+   "yahoo_step": 3,
+   "yield": 4,
+   "mkt_gap": 1
+  },
+  "tw_ex_dates": [
+   {
+    "date": "2018-08-10",
+    "prev_close": 78.5,
+    "close": 76.7,
+    "mult": 1.0329,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2019-08-13",
+    "prev_close": 68.9,
+    "close": 66.6,
+    "mult": 1.0376,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2020-08-13",
+    "prev_close": 69.9,
+    "close": 68.0,
+    "mult": 1.0294,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2021-09-06",
+    "prev_close": 128.5,
+    "close": 124.5,
+    "mult": 1.0349,
+    "how": "yield"
+   },
+   {
+    "date": "2022-06-29",
+    "prev_close": 91.0,
+    "close": 79.1,
+    "mult": 1.1356,
+    "how": "mkt_gap_corporate_action"
+   },
+   {
+    "date": "2023-06-30",
+    "prev_close": 122.5,
+    "close": 110.5,
+    "mult": 1.0414,
+    "how": "yield"
+   },
+   {
+    "date": "2024-07-01",
+    "prev_close": 168.5,
+    "close": 164.5,
+    "mult": 1.0161,
+    "how": "yield"
+   },
+   {
+    "date": "2025-07-02",
+    "prev_close": 145.5,
+    "close": 141.5,
+    "mult": 1.0191,
+    "how": "yield"
+   }
+  ]
+ },
+ "3034.TW": {
+  "status": "ok",
+  "start": "2002-08-26",
+  "end": "2025-12-31",
+  "rows": 5754,
+  "sources": {
+   "twse_raw_adj": 5754
+  },
+  "tw_ex_dates_detected": 23,
+  "tw_mult_sources": {
+   "modern": 0,
+   "yahoo_step": 18,
+   "yield": 4,
+   "mkt_gap": 1
+  },
+  "tw_ex_dates": [
+   {
+    "date": "2012-07-11",
+    "prev_close": 91.0,
+    "close": 86.2,
+    "mult": 1.0532,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2013-08-15",
+    "prev_close": 122.5,
+    "close": 113.0,
+    "mult": 1.0478,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2014-08-14",
+    "prev_close": 158.0,
+    "close": 154.5,
+    "mult": 1.0395,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2015-07-14",
+    "prev_close": 141.0,
+    "close": 127.5,
+    "mult": 1.0763,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2016-07-12",
+    "prev_close": 126.5,
+    "close": 114.5,
+    "mult": 1.0766,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2017-07-11",
+    "prev_close": 123.0,
+    "close": 117.0,
+    "mult": 1.0603,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2018-07-12",
+    "prev_close": 138.5,
+    "close": 135.0,
+    "mult": 1.054,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2019-07-12",
+    "prev_close": 183.0,
+    "close": 173.5,
+    "mult": 1.0505,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2020-07-13",
+    "prev_close": 285.5,
+    "close": 271.5,
+    "mult": 1.0382,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2021-08-17",
+    "prev_close": 506.0,
+    "close": 474.0,
+    "mult": 1.034,
+    "how": "yield"
+   },
+   {
+    "date": "2022-07-12",
+    "prev_close": 300.5,
+    "close": 234.5,
+    "mult": 1.2466,
+    "how": "mkt_gap_corporate_action"
+   },
+   {
+    "date": "2023-07-11",
+    "prev_close": 430.5,
+    "close": 397.0,
+    "mult": 1.0489,
+    "how": "yield"
+   },
+   {
+    "date": "2024-07-10",
+    "prev_close": 604.0,
+    "close": 570.0,
+    "mult": 1.0289,
+    "how": "yield"
+   },
+   {
+    "date": "2025-07-09",
+    "prev_close": 534.0,
+    "close": 509.0,
+    "mult": 1.0283,
+    "how": "yield"
+   }
+  ]
+ },
+ "2379.TW": {
+  "status": "ok",
+  "start": "2000-01-04",
+  "end": "2025-12-31",
+  "rows": 6418,
+  "sources": {
+   "twse_raw_adj": 6418
+  },
+  "tw_ex_dates_detected": 27,
+  "tw_mult_sources": {
+   "modern": 0,
+   "yahoo_step": 22,
+   "yield": 5,
+   "mkt_gap": 0
+  },
+  "tw_ex_dates": [
+   {
+    "date": "2012-08-22",
+    "prev_close": 58.3,
+    "close": 56.3,
+    "mult": 1.0515,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2013-08-15",
+    "prev_close": 71.3,
+    "close": 67.1,
+    "mult": 1.0418,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2014-08-26",
+    "prev_close": 110.0,
+    "close": 109.5,
+    "mult": 1.0476,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2015-09-02",
+    "prev_close": 59.2,
+    "close": 53.0,
+    "mult": 1.1128,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2016-09-01",
+    "prev_close": 127.0,
+    "close": 122.0,
+    "mult": 1.0345,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2017-09-07",
+    "prev_close": 115.5,
+    "close": 110.0,
+    "mult": 1.0359,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2018-09-06",
+    "prev_close": 149.5,
+    "close": 142.5,
+    "mult": 1.0382,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2019-09-05",
+    "prev_close": 220.0,
+    "close": 213.5,
+    "mult": 1.0329,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2020-09-08",
+    "prev_close": 381.5,
+    "close": 370.0,
+    "mult": 1.0297,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2021-09-08",
+    "prev_close": 546.0,
+    "close": 525.0,
+    "mult": 1.0135,
+    "how": "yield"
+   },
+   {
+    "date": "2022-09-12",
+    "prev_close": 331.5,
+    "close": 313.0,
+    "mult": 1.0451,
+    "how": "yield"
+   },
+   {
+    "date": "2023-09-11",
+    "prev_close": 445.5,
+    "close": 405.0,
+    "mult": 1.0345,
+    "how": "yield"
+   },
+   {
+    "date": "2024-09-05",
+    "prev_close": 510.0,
+    "close": 488.5,
+    "mult": 1.0161,
+    "how": "yield"
+   },
+   {
+    "date": "2025-09-10",
+    "prev_close": 540.0,
+    "close": 510.0,
+    "mult": 1.0526,
+    "how": "yield"
+   }
+  ]
+ },
+ "3443.TW": {
+  "status": "ok",
+  "start": "2006-11-03",
+  "end": "2025-12-31",
+  "rows": 4711,
+  "sources": {
+   "twse_raw_adj": 4711
+  },
+  "tw_ex_dates_detected": 18,
+  "tw_mult_sources": {
+   "modern": 0,
+   "yahoo_step": 13,
+   "yield": 5,
+   "mkt_gap": 0
+  },
+  "tw_ex_dates": [
+   {
+    "date": "2012-06-13",
+    "prev_close": 105.5,
+    "close": 103.0,
+    "mult": 1.0293,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2013-07-17",
+    "prev_close": 99.6,
+    "close": 96.9,
+    "mult": 1.0311,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2014-06-17",
+    "prev_close": 98.0,
+    "close": 93.8,
+    "mult": 1.0106,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2015-06-16",
+    "prev_close": 78.1,
+    "close": 75.1,
+    "mult": 1.0399,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2016-06-13",
+    "prev_close": 75.7,
+    "close": 72.3,
+    "mult": 1.0413,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2017-06-05",
+    "prev_close": 106.5,
+    "close": 103.5,
+    "mult": 1.0,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2018-06-01",
+    "prev_close": 255.0,
+    "close": 264.0,
+    "mult": 1.02,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2019-06-03",
+    "prev_close": 228.5,
+    "close": 219.5,
+    "mult": 1.0224,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2020-06-01",
+    "prev_close": 231.0,
+    "close": 227.5,
+    "mult": 1.0221,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2021-06-03",
+    "prev_close": 350.0,
+    "close": 352.0,
+    "mult": 1.0072,
+    "how": "yield"
+   },
+   {
+    "date": "2022-06-02",
+    "prev_close": 566.0,
+    "close": 542.0,
+    "mult": 1.0065,
+    "how": "yield"
+   },
+   {
+    "date": "2023-06-02",
+    "prev_close": 1535.0,
+    "close": 1425.0,
+    "mult": 1.0049,
+    "how": "yield"
+   },
+   {
+    "date": "2024-06-03",
+    "prev_close": 1455.0,
+    "close": 1570.0,
+    "mult": 1.0045,
+    "how": "yield"
+   },
+   {
+    "date": "2025-06-03",
+    "prev_close": 1095.0,
+    "close": 1110.0,
+    "mult": 1.0073,
+    "how": "yield"
+   }
+  ]
+ },
+ "3661.TW": {
+  "status": "ok",
+  "start": "2014-10-28",
+  "end": "2025-12-31",
+  "rows": 2729,
+  "sources": {
+   "twse_raw_adj": 2729
+  },
+  "tw_ex_dates_detected": 10,
+  "tw_mult_sources": {
+   "modern": 0,
+   "yahoo_step": 5,
+   "yield": 5,
+   "mkt_gap": 0
+  },
+  "tw_ex_dates": [
+   {
+    "date": "2015-08-25",
+    "prev_close": 35.95,
+    "close": 34.9,
+    "mult": 1.0191,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2016-08-18",
+    "prev_close": 24.1,
+    "close": 23.8,
+    "mult": 1.0201,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2018-08-30",
+    "prev_close": 113.0,
+    "close": 110.5,
+    "mult": 1.0095,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2019-08-22",
+    "prev_close": 118.0,
+    "close": 128.0,
+    "mult": 1.0131,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2020-08-20",
+    "prev_close": 643.0,
+    "close": 595.0,
+    "mult": 1.0053,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2021-09-09",
+    "prev_close": 781.0,
+    "close": 745.0,
+    "mult": 1.0091,
+    "how": "yield"
+   },
+   {
+    "date": "2022-09-16",
+    "prev_close": 944.0,
+    "close": 908.0,
+    "mult": 1.0127,
+    "how": "yield"
+   },
+   {
+    "date": "2023-09-07",
+    "prev_close": 2500.0,
+    "close": 2450.0,
+    "mult": 1.0027,
+    "how": "yield"
+   },
+   {
+    "date": "2024-09-12",
+    "prev_close": 2285.0,
+    "close": 2435.0,
+    "mult": 1.0093,
+    "how": "yield"
+   },
+   {
+    "date": "2025-09-02",
+    "prev_close": 3915.0,
+    "close": 3845.0,
+    "mult": 1.0048,
+    "how": "yield"
+   }
+  ]
+ },
+ "2408.TW": {
+  "status": "ok",
+  "start": "2000-08-17",
+  "end": "2025-12-31",
+  "rows": 6240,
+  "sources": {
+   "twse_raw_adj": 6240
+  },
+  "tw_ex_dates_detected": 20,
+  "tw_mult_sources": {
+   "modern": 0,
+   "yahoo_step": 16,
+   "yield": 2,
+   "mkt_gap": 1
+  },
+  "tw_ex_dates": [
+   {
+    "date": "2009-08-26",
+    "prev_close": 5.95,
+    "close": 16.5,
+    "mult": 0.3357,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2009-11-20",
+    "prev_close": 26.4,
+    "close": 25.05,
+    "mult": 1.0507,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2010-11-01",
+    "prev_close": 18.35,
+    "close": 17.75,
+    "mult": 1.0125,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2014-09-09",
+    "prev_close": 8.1,
+    "close": 75.5,
+    "mult": null,
+    "how": "skipped"
+   },
+   {
+    "date": "2015-07-09",
+    "prev_close": 41.7,
+    "close": 37.6,
+    "mult": 1.0503,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2015-12-29",
+    "prev_close": 49.6,
+    "close": 46.6,
+    "mult": 1.0258,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2016-07-21",
+    "prev_close": 39.9,
+    "close": 38.8,
+    "mult": 1.0755,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2017-06-20",
+    "prev_close": 53.7,
+    "close": 52.0,
+    "mult": 1.0287,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2018-06-28",
+    "prev_close": 87.2,
+    "close": 83.0,
+    "mult": 1.0419,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2019-07-04",
+    "prev_close": 65.2,
+    "close": 59.2,
+    "mult": 1.1224,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2020-07-02",
+    "prev_close": 61.0,
+    "close": 60.5,
+    "mult": 1.0252,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2021-08-05",
+    "prev_close": 75.5,
+    "close": 75.2,
+    "mult": 1.0176,
+    "how": "yield"
+   },
+   {
+    "date": "2022-06-30",
+    "prev_close": 57.1,
+    "close": 49.4,
+    "mult": 1.1244,
+    "how": "mkt_gap_corporate_action"
+   },
+   {
+    "date": "2023-06-28",
+    "prev_close": 70.8,
+    "close": 69.5,
+    "mult": 1.0155,
+    "how": "yield"
+   }
+  ]
+ },
+ "3529.TWO": {
+  "status": "ok",
+  "start": "2011-01-24",
+  "end": "2025-05-28",
+  "rows": 3496,
+  "sources": {
+   "twse_raw_adj": 3496
+  },
+  "tw_ex_dates_detected": 5,
+  "tw_mult_sources": {
+   "modern": 0,
+   "yahoo_step": 1,
+   "yield": 0,
+   "mkt_gap": 1
+  },
+  "tw_ex_dates": [
+   {
+    "date": "2020-06-30",
+    "prev_close": 525.0,
+    "close": 486.5,
+    "mult": 1.0135,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2021-07-16",
+    "prev_close": 1475.0,
+    "close": 1430.0,
+    "mult": null,
+    "how": "skipped"
+   },
+   {
+    "date": "2022-06-30",
+    "prev_close": 1160.0,
+    "close": 1035.0,
+    "mult": 1.0903,
+    "how": "mkt_gap_corporate_action"
+   },
+   {
+    "date": "2023-06-29",
+    "prev_close": 2095.0,
+    "close": 2165.0,
+    "mult": null,
+    "how": "skipped"
+   },
+   {
+    "date": "2024-07-04",
+    "prev_close": 2560.0,
+    "close": 2620.0,
+    "mult": null,
+    "how": "skipped"
+   }
+  ]
+ },
+ "5274.TWO": {
+  "status": "ok",
+  "start": "2013-04-30",
+  "end": "2025-12-31",
+  "rows": 3099,
+  "sources": {
+   "twse_raw_adj": 3099
+  },
+  "tw_ex_dates_detected": 11,
+  "tw_mult_sources": {
+   "modern": 0,
+   "yahoo_step": 6,
+   "yield": 5,
+   "mkt_gap": 0
+  },
+  "tw_ex_dates": [
+   {
+    "date": "2015-08-04",
+    "prev_close": 296.0,
+    "close": 243.0,
+    "mult": 1.2297,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2016-08-03",
+    "prev_close": 327.0,
+    "close": 320.5,
+    "mult": 1.0257,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2017-06-15",
+    "prev_close": 638.0,
+    "close": 610.0,
+    "mult": 1.0195,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2018-06-15",
+    "prev_close": 975.0,
+    "close": 950.0,
+    "mult": 1.0159,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2019-06-17",
+    "prev_close": 610.0,
+    "close": 580.0,
+    "mult": 1.0314,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2020-06-04",
+    "prev_close": 1295.0,
+    "close": 1290.0,
+    "mult": 1.0173,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2021-06-18",
+    "prev_close": 2190.0,
+    "close": 2115.0,
+    "mult": 1.0125,
+    "how": "yield"
+   },
+   {
+    "date": "2022-06-28",
+    "prev_close": 2365.0,
+    "close": 2125.0,
+    "mult": 1.0172,
+    "how": "yield"
+   },
+   {
+    "date": "2023-06-15",
+    "prev_close": 2675.0,
+    "close": 2720.0,
+    "mult": 1.0083,
+    "how": "yield"
+   },
+   {
+    "date": "2024-06-26",
+    "prev_close": 4770.0,
+    "close": 4950.0,
+    "mult": 1.004,
+    "how": "yield"
+   },
+   {
+    "date": "2025-06-13",
+    "prev_close": 4545.0,
+    "close": 4575.0,
+    "mult": 1.0057,
+    "how": "yield"
+   }
+  ]
+ },
+ "2317.TW": {
+  "status": "ok",
+  "start": "2000-01-04",
+  "end": "2025-12-31",
+  "rows": 6419,
+  "sources": {
+   "twse_raw_adj": 6419
+  },
+  "tw_ex_dates_detected": 29,
+  "tw_mult_sources": {
+   "modern": 0,
+   "yahoo_step": 22,
+   "yield": 6,
+   "mkt_gap": 1
+  },
+  "tw_ex_dates": [
+   {
+    "date": "2015-09-03",
+    "prev_close": 90.6,
+    "close": 83.9,
+    "mult": 1.0937,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2016-03-31",
+    "prev_close": 83.7,
+    "close": 84.8,
+    "mult": 1.0,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2016-09-02",
+    "prev_close": 87.4,
+    "close": 77.2,
+    "mult": 1.1485,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2017-07-13",
+    "prev_close": 118.5,
+    "close": 115.5,
+    "mult": 1.0395,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2018-07-25",
+    "prev_close": 85.2,
+    "close": 82.7,
+    "mult": 1.024,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2018-10-26",
+    "prev_close": 68.1,
+    "close": 76.2,
+    "mult": 0.8,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2019-07-25",
+    "prev_close": 81.3,
+    "close": 78.6,
+    "mult": 1.0517,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2020-07-23",
+    "prev_close": 85.9,
+    "close": 82.1,
+    "mult": 1.0514,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2021-07-22",
+    "prev_close": 112.5,
+    "close": 110.5,
+    "mult": 1.0184,
+    "how": "yield"
+   },
+   {
+    "date": "2022-07-04",
+    "prev_close": 106.0,
+    "close": 100.0,
+    "mult": 1.0267,
+    "how": "yield"
+   },
+   {
+    "date": "2023-07-04",
+    "prev_close": 115.0,
+    "close": 110.0,
+    "mult": 1.0247,
+    "how": "yield"
+   },
+   {
+    "date": "2024-07-02",
+    "prev_close": 216.0,
+    "close": 204.5,
+    "mult": 1.0134,
+    "how": "yield"
+   },
+   {
+    "date": "2025-07-02",
+    "prev_close": 165.5,
+    "close": 162.0,
+    "mult": 1.0182,
+    "how": "yield"
+   },
+   {
+    "date": "2025-07-31",
+    "prev_close": 171.5,
+    "close": 178.0,
+    "mult": 1.0166,
+    "how": "yield"
+   }
+  ]
+ },
+ "2382.TW": {
+  "status": "ok",
+  "start": "2000-01-04",
+  "end": "2025-12-31",
+  "rows": 6427,
+  "sources": {
+   "twse_raw_adj": 6427
+  },
+  "tw_ex_dates_detected": 26,
+  "tw_mult_sources": {
+   "modern": 0,
+   "yahoo_step": 21,
+   "yield": 5,
+   "mkt_gap": 0
+  },
+  "tw_ex_dates": [
+   {
+    "date": "2012-08-01",
+    "prev_close": 78.4,
+    "close": 71.5,
+    "mult": 1.0537,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2013-08-01",
+    "prev_close": 69.8,
+    "close": 64.7,
+    "mult": 1.0608,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2014-08-01",
+    "prev_close": 84.4,
+    "close": 80.5,
+    "mult": 1.0471,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2015-07-29",
+    "prev_close": 64.8,
+    "close": 62.0,
+    "mult": 1.0658,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2016-08-01",
+    "prev_close": 64.9,
+    "close": 60.4,
+    "mult": 1.0622,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2017-07-31",
+    "prev_close": 77.3,
+    "close": 71.6,
+    "mult": 1.0474,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2018-07-30",
+    "prev_close": 55.6,
+    "close": 52.5,
+    "mult": 1.0651,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2019-07-29",
+    "prev_close": 61.5,
+    "close": 57.9,
+    "mult": 1.0613,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2020-08-03",
+    "prev_close": 81.8,
+    "close": 73.6,
+    "mult": 1.0474,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2021-07-26",
+    "prev_close": 89.4,
+    "close": 80.9,
+    "mult": 1.0332,
+    "how": "yield"
+   },
+   {
+    "date": "2022-08-01",
+    "prev_close": 84.6,
+    "close": 78.4,
+    "mult": 1.0919,
+    "how": "yield"
+   },
+   {
+    "date": "2023-04-14",
+    "prev_close": 89.3,
+    "close": 81.8,
+    "mult": 1.038,
+    "how": "yield"
+   },
+   {
+    "date": "2024-04-12",
+    "prev_close": 284.5,
+    "close": 271.0,
+    "mult": 1.0169,
+    "how": "yield"
+   },
+   {
+    "date": "2025-06-30",
+    "prev_close": 285.5,
+    "close": 274.5,
+    "mult": 1.0498,
+    "how": "yield"
+   }
+  ]
+ },
+ "3231.TW": {
+  "status": "ok",
+  "start": "2003-08-19",
+  "end": "2025-12-31",
+  "rows": 5510,
+  "sources": {
+   "twse_raw_adj": 5510
+  },
+  "tw_ex_dates_detected": 22,
+  "tw_mult_sources": {
+   "modern": 0,
+   "yahoo_step": 17,
+   "yield": 4,
+   "mkt_gap": 1
+  },
+  "tw_ex_dates": [
+   {
+    "date": "2012-07-27",
+    "prev_close": 35.5,
+    "close": 32.1,
+    "mult": 1.1194,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2013-08-01",
+    "prev_close": 28.6,
+    "close": 26.85,
+    "mult": 1.1112,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2014-07-29",
+    "prev_close": 30.5,
+    "close": 28.2,
+    "mult": 1.0828,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2015-08-06",
+    "prev_close": 20.2,
+    "close": 17.9,
+    "mult": 1.0976,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2016-08-09",
+    "prev_close": 23.8,
+    "close": 22.3,
+    "mult": 1.0828,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2017-08-02",
+    "prev_close": 30.35,
+    "close": 28.55,
+    "mult": 1.0714,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2018-08-01",
+    "prev_close": 23.65,
+    "close": 22.35,
+    "mult": 1.0848,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2019-07-22",
+    "prev_close": 25.3,
+    "close": 23.7,
+    "mult": 1.0625,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2020-07-07",
+    "prev_close": 38.65,
+    "close": 34.5,
+    "mult": 1.0558,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2021-07-21",
+    "prev_close": 31.2,
+    "close": 28.05,
+    "mult": 1.0851,
+    "how": "yield"
+   },
+   {
+    "date": "2022-07-06",
+    "prev_close": 26.25,
+    "close": 23.4,
+    "mult": 1.0934,
+    "how": "mkt_gap_corporate_action"
+   },
+   {
+    "date": "2023-07-05",
+    "prev_close": 105.0,
+    "close": 102.5,
+    "mult": 1.0129,
+    "how": "yield"
+   },
+   {
+    "date": "2024-06-25",
+    "prev_close": 110.0,
+    "close": 108.0,
+    "mult": 1.0122,
+    "how": "yield"
+   },
+   {
+    "date": "2025-06-03",
+    "prev_close": 115.0,
+    "close": 109.5,
+    "mult": 1.0177,
+    "how": "yield"
+   }
+  ]
+ },
+ "6669.TW": {
+  "status": "ok",
+  "start": "2017-11-13",
+  "end": "2025-12-30",
+  "rows": 1976,
+  "sources": {
+   "twse_raw_adj": 1976
+  },
+  "tw_ex_dates_detected": 0,
+  "tw_mult_sources": {
+   "modern": 0,
+   "yahoo_step": 0,
+   "yield": 0,
+   "mkt_gap": 0
+  },
+  "tw_ex_dates": []
+ },
+ "2356.TW": {
+  "status": "ok",
+  "start": "2000-01-04",
+  "end": "2025-12-31",
+  "rows": 6427,
+  "sources": {
+   "twse_raw_adj": 6427
+  },
+  "tw_ex_dates_detected": 26,
+  "tw_mult_sources": {
+   "modern": 0,
+   "yahoo_step": 21,
+   "yield": 4,
+   "mkt_gap": 1
+  },
+  "tw_ex_dates": [
+   {
+    "date": "2012-07-16",
+    "prev_close": 9.55,
+    "close": 8.95,
+    "mult": 1.0686,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2013-07-16",
+    "prev_close": 19.75,
+    "close": 19.75,
+    "mult": 1.0422,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2014-07-16",
+    "prev_close": 29.5,
+    "close": 27.75,
+    "mult": 1.0573,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2015-07-16",
+    "prev_close": 20.5,
+    "close": 18.85,
+    "mult": 1.0933,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2016-07-14",
+    "prev_close": 25.25,
+    "close": 23.6,
+    "mult": 1.0587,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2017-07-13",
+    "prev_close": 27.0,
+    "close": 24.6,
+    "mult": 1.0568,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2018-07-12",
+    "prev_close": 24.3,
+    "close": 23.1,
+    "mult": 1.0728,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2019-07-11",
+    "prev_close": 25.5,
+    "close": 23.65,
+    "mult": 1.0625,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2020-07-15",
+    "prev_close": 27.7,
+    "close": 25.6,
+    "mult": 1.0492,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2021-07-15",
+    "prev_close": 27.15,
+    "close": 24.05,
+    "mult": 1.1408,
+    "how": "mkt_gap_corporate_action"
+   },
+   {
+    "date": "2022-07-14",
+    "prev_close": 24.0,
+    "close": 22.7,
+    "mult": 1.0318,
+    "how": "yield"
+   },
+   {
+    "date": "2023-07-12",
+    "prev_close": 47.25,
+    "close": 47.6,
+    "mult": 1.016,
+    "how": "yield"
+   },
+   {
+    "date": "2024-07-11",
+    "prev_close": 57.0,
+    "close": 58.1,
+    "mult": 1.0131,
+    "how": "yield"
+   },
+   {
+    "date": "2025-07-10",
+    "prev_close": 44.0,
+    "close": 41.7,
+    "mult": 1.0208,
+    "how": "yield"
+   }
+  ]
+ },
+ "2308.TW": {
+  "status": "ok",
+  "start": "2000-01-04",
+  "end": "2025-12-31",
+  "rows": 6427,
+  "sources": {
+   "twse_raw_adj": 6427
+  },
+  "tw_ex_dates_detected": 26,
+  "tw_mult_sources": {
+   "modern": 0,
+   "yahoo_step": 20,
+   "yield": 5,
+   "mkt_gap": 1
+  },
+  "tw_ex_dates": [
+   {
+    "date": "2012-07-19",
+    "prev_close": 92.3,
+    "close": 92.2,
+    "mult": 1.0393,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2013-07-08",
+    "prev_close": 148.0,
+    "close": 144.0,
+    "mult": 1.0371,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2014-07-03",
+    "prev_close": 214.0,
+    "close": 208.5,
+    "mult": 1.0279,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2015-11-16",
+    "prev_close": 159.5,
+    "close": 160.0,
+    "mult": 1.003,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2016-07-07",
+    "prev_close": 158.0,
+    "close": 159.0,
+    "mult": 1.0327,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2017-07-03",
+    "prev_close": 166.5,
+    "close": 163.0,
+    "mult": 1.031,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2018-07-02",
+    "prev_close": 109.5,
+    "close": 104.5,
+    "mult": 1.0478,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2019-07-02",
+    "prev_close": 160.5,
+    "close": 155.0,
+    "mult": 1.0322,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2020-07-02",
+    "prev_close": 169.5,
+    "close": 165.5,
+    "mult": 1.0304,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2021-07-20",
+    "prev_close": 308.0,
+    "close": 300.0,
+    "mult": 1.0186,
+    "how": "yield"
+   },
+   {
+    "date": "2022-06-29",
+    "prev_close": 236.0,
+    "close": 227.5,
+    "mult": 1.0122,
+    "how": "yield"
+   },
+   {
+    "date": "2023-06-30",
+    "prev_close": 349.5,
+    "close": 344.5,
+    "mult": 1.0145,
+    "how": "yield"
+   },
+   {
+    "date": "2024-06-18",
+    "prev_close": 352.0,
+    "close": 348.0,
+    "mult": 1.0093,
+    "how": "yield"
+   },
+   {
+    "date": "2025-06-17",
+    "prev_close": 400.5,
+    "close": 395.0,
+    "mult": 1.0089,
+    "how": "yield"
+   }
+  ]
+ },
+ "3017.TW": {
+  "status": "ok",
+  "start": "2002-09-27",
+  "end": "2025-12-31",
+  "rows": 5731,
+  "sources": {
+   "twse_raw_adj": 5731
+  },
+  "tw_ex_dates_detected": 23,
+  "tw_mult_sources": {
+   "modern": 0,
+   "yahoo_step": 17,
+   "yield": 6,
+   "mkt_gap": 0
+  },
+  "tw_ex_dates": [
+   {
+    "date": "2013-09-24",
+    "prev_close": 16.6,
+    "close": 16.5,
+    "mult": 1.0122,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2014-09-05",
+    "prev_close": 23.75,
+    "close": 23.7,
+    "mult": 1.0171,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2015-09-17",
+    "prev_close": 23.95,
+    "close": 23.75,
+    "mult": 1.0436,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2016-09-26",
+    "prev_close": 25.45,
+    "close": 24.6,
+    "mult": 1.0409,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2017-09-28",
+    "prev_close": 27.15,
+    "close": 26.1,
+    "mult": 1.0304,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2018-09-27",
+    "prev_close": 27.95,
+    "close": 26.75,
+    "mult": 1.0488,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2019-09-26",
+    "prev_close": 40.55,
+    "close": 39.4,
+    "mult": 1.0253,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2020-09-23",
+    "prev_close": 68.7,
+    "close": 71.0,
+    "mult": 1.0193,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2021-08-24",
+    "prev_close": 72.4,
+    "close": 69.8,
+    "mult": 1.0205,
+    "how": "yield"
+   },
+   {
+    "date": "2022-08-25",
+    "prev_close": 117.0,
+    "close": 112.0,
+    "mult": 1.0196,
+    "how": "yield"
+   },
+   {
+    "date": "2023-02-17",
+    "prev_close": 117.5,
+    "close": 114.5,
+    "mult": 1.0192,
+    "how": "yield"
+   },
+   {
+    "date": "2023-08-25",
+    "prev_close": 387.0,
+    "close": 354.0,
+    "mult": 1.0047,
+    "how": "yield"
+   },
+   {
+    "date": "2024-08-15",
+    "prev_close": 597.0,
+    "close": 594.0,
+    "mult": 1.0059,
+    "how": "yield"
+   },
+   {
+    "date": "2025-08-19",
+    "prev_close": 1145.0,
+    "close": 1070.0,
+    "mult": 1.0047,
+    "how": "yield"
+   }
+  ]
+ },
+ "2383.TW": {
+  "status": "ok",
+  "start": "2000-01-04",
+  "end": "2025-12-31",
+  "rows": 6427,
+  "sources": {
+   "twse_raw_adj": 6427
+  },
+  "tw_ex_dates_detected": 22,
+  "tw_mult_sources": {
+   "modern": 0,
+   "yahoo_step": 17,
+   "yield": 5,
+   "mkt_gap": 0
+  },
+  "tw_ex_dates": [
+   {
+    "date": "2012-08-06",
+    "prev_close": 27.6,
+    "close": 26.25,
+    "mult": 1.0697,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2013-08-29",
+    "prev_close": 26.5,
+    "close": 24.8,
+    "mult": 1.0726,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2014-08-28",
+    "prev_close": 35.4,
+    "close": 34.25,
+    "mult": 1.0535,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2015-08-27",
+    "prev_close": 71.7,
+    "close": 68.8,
+    "mult": 1.0361,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2016-08-25",
+    "prev_close": 83.3,
+    "close": 80.5,
+    "mult": 1.0562,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2017-08-10",
+    "prev_close": 143.5,
+    "close": 133.0,
+    "mult": 1.0338,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2018-08-30",
+    "prev_close": 94.4,
+    "close": 88.4,
+    "mult": 1.0536,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2019-08-29",
+    "prev_close": 135.5,
+    "close": 136.5,
+    "mult": 1.0289,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2020-09-07",
+    "prev_close": 169.0,
+    "close": 158.5,
+    "mult": 1.0353,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2021-08-26",
+    "prev_close": 234.0,
+    "close": 232.0,
+    "mult": 1.0153,
+    "how": "yield"
+   },
+   {
+    "date": "2022-08-25",
+    "prev_close": 173.0,
+    "close": 164.5,
+    "mult": 1.0314,
+    "how": "yield"
+   },
+   {
+    "date": "2023-08-24",
+    "prev_close": 442.0,
+    "close": 445.0,
+    "mult": 1.0095,
+    "how": "yield"
+   },
+   {
+    "date": "2024-08-29",
+    "prev_close": 451.5,
+    "close": 440.0,
+    "mult": 1.0232,
+    "how": "yield"
+   },
+   {
+    "date": "2025-08-28",
+    "prev_close": 1280.0,
+    "close": 1250.0,
+    "mult": 1.0067,
+    "how": "yield"
+   }
+  ]
+ },
+ "3037.TW": {
+  "status": "ok",
+  "start": "2002-08-26",
+  "end": "2025-12-31",
+  "rows": 5753,
+  "sources": {
+   "twse_raw_adj": 5753
+  },
+  "tw_ex_dates_detected": 24,
+  "tw_mult_sources": {
+   "modern": 0,
+   "yahoo_step": 8,
+   "yield": 7,
+   "mkt_gap": 0
+  },
+  "tw_ex_dates": [
+   {
+    "date": "2014-07-24",
+    "prev_close": 28.45,
+    "close": 27.85,
+    "mult": 1.0216,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2015-07-28",
+    "prev_close": 15.5,
+    "close": 15.4,
+    "mult": 1.0337,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2016-07-28",
+    "prev_close": 14.05,
+    "close": 13.6,
+    "mult": 1.009,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2017-08-08",
+    "prev_close": 19.3,
+    "close": 18.6,
+    "mult": 1.0157,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2018-07-30",
+    "prev_close": 16.7,
+    "close": 16.4,
+    "mult": 1.0308,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2019-07-29",
+    "prev_close": 41.15,
+    "close": 40.2,
+    "mult": 1.0198,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2020-07-15",
+    "prev_close": 52.2,
+    "close": 51.8,
+    "mult": 1.0214,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2021-08-27",
+    "prev_close": 139.5,
+    "close": 144.5,
+    "mult": 1.0097,
+    "how": "yield"
+   },
+   {
+    "date": "2022-02-23",
+    "prev_close": 237.5,
+    "close": 240.5,
+    "mult": 1.0029,
+    "how": "yield"
+   },
+   {
+    "date": "2022-07-15",
+    "prev_close": 153.5,
+    "close": 156.5,
+    "mult": 1.0073,
+    "how": "yield"
+   },
+   {
+    "date": "2023-07-13",
+    "prev_close": 171.0,
+    "close": 175.5,
+    "mult": 1.0233,
+    "how": "yield"
+   },
+   {
+    "date": "2024-07-11",
+    "prev_close": 175.5,
+    "close": 189.5,
+    "mult": 1.008,
+    "how": "yield"
+   },
+   {
+    "date": "2025-07-10",
+    "prev_close": 122.5,
+    "close": 125.5,
+    "mult": 1.006,
+    "how": "yield"
+   },
+   {
+    "date": "2025-11-14",
+    "prev_close": 178.5,
+    "close": 171.5,
+    "mult": 1.0044,
+    "how": "yield"
+   }
+  ]
+ },
+ "2345.TW": {
+  "status": "ok",
+  "start": "2000-01-04",
+  "end": "2025-12-31",
+  "rows": 6427,
+  "sources": {
+   "twse_raw_adj": 6427
+  },
+  "tw_ex_dates_detected": 21,
+  "tw_mult_sources": {
+   "modern": 0,
+   "yahoo_step": 16,
+   "yield": 5,
+   "mkt_gap": 0
+  },
+  "tw_ex_dates": [
+   {
+    "date": "2012-07-31",
+    "prev_close": 16.95,
+    "close": 16.05,
+    "mult": 1.0953,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2013-07-18",
+    "prev_close": 18.9,
+    "close": 17.5,
+    "mult": 1.0858,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2014-07-03",
+    "prev_close": 19.4,
+    "close": 18.65,
+    "mult": 1.0495,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2015-07-09",
+    "prev_close": 14.3,
+    "close": 13.3,
+    "mult": 1.0813,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2016-07-12",
+    "prev_close": 47.6,
+    "close": 45.6,
+    "mult": 1.043,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2017-07-11",
+    "prev_close": 75.8,
+    "close": 73.1,
+    "mult": 1.0426,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2018-07-11",
+    "prev_close": 97.2,
+    "close": 92.5,
+    "mult": 1.0444,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2019-07-11",
+    "prev_close": 133.0,
+    "close": 129.0,
+    "mult": 1.031,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2020-07-23",
+    "prev_close": 247.0,
+    "close": 240.5,
+    "mult": 1.0257,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2021-08-09",
+    "prev_close": 332.5,
+    "close": 325.5,
+    "mult": 1.0204,
+    "how": "yield"
+   },
+   {
+    "date": "2022-08-04",
+    "prev_close": 253.0,
+    "close": 253.5,
+    "mult": 1.012,
+    "how": "yield"
+   },
+   {
+    "date": "2023-08-02",
+    "prev_close": 394.5,
+    "close": 366.0,
+    "mult": 1.0104,
+    "how": "yield"
+   },
+   {
+    "date": "2024-07-31",
+    "prev_close": 510.0,
+    "close": 507.0,
+    "mult": 1.0099,
+    "how": "yield"
+   },
+   {
+    "date": "2025-07-30",
+    "prev_close": 852.0,
+    "close": 843.0,
+    "mult": 1.0065,
+    "how": "yield"
+   }
+  ]
+ },
+ "2357.TW": {
+  "status": "ok",
+  "start": "2000-01-04",
+  "end": "2025-12-31",
+  "rows": 6400,
+  "sources": {
+   "twse_raw_adj": 6400
+  },
+  "tw_ex_dates_detected": 26,
+  "tw_mult_sources": {
+   "modern": 0,
+   "yahoo_step": 20,
+   "yield": 4,
+   "mkt_gap": 1
+  },
+  "tw_ex_dates": [
+   {
+    "date": "2012-08-08",
+    "prev_close": 278.5,
+    "close": 274.0,
+    "mult": 1.0549,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2013-08-08",
+    "prev_close": 246.5,
+    "close": 225.0,
+    "mult": 1.0843,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2014-08-11",
+    "prev_close": 308.5,
+    "close": 292.5,
+    "mult": 1.0675,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2015-08-10",
+    "prev_close": 271.0,
+    "close": 255.0,
+    "mult": 1.0669,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2016-08-05",
+    "prev_close": 282.5,
+    "close": 270.0,
+    "mult": 1.0561,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2017-08-08",
+    "prev_close": 280.5,
+    "close": 263.0,
+    "mult": 1.0645,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2018-07-03",
+    "prev_close": 273.0,
+    "close": 260.0,
+    "mult": 1.0581,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2019-07-08",
+    "prev_close": 232.0,
+    "close": 218.0,
+    "mult": 1.0691,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2020-06-24",
+    "prev_close": 246.5,
+    "close": 223.5,
+    "mult": 1.0602,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2021-08-02",
+    "prev_close": 351.0,
+    "close": 319.5,
+    "mult": 1.0886,
+    "how": "yield"
+   },
+   {
+    "date": "2022-07-29",
+    "prev_close": 319.0,
+    "close": 281.5,
+    "mult": 1.1414,
+    "how": "mkt_gap_corporate_action"
+   },
+   {
+    "date": "2023-07-04",
+    "prev_close": 312.5,
+    "close": 293.5,
+    "mult": 1.0262,
+    "how": "yield"
+   },
+   {
+    "date": "2024-07-03",
+    "prev_close": 490.0,
+    "close": 479.5,
+    "mult": 1.0181,
+    "how": "yield"
+   },
+   {
+    "date": "2025-06-26",
+    "prev_close": 700.0,
+    "close": 641.0,
+    "mult": 1.0272,
+    "how": "yield"
+   }
+  ]
+ },
+ "2376.TW": {
+  "status": "ok",
+  "start": "2000-01-04",
+  "end": "2025-12-31",
+  "rows": 6427,
+  "sources": {
+   "twse_raw_adj": 6427
+  },
+  "tw_ex_dates_detected": 26,
+  "tw_mult_sources": {
+   "modern": 0,
+   "yahoo_step": 21,
+   "yield": 3,
+   "mkt_gap": 2
+  },
+  "tw_ex_dates": [
+   {
+    "date": "2012-08-07",
+    "prev_close": 26.65,
+    "close": 24.65,
+    "mult": 1.0811,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2013-07-10",
+    "prev_close": 28.5,
+    "close": 26.5,
+    "mult": 1.0755,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2014-07-14",
+    "prev_close": 47.0,
+    "close": 44.5,
+    "mult": 1.0682,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2015-07-20",
+    "prev_close": 29.6,
+    "close": 27.05,
+    "mult": 1.1004,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2016-07-11",
+    "prev_close": 39.2,
+    "close": 37.6,
+    "mult": 1.0681,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2017-07-06",
+    "prev_close": 41.0,
+    "close": 38.3,
+    "mult": 1.0406,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2018-07-12",
+    "prev_close": 62.6,
+    "close": 58.2,
+    "mult": 1.0683,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2019-07-15",
+    "prev_close": 53.5,
+    "close": 49.9,
+    "mult": 1.0594,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2020-07-15",
+    "prev_close": 73.7,
+    "close": 72.0,
+    "mult": 1.0308,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2021-07-08",
+    "prev_close": 113.0,
+    "close": 105.5,
+    "mult": 1.0243,
+    "how": "yield"
+   },
+   {
+    "date": "2022-08-04",
+    "prev_close": 92.3,
+    "close": 79.6,
+    "mult": 1.1537,
+    "how": "mkt_gap_corporate_action"
+   },
+   {
+    "date": "2023-08-04",
+    "prev_close": 297.0,
+    "close": 306.0,
+    "mult": 1.0103,
+    "how": "yield"
+   },
+   {
+    "date": "2024-08-05",
+    "prev_close": 262.5,
+    "close": 231.0,
+    "mult": 1.0415,
+    "how": "mkt_gap_corporate_action"
+   },
+   {
+    "date": "2025-07-30",
+    "prev_close": 282.5,
+    "close": 268.5,
+    "mult": 1.019,
+    "how": "yield"
+   }
+  ]
+ },
+ "2395.TW": {
+  "status": "ok",
+  "start": "2000-01-04",
+  "end": "2025-12-31",
+  "rows": 6427,
+  "sources": {
+   "twse_raw_adj": 6427
+  },
+  "tw_ex_dates_detected": 27,
+  "tw_mult_sources": {
+   "modern": 0,
+   "yahoo_step": 22,
+   "yield": 5,
+   "mkt_gap": 0
+  },
+  "tw_ex_dates": [
+   {
+    "date": "2013-07-15",
+    "prev_close": 157.0,
+    "close": 150.5,
+    "mult": 1.0321,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2014-07-16",
+    "prev_close": 248.0,
+    "close": 242.5,
+    "mult": 1.0217,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2014-09-01",
+    "prev_close": 280.5,
+    "close": 251.5,
+    "mult": 1.0994,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2015-06-23",
+    "prev_close": 212.5,
+    "close": 209.0,
+    "mult": 1.029,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2016-06-30",
+    "prev_close": 238.5,
+    "close": 244.5,
+    "mult": 1.0258,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2017-06-30",
+    "prev_close": 243.0,
+    "close": 215.5,
+    "mult": 1.1292,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2018-07-09",
+    "prev_close": 193.0,
+    "close": 190.0,
+    "mult": 1.0354,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2019-07-09",
+    "prev_close": 264.0,
+    "close": 257.0,
+    "mult": 1.0264,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2020-07-31",
+    "prev_close": 345.5,
+    "close": 309.0,
+    "mult": 1.1252,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2021-07-08",
+    "prev_close": 347.0,
+    "close": 344.5,
+    "mult": 1.0104,
+    "how": "yield"
+   },
+   {
+    "date": "2022-07-07",
+    "prev_close": 328.5,
+    "close": 327.5,
+    "mult": 1.0124,
+    "how": "yield"
+   },
+   {
+    "date": "2023-07-04",
+    "prev_close": 430.0,
+    "close": 387.5,
+    "mult": 1.0144,
+    "how": "yield"
+   },
+   {
+    "date": "2024-07-18",
+    "prev_close": 374.5,
+    "close": 370.5,
+    "mult": 1.0262,
+    "how": "yield"
+   },
+   {
+    "date": "2025-07-17",
+    "prev_close": 337.5,
+    "close": 331.0,
+    "mult": 1.0128,
+    "how": "yield"
+   }
+  ]
+ },
+ "2301.TW": {
+  "status": "ok",
+  "start": "2000-01-04",
+  "end": "2025-12-31",
+  "rows": 6395,
+  "sources": {
+   "twse_raw_adj": 6395
+  },
+  "tw_ex_dates_detected": 32,
+  "tw_mult_sources": {
+   "modern": 0,
+   "yahoo_step": 22,
+   "yield": 10,
+   "mkt_gap": 0
+  },
+  "tw_ex_dates": [
+   {
+    "date": "2017-08-10",
+    "prev_close": 48.3,
+    "close": 44.1,
+    "mult": 1.0643,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2018-08-10",
+    "prev_close": 39.85,
+    "close": 37.2,
+    "mult": 1.0791,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2019-07-22",
+    "prev_close": 47.1,
+    "close": 43.0,
+    "mult": 1.0661,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2020-06-23",
+    "prev_close": 53.1,
+    "close": 47.4,
+    "mult": 1.0641,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2021-06-29",
+    "prev_close": 63.7,
+    "close": 57.4,
+    "mult": 1.0629,
+    "how": "yield"
+   },
+   {
+    "date": "2021-08-16",
+    "prev_close": 61.3,
+    "close": 58.6,
+    "mult": 1.0299,
+    "how": "yield"
+   },
+   {
+    "date": "2022-03-18",
+    "prev_close": 71.0,
+    "close": 65.5,
+    "mult": 1.0176,
+    "how": "yield"
+   },
+   {
+    "date": "2022-08-16",
+    "prev_close": 68.3,
+    "close": 67.2,
+    "mult": 1.0228,
+    "how": "yield"
+   },
+   {
+    "date": "2023-03-16",
+    "prev_close": 74.1,
+    "close": 70.0,
+    "mult": 1.0219,
+    "how": "yield"
+   },
+   {
+    "date": "2023-08-16",
+    "prev_close": 143.5,
+    "close": 147.0,
+    "mult": 1.0103,
+    "how": "yield"
+   },
+   {
+    "date": "2024-03-27",
+    "prev_close": 120.5,
+    "close": 112.5,
+    "mult": 1.0205,
+    "how": "yield"
+   },
+   {
+    "date": "2024-08-19",
+    "prev_close": 108.0,
+    "close": 109.0,
+    "mult": 1.014,
+    "how": "yield"
+   },
+   {
+    "date": "2025-03-20",
+    "prev_close": 105.5,
+    "close": 102.5,
+    "mult": 1.0149,
+    "how": "yield"
+   },
+   {
+    "date": "2025-08-19",
+    "prev_close": 134.0,
+    "close": 127.5,
+    "mult": 1.0119,
+    "how": "yield"
+   }
+  ]
+ },
+ "2412.TW": {
+  "status": "ok",
+  "start": "2000-10-27",
+  "end": "2025-12-31",
+  "rows": 6152,
+  "sources": {
+   "twse_raw_adj": 6152
+  },
+  "tw_ex_dates_detected": 29,
+  "tw_mult_sources": {
+   "modern": 0,
+   "yahoo_step": 24,
+   "yield": 5,
+   "mkt_gap": 0
+  },
+  "tw_ex_dates": [
+   {
+    "date": "2012-07-17",
+    "prev_close": 93.8,
+    "close": 89.5,
+    "mult": 1.0618,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2013-07-17",
+    "prev_close": 99.8,
+    "close": 95.4,
+    "mult": 1.0486,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2014-07-17",
+    "prev_close": 95.6,
+    "close": 92.0,
+    "mult": 1.0497,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2015-07-16",
+    "prev_close": 98.2,
+    "close": 94.9,
+    "mult": 1.052,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2016-07-21",
+    "prev_close": 123.0,
+    "close": 118.5,
+    "mult": 1.0467,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2017-07-21",
+    "prev_close": 109.5,
+    "close": 103.5,
+    "mult": 1.0473,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2018-07-23",
+    "prev_close": 111.5,
+    "close": 106.5,
+    "mult": 1.0449,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2019-07-25",
+    "prev_close": 112.0,
+    "close": 107.0,
+    "mult": 1.0417,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2020-07-02",
+    "prev_close": 116.5,
+    "close": 114.0,
+    "mult": 1.0376,
+    "how": "yahoo_step"
+   },
+   {
+    "date": "2021-08-25",
+    "prev_close": 115.5,
+    "close": 110.0,
+    "mult": 1.0408,
+    "how": "yield"
+   },
+   {
+    "date": "2022-06-30",
+    "prev_close": 130.5,
+    "close": 122.0,
+    "mult": 1.0193,
+    "how": "yield"
+   },
+   {
+    "date": "2023-06-29",
+    "prev_close": 121.5,
+    "close": 117.5,
+    "mult": 1.0204,
+    "how": "yield"
+   },
+   {
+    "date": "2024-07-04",
+    "prev_close": 125.5,
+    "close": 118.5,
+    "mult": 1.0419,
+    "how": "yield"
+   },
+   {
+    "date": "2025-07-03",
+    "prev_close": 134.5,
+    "close": 131.0,
+    "mult": 1.0195,
+    "how": "yield"
+   }
+  ]
+ },
+ "QQQ": {
+  "status": "ok",
+  "start": "1999-03-10",
+  "end": "2026-11-06",
+  "rows": 6960,
+  "sources": {
+   "plain_backtest": 6893,
+   "yennanliu": 67
+  },
+  "plain_backtest~yennanliu": {
+   "overlap_days": 2447,
+   "ret_corr": 0.9999,
+   "mean_abs_diff_bp": 0.28
+  },
+  "yennanliu~culolom_close": {
+   "overlap_days": 2514,
+   "ret_corr": 0.9999,
+   "mean_abs_diff_bp": 0.3
+  }
+ },
+ "SMH": {
+  "status": "ok",
+  "start": "2013-04-08",
+  "end": "2026-05-26",
+  "rows": 3304,
+  "sources": {
+   "azataiot": 2519,
+   "kronos": 754,
+   "etspotter": 31
+  },
+  "azataiot~kronos": {
+   "overlap_days": 2080,
+   "ret_corr": 1.0,
+   "mean_abs_diff_bp": 0.0
+  },
+  "kronos~etspotter": {
+   "overlap_days": 469,
+   "ret_corr": 1.0,
+   "mean_abs_diff_bp": 0.0
+  }
+ },
+ "SOXX": {
+  "status": "ok",
+  "start": "2013-04-08",
+  "end": "2026-11-06",
+  "rows": 3419,
+  "sources": {
+   "azataiot": 2519,
+   "yennanliu": 900
+  },
+  "azataiot~yennanliu": {
+   "overlap_days": 1614,
+   "ret_corr": 0.9998,
+   "mean_abs_diff_bp": 1.73
+  },
+  "yennanliu~crowding": {
+   "overlap_days": 1131,
+   "ret_corr": 0.7557,
+   "mean_abs_diff_bp": 6.62
+  }
+ },
+ "XLK": {
+  "status": "ok",
+  "start": "2003-09-30",
+  "end": "2026-05-26",
+  "rows": 5215,
+  "sources": {
+   "ramki": 4716,
+   "etspotter": 499
+  }
+ },
+ "VGT": {
+  "status": "missing"
+ },
+ "SPY": {
+  "status": "ok",
+  "start": "1993-01-29",
+  "end": "2026-11-06",
+  "rows": 8502,
+  "sources": {
+   "plain_backtest": 8435,
+   "culolom_close": 67
+  },
+  "plain_backtest~culolom_close": {
+   "overlap_days": 8435,
+   "ret_corr": 0.9979,
+   "mean_abs_diff_bp": 1.5
+  }
+ },
+ "AAPL": {
+  "status": "ok",
+  "start": "1990-01-02",
+  "end": "2026-08-04",
+  "rows": 9214,
+  "sources": {
+   "plain_backtest": 9214
+  }
+ },
+ "MSFT": {
+  "status": "ok",
+  "start": "1990-01-02",
+  "end": "2026-11-06",
+  "rows": 9281,
+  "sources": {
+   "plain_backtest": 9214,
+   "yennanliu": 67
+  },
+  "plain_backtest~yennanliu": {
+   "overlap_days": 2447,
+   "ret_corr": 0.9997,
+   "mean_abs_diff_bp": 0.48
+  }
+ },
+ "NVDA": {
+  "status": "ok",
+  "start": "1999-01-22",
+  "end": "2026-11-06",
+  "rows": 6992,
+  "sources": {
+   "plain_backtest": 6925,
+   "yennanliu": 67
+  },
+  "plain_backtest~yennanliu": {
+   "overlap_days": 2447,
+   "ret_corr": 0.9998,
+   "mean_abs_diff_bp": 3.51
+  }
+ },
+ "GOOGL": {
+  "status": "ok",
+  "start": "2004-08-19",
+  "end": "2026-11-06",
+  "rows": 5591,
+  "sources": {
+   "plain_backtest": 5524,
+   "yennanliu_goog": 67
+  },
+  "plain_backtest~yennanliu_goog": {
+   "overlap_days": 2447,
+   "ret_corr": 0.9955,
+   "mean_abs_diff_bp": 11.81
+  }
+ },
+ "AMZN": {
+  "status": "ok",
+  "start": "1997-05-15",
+  "end": "2026-11-06",
+  "rows": 7417,
+  "sources": {
+   "plain_backtest": 7350,
+   "yennanliu": 67
+  },
+  "plain_backtest~yennanliu": {
+   "overlap_days": 2447,
+   "ret_corr": 1.0,
+   "mean_abs_diff_bp": 0.22
+  }
+ },
+ "META": {
+  "status": "ok",
+  "start": "2012-05-18",
+  "end": "2026-11-06",
+  "rows": 3639,
+  "sources": {
+   "plain_backtest": 3572,
+   "yennanliu": 67
+  },
+  "plain_backtest~yennanliu": {
+   "overlap_days": 2447,
+   "ret_corr": 1.0,
+   "mean_abs_diff_bp": 0.04
+  }
+ },
+ "TSLA": {
+  "status": "ok",
+  "start": "2010-06-29",
+  "end": "2026-11-06",
+  "rows": 4116,
+  "sources": {
+   "plain_backtest": 4049,
+   "yennanliu": 67
+  },
+  "plain_backtest~yennanliu": {
+   "overlap_days": 2447,
+   "ret_corr": 1.0,
+   "mean_abs_diff_bp": 0.63
+  }
+ },
+ "AVGO": {
+  "status": "ok",
+  "start": "2009-08-06",
+  "end": "2026-11-06",
+  "rows": 4341,
+  "sources": {
+   "plain_backtest": 4274,
+   "yennanliu": 67
+  },
+  "plain_backtest~yennanliu": {
+   "overlap_days": 2447,
+   "ret_corr": 0.9994,
+   "mean_abs_diff_bp": 1.76
+  }
+ },
+ "TSM": {
+  "status": "ok",
+  "start": "2013-04-08",
+  "end": "2026-11-06",
+  "rows": 3419,
+  "sources": {
+   "azataiot": 2519,
+   "yennanliu": 900
+  },
+  "azataiot~yennanliu": {
+   "overlap_days": 1614,
+   "ret_corr": 0.9972,
+   "mean_abs_diff_bp": 1.13
+  }
+ },
+ "ORCL": {
+  "status": "ok",
+  "start": "1990-01-02",
+  "end": "2026-11-06",
+  "rows": 9281,
+  "sources": {
+   "plain_backtest": 9214,
+   "yennanliu": 67
+  },
+  "plain_backtest~yennanliu": {
+   "overlap_days": 2447,
+   "ret_corr": 0.9998,
+   "mean_abs_diff_bp": 0.6
+  }
+ },
+ "NFLX": {
+  "status": "ok",
+  "start": "2002-05-23",
+  "end": "2026-08-04",
+  "rows": 6088,
+  "sources": {
+   "plain_backtest": 6088
+  }
+ },
+ "AMD": {
+  "status": "ok",
+  "start": "1990-01-02",
+  "end": "2026-11-06",
+  "rows": 9281,
+  "sources": {
+   "plain_backtest": 9214,
+   "yennanliu": 67
+  },
+  "plain_backtest~yennanliu": {
+   "overlap_days": 2447,
+   "ret_corr": 1.0,
+   "mean_abs_diff_bp": 0.03
+  }
+ },
+ "ASML": {
+  "status": "ok",
+  "start": "1995-03-15",
+  "end": "2026-08-04",
+  "rows": 7899,
+  "sources": {
+   "ndx100": 7899
+  }
+ },
+ "AMAT": {
+  "status": "ok",
+  "start": "1990-01-02",
+  "end": "2026-08-04",
+  "rows": 9214,
+  "sources": {
+   "plain_backtest": 9214
+  }
+ },
+ "LRCX": {
+  "status": "ok",
+  "start": "1990-01-02",
+  "end": "2026-08-04",
+  "rows": 9213,
+  "sources": {
+   "plain_backtest": 9213
+  }
+ },
+ "KLAC": {
+  "status": "ok",
+  "start": "1990-01-02",
+  "end": "2026-08-04",
+  "rows": 9214,
+  "sources": {
+   "plain_backtest": 9214
+  }
+ },
+ "QCOM": {
+  "status": "ok",
+  "start": "1991-12-13",
+  "end": "2026-08-04",
+  "rows": 8720,
+  "sources": {
+   "plain_backtest": 8720
+  }
+ },
+ "MU": {
+  "status": "ok",
+  "start": "1990-01-02",
+  "end": "2026-11-06",
+  "rows": 9281,
+  "sources": {
+   "plain_backtest": 9214,
+   "yennanliu": 67
+  },
+  "plain_backtest~yennanliu": {
+   "overlap_days": 2447,
+   "ret_corr": 1.0,
+   "mean_abs_diff_bp": 0.11
+  }
+ },
+ "INTC": {
+  "status": "ok",
+  "start": "1990-01-02",
+  "end": "2026-11-06",
+  "rows": 9281,
+  "sources": {
+   "plain_backtest": 9214,
+   "yennanliu": 67
+  },
+  "plain_backtest~yennanliu": {
+   "overlap_days": 2447,
+   "ret_corr": 0.9996,
+   "mean_abs_diff_bp": 0.84
+  }
+ },
+ "TXN": {
+  "status": "ok",
+  "start": "1990-01-02",
+  "end": "2026-08-04",
+  "rows": 9214,
+  "sources": {
+   "plain_backtest": 9214
+  }
+ },
+ "ARM": {
+  "status": "ok",
+  "start": "2023-09-14",
+  "end": "2026-08-04",
+  "rows": 724,
+  "sources": {
+   "ndx100": 724
+  }
+ },
+ "MRVL": {
+  "status": "ok",
+  "start": "2000-06-27",
+  "end": "2026-11-06",
+  "rows": 6631,
+  "sources": {
+   "plain_backtest": 6564,
+   "yennanliu": 67
+  },
+  "plain_backtest~yennanliu": {
+   "overlap_days": 2447,
+   "ret_corr": 1.0,
+   "mean_abs_diff_bp": 0.31
+  }
+ },
+ "CRM": {
+  "status": "ok",
+  "start": "2004-06-23",
+  "end": "2026-08-04",
+  "rows": 5564,
+  "sources": {
+   "plain_backtest": 5564
+  }
+ },
+ "ADBE": {
+  "status": "ok",
+  "start": "1990-01-02",
+  "end": "2026-08-04",
+  "rows": 9214,
+  "sources": {
+   "plain_backtest": 9214
+  }
+ },
+ "NOW": {
+  "status": "ok",
+  "start": "2012-06-29",
+  "end": "2026-08-04",
+  "rows": 3543,
+  "sources": {
+   "plain_backtest": 3543
+  }
+ },
+ "PLTR": {
+  "status": "ok",
+  "start": "2020-09-30",
+  "end": "2026-11-06",
+  "rows": 1534,
+  "sources": {
+   "plain_backtest": 1467,
+   "yennanliu": 67
+  },
+  "plain_backtest~yennanliu": {
+   "overlap_days": 1467,
+   "ret_corr": 1.0,
+   "mean_abs_diff_bp": 0.0
+  }
+ },
+ "SNOW": {
+  "status": "missing"
+ },
+ "CRWD": {
+  "status": "ok",
+  "start": "2019-06-12",
+  "end": "2026-08-04",
+  "rows": 1796,
+  "sources": {
+   "plain_backtest": 1796
+  }
+ },
+ "PANW": {
+  "status": "ok",
+  "start": "2012-07-20",
+  "end": "2026-08-04",
+  "rows": 3529,
+  "sources": {
+   "plain_backtest": 3529
+  }
+ },
+ "UBER": {
+  "status": "ok",
+  "start": "2019-05-10",
+  "end": "2026-11-06",
+  "rows": 1885,
+  "sources": {
+   "plain_backtest": 1818,
+   "yennanliu": 67
+  },
+  "plain_backtest~yennanliu": {
+   "overlap_days": 1818,
+   "ret_corr": 1.0,
+   "mean_abs_diff_bp": 0.0
+  }
+ },
+ "SHOP": {
+  "status": "ok",
+  "start": "2015-05-21",
+  "end": "2026-08-04",
+  "rows": 2817,
+  "sources": {
+   "ndx100": 2817
+  }
+ },
+ "^TWII": {
+  "status": "ok",
+  "start": "1997-07-02",
+  "end": "2026-11-06",
+  "rows": 7268,
+  "twse_official~culolom_close": {
+   "overlap_days": 6373,
+   "ret_corr": 0.9998,
+   "mean_abs_diff_bp": 0.04
+  }
+ }
+}

@@ -1,0 +1,198 @@
+{
+ "IS": {
+  "equal": {
+   "invested": 156.0,
+   "final": 456.28820365592924,
+   "multiple": 2.924924382409803,
+   "placebo_pct": 0.55
+  },
+  "cheap_third_channel": {
+   "invested": 156.0,
+   "final": 422.6102006448832,
+   "multiple": 2.7090397477236103,
+   "placebo_pct": 0.25
+  },
+  "rich_third_channel": {
+   "invested": 156.0,
+   "final": 578.4059620762052,
+   "multiple": 3.7077305261295206,
+   "placebo_pct": 1.0
+  },
+  "cheap_third_dev": {
+   "invested": 156.0,
+   "final": 398.01387887089857,
+   "multiple": 2.551371018403196,
+   "placebo_pct": 0.07
+  },
+  "rich_third_dev": {
+   "invested": 156.0,
+   "final": 459.796719749588,
+   "multiple": 2.9474148701896667,
+   "placebo_pct": 0.6
+  },
+  "mom_top_third": {
+   "invested": 156.0,
+   "final": 510.7870120490268,
+   "multiple": 3.2742757182629925,
+   "placebo_pct": 0.9
+  },
+  "mom_bottom_third": {
+   "invested": 156.0,
+   "final": 494.997803922359,
+   "multiple": 3.1730628456561476,
+   "placebo_pct": 0.83
+  },
+  "random_third": {
+   "multiple_median": 2.8948029959565433,
+   "p5": 2.537593227981217,
+   "p95": 3.3756994132389746
+  }
+ },
+ "VAL": {
+  "equal": {
+   "invested": 72.0,
+   "final": 148.22502633835944,
+   "multiple": 2.0586809213661033,
+   "placebo_pct": 0.44
+  },
+  "cheap_third_channel": {
+   "invested": 72.0,
+   "final": 138.9883312138501,
+   "multiple": 1.9303934890812515,
+   "placebo_pct": 0.02
+  },
+  "rich_third_channel": {
+   "invested": 72.0,
+   "final": 150.45304741010082,
+   "multiple": 2.0896256584736226,
+   "placebo_pct": 0.69
+  },
+  "cheap_third_dev": {
+   "invested": 72.0,
+   "final": 143.93038522288697,
+   "multiple": 1.9990331280956524,
+   "placebo_pct": 0.13
+  },
+  "rich_third_dev": {
+   "invested": 72.0,
+   "final": 151.97271744655728,
+   "multiple": 2.11073218675774,
+   "placebo_pct": 0.81
+  },
+  "mom_top_third": {
+   "invested": 72.0,
+   "final": 149.9662386394594,
+   "multiple": 2.0828644255480473,
+   "placebo_pct": 0.62
+  },
+  "mom_bottom_third": {
+   "invested": 72.0,
+   "final": 157.89170628012764,
+   "multiple": 2.192940365001773,
+   "placebo_pct": 0.99
+  },
+  "random_third": {
+   "multiple_median": 2.0661012712305533,
+   "p5": 1.9639315762677323,
+   "p95": 2.1584299020436846
+  }
+ },
+ "TEST": {
+  "equal": {
+   "invested": 95.0,
+   "final": 341.45406090483516,
+   "multiple": 3.5942532726824754,
+   "placebo_pct": 0.58
+  },
+  "cheap_third_channel": {
+   "invested": 95.0,
+   "final": 364.109344612798,
+   "multiple": 3.8327299432926103,
+   "placebo_pct": 0.98
+  },
+  "rich_third_channel": {
+   "invested": 95.0,
+   "final": 319.4469956600731,
+   "multiple": 3.3625999543165594,
+   "placebo_pct": 0.0
+  },
+  "cheap_third_dev": {
+   "invested": 95.0,
+   "final": 355.1985992222846,
+   "multiple": 3.7389326233924693,
+   "placebo_pct": 0.93
+  },
+  "rich_third_dev": {
+   "invested": 95.0,
+   "final": 322.24211848278395,
+   "multiple": 3.3920222998187786,
+   "placebo_pct": 0.03
+  },
+  "mom_top_third": {
+   "invested": 95.0,
+   "final": 344.62137555843344,
+   "multiple": 3.6275934269308783,
+   "placebo_pct": 0.68
+  },
+  "mom_bottom_third": {
+   "invested": 95.0,
+   "final": 376.8009108937456,
+   "multiple": 3.966325377828901,
+   "placebo_pct": 0.99
+  },
+  "random_third": {
+   "multiple_median": 3.578495831340579,
+   "p5": 3.4035039141917287,
+   "p95": 3.762470337693429
+  }
+ },
+ "ALL": {
+  "equal": {
+   "invested": 323.0,
+   "final": 18504.865555227138,
+   "multiple": 57.29060543413974,
+   "placebo_pct": 0.52
+  },
+  "cheap_third_channel": {
+   "invested": 323.0,
+   "final": 20839.976465024978,
+   "multiple": 64.52005097530953,
+   "placebo_pct": 0.96
+  },
+  "rich_third_channel": {
+   "invested": 323.0,
+   "final": 19521.780421248823,
+   "multiple": 60.43894867259697,
+   "placebo_pct": 0.79
+  },
+  "cheap_third_dev": {
+   "invested": 323.0,
+   "final": 20305.23759751276,
+   "multiple": 62.864512685798026,
+   "placebo_pct": 0.92
+  },
+  "rich_third_dev": {
+   "invested": 323.0,
+   "final": 16279.474909159742,
+   "multiple": 50.40085111194966,
+   "placebo_pct": 0.03
+  },
+  "mom_top_third": {
+   "invested": 323.0,
+   "final": 18450.219402818133,
+   "multiple": 57.12142229974654,
+   "placebo_pct": 0.49
+  },
+  "mom_bottom_third": {
+   "invested": 323.0,
+   "final": 25047.954627455387,
+   "multiple": 77.54784714382473,
+   "placebo_pct": 1.0
+  },
+  "random_third": {
+   "multiple_median": 57.17068833785318,
+   "p5": 50.97031702369888,
+   "p95": 63.87730371662171
+  }
+ }
+}

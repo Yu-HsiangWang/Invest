@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>科技股買賣區間</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/style.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='2' y='2' width='28' height='28' rx='3' fill='%231d6fa5'/%3E%3Ctext x='16' y='23' font-size='18' text-anchor='middle' fill='white' font-family='serif'%3E股%3C/text%3E%3C/svg%3E">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand"><span class="mark" aria-hidden="true">股</span><span class="brand-name">科技股買賣區間</span></div>
+  <nav class="mkt-tabs" role="tablist" aria-label="市場">
+    <button class="tab" role="tab" data-mkt="TW" aria-selected="true">台股</button>
+    <button class="tab" role="tab" data-mkt="US" aria-selected="false">美股</button>
+  </nav>
+  <dl class="meta">
+    <div><dt>價格</dt><dd id="st-prices">—</dd></div>
+    <div><dt>資訊</dt><dd id="st-feeds">—</dd></div>
+    <div><dt>更新</dt><dd id="st-time">—</dd></div>
+  </dl>
+  <div class="top-actions">
+    <button id="btn-refresh" class="btn ghost small" type="button">重新抓資料</button>
+    <button id="btn-enable" class="btn ghost small" type="button">開啟提醒</button>
+    <button id="btn-research" class="btn ghost small" type="button">回測怎麼說</button>
+    <button id="btn-settings" class="btn ghost small" type="button" aria-controls="settings" aria-expanded="false">設定</button>
+  </div>
+</header>
+
+<div id="banner" class="banner" hidden></div>
+
+<main class="layout">
+  <section class="list-col" aria-label="觀察名單">
+    <div class="panel list-panel">
+      <div class="panel-head">
+        <h2 id="list-h">觀察名單</h2>
+        <div class="list-tools">
+          <select id="sort" aria-label="排序">
+            <option value="verdict">依建議</option>
+            <option value="zone">依位置（最便宜在前）</option>
+            <option value="chg">依今日漲跌</option>
+            <option value="ret1y">依一年報酬</option>
+            <option value="name">依名稱</option>
+          </select>
+          <input id="filter" type="search" placeholder="搜尋" aria-label="搜尋">
+        </div>
+      </div>
+      <div id="regime" class="regime"></div>
+      <table class="watch">
+        <thead><tr><th>標的</th><th class="num">現價</th><th class="num">今日</th><th>位置</th><th>建議</th></tr></thead>
+        <tbody id="watch"></tbody>
+      </table>
+      <form id="add-form" class="add-form">
+        <input name="symbol" placeholder="加入代號（台股 2345 / 美股 TTD）" aria-label="代號" required>
+        <input name="name" placeholder="名稱（選填）" aria-label="名稱">
+        <button class="btn small" type="submit">加入</button>
+      </form>
+      <p class="hint">位置：五線譜／年線乖離／本益比（台股）三個尺度；顏色越藍越便宜、越橙越貴。點一列看詳細。</p>
+    </div>
+  </section>
+
+  <section class="detail-col" aria-label="詳細">
+    <article id="ticket" class="ticket">
+      <div class="ticket-head">
+        <div id="stamp" class="stamp neutral" role="img" aria-label="—"><span id="stamp-text">—</span></div>
+        <div class="ticket-title">
+          <div class="ticket-name"><h1 id="d-name">選一檔標的</h1><span id="d-sym" class="sym"></span><span id="d-sector" class="pill"></span></div>
+          <div class="quote"><span id="d-px" class="px">—</span><span id="d-chg" class="chg"></span><span id="d-ret" class="rets"></span></div>
+          <p id="d-title" class="v-title"></p>
+        </div>
+      </div>
+      <p id="d-body" class="v-body"></p>
+      <p id="d-hist" class="v-hist"></p>
+      <div id="levels" class="levels"></div>
+      <div id="d-trend" class="trend-row"></div>
+    </article>
+
+    <div class="panel chart-panel">
+      <div class="chart-head">
+        <div class="tf-tabs" role="tablist">
+          <button class="tab" data-tf="1D" aria-selected="true">日線</button>
+          <button class="tab" data-tf="1W" aria-selected="false">週線</button>
+          <button class="tab" data-tf="1M" aria-selected="false">月線</button>
+        </div>
+        <div class="band-toggles" role="group" aria-label="價格帶">
+          <label><input type="checkbox" data-band="ch" checked> 五線譜 ±1σ／±2σ</label>
+          <label><input type="checkbox" data-band="dv"> 年線乖離帶</label>
+          <label><input type="checkbox" data-band="pe"> 本益比河流</label>
+          <label><input type="checkbox" data-band="ma" checked> 200 日線</label>
+        </div>
+      </div>
+      <div id="chart" class="chart"></div>
+      <p class="hint">價格已還原權息（歷史價位會比當年看到的低），所以價格帶的位置是今天的價格水準。五線譜＝過去 3.5 年對數線性回歸 ±1／±2 個標準差；年線乖離帶＝200 日均線上下，取自己過去 5 年乖離率的 5／15／85／95 百分位；本益比河流＝近 4 季 EPS × 自己 5 年本益比的 10／25／50／75／90 百分位。</p>
+    </div>
+
+    <div class="two">
+      <section class="panel" aria-labelledby="cloud-h">
+        <h2 id="cloud-h">從這個位置出發，歷史上之後怎麼走？</h2>
+        <div id="cloud"></div>
+        <p class="hint">「自己」＝這檔標的過去在同一區間的所有日子；「同市場合併」＝名單裡所有標的（今天的龍頭，偏樂觀）。獨立樣本＝天數÷持有天數。這是歷史條件機率，不是預測。</p>
+      </section>
+      <section class="panel" aria-labelledby="def-h">
+        <h2 id="def-h">防守模式值得嗎？（10 月均線）</h2>
+        <div id="defense"></div>
+        <p class="hint">月底收盤低於 10 月均線就空手、高於就持有。只建議用在 ETF／大盤，而且只適合「跌三成會受不了」的人；回測顯示多頭中每年少賺 2–6 個百分點，換最大回撤少 25–50%。</p>
+      </section>
+    </div>
+
+    <section class="panel" aria-labelledby="feeds-h">
+      <div class="panel-head"><h2 id="feeds-h">這檔的資訊流</h2><span id="feeds-agg" class="pill"></span></div>
+      <div class="feed-tabs" role="tablist">
+        <button class="tab" data-feed="news" aria-selected="true">新聞</button>
+        <button class="tab" data-feed="insiders" aria-selected="false">內部人</button>
+        <button class="tab" data-feed="congress" aria-selected="false">國會議員</button>
+        <button class="tab" data-feed="flow" aria-selected="false">法人／營收</button>
+      </div>
+      <div id="feed-body" class="feed-body"></div>
+      <p class="hint">新聞、國會交易、法人買賣超都是資訊，不進入任何判斷（研究顯示它們對 1–12 個月報酬沒有穩定的預測力）；內部人「買進」是唯一有正面證據的加分項，賣出幾乎沒有資訊。</p>
+    </section>
+  </section>
+
+  <section class="info-col">
+    <section class="panel" aria-labelledby="mk-h">
+      <h2 id="mk-h">大盤狀態</h2>
+      <div id="market"></div>
+    </section>
+    <section class="panel" aria-labelledby="cal-h">
+      <h2 id="cal-h">日曆與總經</h2>
+      <div id="calendar"></div>
+    </section>
+    <section class="panel" aria-labelledby="mkfeed-h">
+      <div class="panel-head"><h2 id="mkfeed-h">市場資訊</h2><span id="mk-agg" class="pill"></span></div>
+      <div class="feed-tabs small" role="tablist" id="mk-tabs"></div>
+      <div id="mk-body" class="feed-body"></div>
+    </section>
+    <section class="panel" aria-labelledby="al-h">
+      <h2 id="al-h">最近提醒</h2>
+      <ul id="alerts" class="alerts"></ul>
+    </section>
+  </section>
+</main>
+
+<footer class="foot">
+  <p>僅供研究與學習參考，不構成投資建議；過去績效不保證未來。資料：Yahoo Finance、臺灣證券交易所 OpenAPI、FinMind、SEC EDGAR、kadoa congress-trading-monitor（MIT）、鉅亨網、Google News、FRED。圖表：<a href="https://www.tradingview.com/" target="_blank" rel="noopener">TradingView Lightweight Charts</a>。</p>
+</footer>
+
+<aside id="settings" class="drawer" hidden aria-label="設定">
+  <form id="settings-form">
+    <div class="drawer-head"><h2>設定</h2><button type="button" class="btn ghost small" id="settings-close">關閉</button></div>
+    <fieldset><legend>名單</legend>
+      <label>台股（代號，逗號或換行分隔；上櫃加 .TWO）<textarea name="watch_tw" rows="4"></textarea></label>
+      <label>美股<textarea name="watch_us" rows="4"></textarea></label>
+      <label class="check"><input name="defense_mode" type="checkbox"> 防守模式（大盤 10 月均線翻空時，ETF 顯示減碼建議並通知）</label>
+    </fieldset>
+    <fieldset><legend>資料</legend>
+      <label>價格更新間隔（小時）<input name="price_refresh_hours" type="number" step="0.5" min="0.5"></label>
+      <label>新聞／申報更新間隔（分鐘）<input name="feeds_refresh_minutes" type="number" step="5" min="5"></label>
+      <label>FinMind token（選填，免費註冊可提高台股法人資料的額度）<input name="finmind_token" type="password" autocomplete="off"></label>
+      <label>SEC 要求的聯絡資訊（User-Agent，例如 "yourname email@example.com"）<input name="sec_user_agent" type="text"></label>
+    </fieldset>
+    <fieldset><legend>顯示</legend>
+      <label>顏色習慣 <select name="color_convention"><option value="tw">紅漲綠跌（台灣）</option><option value="intl">綠漲紅跌（國際）</option></select></label>
+    </fieldset>
+    <fieldset><legend>提醒</legend>
+      <label class="check"><input name="sound" type="checkbox"> 聲音</label>
+      <label class="check"><input name="desktop_notify" type="checkbox"> 桌面通知</label>
+      <label class="check"><input name="alert_zone_changes" type="checkbox"> 進入「很便宜」／「很貴」區時通知</label>
+      <label class="check"><input name="alert_insider_buys" type="checkbox"> 內部人買進時通知</label>
+      <label class="check"><input name="alert_congress_cluster" type="checkbox"> 國會議員集群買進時通知</label>
+      <label class="check"><input name="alert_trend_flips" type="checkbox"> 防守模式下大盤翻多／翻空時通知</label>
+      <label>Telegram Bot Token（選填）<input name="telegram_bot_token" type="password" autocomplete="off"></label>
+      <label>Telegram Chat ID（選填）<input name="telegram_chat_id" type="text"></label>
+      <label>Discord Webhook 網址（選填）<input name="discord_webhook_url" type="password" autocomplete="off"></label>
+      <button id="btn-test" class="btn ghost small" type="button">送出測試通知</button>
+    </fieldset>
+    <div class="row"><button class="btn" type="submit">儲存設定</button><span id="settings-saved" class="saved" hidden>已儲存</span></div>
+  </form>
+</aside>
+
+<aside id="research" class="drawer wide" hidden aria-label="回測怎麼說">
+  <div class="drawer-head"><h2>回測怎麼說</h2><button type="button" class="btn ghost small" id="research-close">關閉</button></div>
+  <div id="research-body"></div>
+</aside>
+
+<div id="toasts" class="toasts" aria-live="assertive"></div>
+<script src="/static/vendor/lightweight-charts.standalone.production.js"></script>
+<script>window.LightweightCharts || document.write('<script src="https://cdn.jsdelivr.net/npm/lightweight-charts@4.2.3/dist/lightweight-charts.standalone.production.js"><\/script>')</script>
+<script src="/static/app.js"></script>
+</body>
+</html>
