@@ -139,7 +139,7 @@ def parse_cnyes(js: dict, source: str) -> list[dict]:
         t = d.get("publishAt")
         items.append({"title": _clean(d.get("title")), "link": f"https://news.cnyes.com/news/id/{nid}" if nid else "",
                       "time": datetime.fromtimestamp(t, timezone.utc) if t else None, "source": source,
-                      "stocks": [s.get("key") for s in (d.get("market") or []) if isinstance(s, dict)]})
+                      "stocks": [str(x) for x in (d.get("stock") or [])] or [str(s.get("code") or s.get("key")) for s in (d.get("market") or []) if isinstance(s, dict)]})
     return items
 
 

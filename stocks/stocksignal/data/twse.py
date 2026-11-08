@@ -257,6 +257,100 @@ class TWSEOpenData:
         df.to_csv(self._hist_path(name), index=False)
 
 
+# ------------------------------------------------------------- legacy JSON (www.twse.com.tw)
+class TWSELegacy:
+    """The exchange's older JSON endpoints (work from a home IP with a browser UA; one request per day).
+
+    T86 = 三大法人買賣超 for every listed stock on one day. We fetch the last N trading days once,
+    then one new day per refresh, and keep history/t86.csv so per-stock series grow over time.
+    """
+    BASE = "https://www.twse.com.tw/rwd/zh"
+
+    def __init__(self, cache_dir: str | Path, min_interval_s: float = 3.5):
+        self.dir = Path(cache_dir)
+        self.dir.mkdir(parents=True, exist_ok=True)
+        self.s = requests.Session()
+        self.s.headers.update({"User-Agent": UA, "Accept": "application/json, text/plain, */*", "Referer": "https://www.twse.com.tw/zh/trading/foreign/t86.html",
+                               "Accept-Language": "zh-TW,zh;q=0.9"})
+        self.min_interval = min_interval_s
+        self._last = 0.0
+        self.status: dict[str, str] = {}
+
+    def _get(self, path: str, params: dict) -> dict | None:
+        wait = self.min_interval - (time.time() - self._last)
+        if wait > 0:
+            time.sleep(wait)
+        try:
+            r = self.s.get(f"{self.BASE}/{path}", params=params, timeout=20)
+            self._last = time.time()
+            r.raise_for_status()
+            js = r.json()
+            return js if isinstance(js, dict) else None
+        except Exception as e:  # noqa: BLE001
+            self.status[path] = f"error: {type(e).__name__}"
+            return None
+
+    def t86_day(self, day: pd.Timestamp) -> pd.DataFrame:
+        js = self._get("fund/T86", {"date": day.strftime("%Y%m%d"), "selectType": "ALLBUT0999", "response": "json"})
+        if not js or js.get("stat") != "OK" or not js.get("data"):
+            return pd.DataFrame()
+        fields = js.get("fields") or []
+        df = pd.DataFrame(js["data"], columns=fields[: len(js["data"][0])])
+        def col(*subs):
+            for c in df.columns:
+                if all(x in c for x in subs):
+                    return c
+            return None
+        c_code = col("證券代號")
+        c_f = next((c for c in df.columns if ("外陸資買賣超" in c or "外資買賣超" in c) and "自營商" not in c), None)
+        c_fd = col("外資自營商買賣超")
+        c_t = col("投信買賣超")
+        c_d = next((c for c in df.columns if c.strip() == "自營商買賣超股數"), None)
+        c_tot = col("三大法人買賣超")
+        if not (c_code and c_tot):
+            return pd.DataFrame()
+        out = pd.DataFrame({"date": day, "code": df[c_code].astype(str).str.strip(),
+                            "foreign": df[c_f].map(_num) + (df[c_fd].map(_num).fillna(0) if c_fd else 0),
+                            "trust": df[c_t].map(_num) if c_t else float("nan"),
+                            "dealer": df[c_d].map(_num) if c_d else float("nan"),
+                            "total": df[c_tot].map(_num)})
+        self.status["fund/T86"] = f"ok {day.date()} ({len(out)})"
+        return out
+
+    def t86_history(self) -> pd.DataFrame:
+        p = self.dir / "history_t86.csv"
+        if not p.exists():
+            return pd.DataFrame(columns=["date", "code", "foreign", "trust", "dealer", "total"])
+        df = pd.read_csv(p, dtype={"code": str})
+        df["date"] = pd.to_datetime(df["date"])
+        return df
+
+    def t86_update(self, backfill_days: int = 40, max_new: int = 12) -> pd.DataFrame:
+        """Append missing trading days (at most `max_new` requests per call, newest first)."""
+        hist = self.t86_history()
+        have = set(hist["date"].dt.normalize()) if len(hist) else set()
+        today = pd.Timestamp(datetime.now(timezone.utc) + timedelta(hours=8)).normalize()
+        days = [d for d in pd.bdate_range(today - pd.Timedelta(days=backfill_days), today) if d not in have][::-1]
+        new = []
+        for d in days[:max_new]:
+            df = self.t86_day(d)
+            if len(df):
+                new.append(df)
+            elif d == today:
+                continue                      # not published yet (before ~17:00 Taipei)
+        if new:
+            hist = pd.concat([hist] + new).drop_duplicates(subset=["date", "code"], keep="last").sort_values(["date", "code"])
+            hist.to_csv(self.dir / "history_t86.csv", index=False)
+        return hist
+
+    def institutional(self, code: str, days: int = 120) -> pd.DataFrame:
+        hist = self.t86_history()
+        if not len(hist):
+            return pd.DataFrame()
+        h = hist[(hist["code"] == code) & (hist["date"] >= pd.Timestamp.now().normalize() - pd.Timedelta(days=days))]
+        return h.set_index("date")[["foreign", "trust", "dealer", "total"]].sort_index()
+
+
 # ----------------------------------------------------------------------- FinMind
 class FinMind:
     """Historical series for Taiwan (free tier: ~300 req/h anonymous, 600 with a free token)."""

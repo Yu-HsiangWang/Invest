@@ -19,7 +19,7 @@ from .data.macro import Macro, earnings_dates, tw_revenue_deadline
 from .data.news import NewsMonitor
 from .data.prices import PriceStore
 from .data.sec import SEC
-from .data.twse import FinMind, TWSEOpenData
+from .data.twse import FinMind, TWSELegacy, TWSEOpenData
 from .settings import Settings
 from .universe import DEFAULT_UNIVERSE, Instrument
 
@@ -44,6 +44,7 @@ class Hub:
         self.news = NewsMonitor(cache / "news")
         self.congress = CongressFeed(cache / "congress", seed_csv=self.root / "data" / "congress_seed.csv.gz")
         self.twse = TWSEOpenData(cache / "twse")
+        self.twse_legacy = TWSELegacy(cache / "twse")
         self.finmind = FinMind(cache / "finmind", token=self.settings.finmind_token)
         self.sec = SEC(cache / "sec", user_agent=self.settings.sec_user_agent or "stocksignal-dashboard/0.1")
         self.macro = Macro(cache / "macro")
@@ -246,7 +247,7 @@ class Hub:
         except Exception as e:  # noqa: BLE001
             log.warning("congress: %s", e)
         if "TW" in self.settings.markets:
-            for fn in (self.twse.valuation, self.twse.margin, self.twse.monthly_revenue, self.twse.insider_transfers):
+            for fn in (self.twse.valuation, self.twse.margin, self.twse.monthly_revenue, self.twse.insider_transfers, self.twse_legacy.t86_update):
                 try:
                     fn()
                 except Exception as e:  # noqa: BLE001
@@ -281,7 +282,10 @@ class Hub:
             out["earnings"] = earnings_dates(sym)
         else:
             start = str((datetime.now() - timedelta(days=120)).date())
-            inst_flow = self.finmind.institutional(inst.code, start)
+            inst_flow = self.twse_legacy.institutional(inst.code, 120)
+            fm_flow = self.finmind.institutional(inst.code, start)
+            if len(fm_flow):
+                inst_flow = fm_flow.combine_first(inst_flow) if len(inst_flow) else fm_flow
             out["institutional"] = [{"date": str(d.date()), **{k: float(v) for k, v in r.items()}} for d, r in inst_flow.tail(30).iterrows()] if len(inst_flow) else []
             if len(inst_flow):
                 last5 = inst_flow.tail(5).sum()
