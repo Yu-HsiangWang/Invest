@@ -2,3 +2,5 @@
 pytest>=7
 numba>=0.58      # optional: makes research backtests ~50x faster
 pyarrow>=14      # research cache files
+# research/rl_agent.py and rl_sizer.py only (installs PyTorch, ~1 GB):
+#   pip install stable-baselines3 gymnasium

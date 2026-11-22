@@ -1,0 +1,1357 @@
+{
+ "how": "Every 15-minute bar the agent chooses a target position - long, flat or short (1x notional) - and\nholds it to the next bar. It sees what the rule system sees (multi-timeframe trend, EMAs, ADX, RSI,\nATRs, Bollinger width percentile, channel position, extension) plus recent price changes in ATR\nunits, tick-volume ratio, time of day / week and its own position, open profit and time in the\ntrade. Episode = one trading session (17:00 -> 16:45 New York); it is forced flat at the session's\nlast bar, like 當日平倉模式, so it never holds overnight.",
+ "features": [
+  "ret1",
+  "ret2",
+  "ret4",
+  "ret8",
+  "ret16",
+  "ret32",
+  "ret96",
+  "c_h1e20",
+  "c_h1e50",
+  "c_m15e20",
+  "h4_e20",
+  "d1_e20",
+  "d1_e2050",
+  "trend_d1",
+  "trend_h4",
+  "trend_h1",
+  "h1_adx",
+  "h4_adx",
+  "d1_adx",
+  "m15_rsi",
+  "h1_rsi",
+  "h4_rsi",
+  "d1_rsi",
+  "bw_pct",
+  "chan_pos",
+  "d1_ext",
+  "a1_ad",
+  "m15_a1",
+  "vol_ratio",
+  "sess_sin",
+  "sess_cos",
+  "dow_sin",
+  "dow_cos"
+ ],
+ "system": {
+  "train": {
+   "efficient": {
+    "days": 3130,
+    "sharpe": 0.79,
+    "mean_day_%": 0.0305,
+    "sd_day_%": 0.611,
+    "total_%_1x": 95.3,
+    "max_dd_%_1x": 11.8,
+    "trades": 249,
+    "trades_per_week": 0.4,
+    "avg_trade_%": 0.4024,
+    "win%": 43.0,
+    "kelly_leverage": 8.2,
+    "best_median_year_at_kelly": 0.37
+   },
+   "active": {
+    "days": 3130,
+    "sharpe": 0.81,
+    "mean_day_%": 0.0411,
+    "sd_day_%": 0.803,
+    "total_%_1x": 128.7,
+    "max_dd_%_1x": 15.9,
+    "trades": 433,
+    "trades_per_week": 0.69,
+    "avg_trade_%": 0.3149,
+    "win%": 40.9,
+    "kelly_leverage": 6.4,
+    "best_median_year_at_kelly": 0.39
+   }
+  },
+  "val": {
+   "efficient": {
+    "days": 1044,
+    "sharpe": 0.51,
+    "mean_day_%": 0.0094,
+    "sd_day_%": 0.293,
+    "total_%_1x": 9.8,
+    "max_dd_%_1x": 4.8,
+    "trades": 120,
+    "trades_per_week": 0.58,
+    "avg_trade_%": 0.0842,
+    "win%": 34.2,
+    "kelly_leverage": 10.9,
+    "best_median_year_at_kelly": 0.14
+   },
+   "active": {
+    "days": 1044,
+    "sharpe": 0.25,
+    "mean_day_%": 0.0067,
+    "sd_day_%": 0.433,
+    "total_%_1x": 7.0,
+    "max_dd_%_1x": 9.6,
+    "trades": 198,
+    "trades_per_week": 0.95,
+    "avg_trade_%": 0.0862,
+    "win%": 34.8,
+    "kelly_leverage": 3.6,
+    "best_median_year_at_kelly": 0.03
+   }
+  },
+  "test": {
+   "efficient": {
+    "days": 1101,
+    "sharpe": 0.67,
+    "mean_day_%": 0.0169,
+    "sd_day_%": 0.401,
+    "total_%_1x": 18.6,
+    "max_dd_%_1x": 5.8,
+    "trades": 139,
+    "trades_per_week": 0.63,
+    "avg_trade_%": 0.1306,
+    "win%": 32.4,
+    "kelly_leverage": 10.5,
+    "best_median_year_at_kelly": 0.25
+   },
+   "active": {
+    "days": 1101,
+    "sharpe": 0.89,
+    "mean_day_%": 0.0276,
+    "sd_day_%": 0.494,
+    "total_%_1x": 30.4,
+    "max_dd_%_1x": 7.2,
+    "trades": 208,
+    "trades_per_week": 0.95,
+    "avg_trade_%": 0.1799,
+    "win%": 38.0,
+    "kelly_leverage": 11.3,
+    "best_median_year_at_kelly": 0.48
+   }
+  }
+ },
+ "variants": {
+  "A1": {
+   "every": 1,
+   "train_cost": 1.0,
+   "steps": 1500000,
+   "runs": [
+    {
+     "seed": 0,
+     "steps": 1500000,
+     "minutes": 8.8,
+     "best_steps": 200000,
+     "history": [
+      {
+       "steps": 100000,
+       "sharpe": -0.06,
+       "total_%_1x": -2.1,
+       "trades_per_week": 4.4,
+       "avg_trade_%": -0.0022
+      },
+      {
+       "steps": 200000,
+       "sharpe": 0.3,
+       "total_%_1x": 13.9,
+       "trades_per_week": 5.36,
+       "avg_trade_%": 0.0125
+      },
+      {
+       "steps": 300000,
+       "sharpe": -0.26,
+       "total_%_1x": -12.0,
+       "trades_per_week": 7.18,
+       "avg_trade_%": -0.008
+      },
+      {
+       "steps": 400000,
+       "sharpe": -0.21,
+       "total_%_1x": -10.8,
+       "trades_per_week": 7.36,
+       "avg_trade_%": -0.007
+      },
+      {
+       "steps": 500000,
+       "sharpe": -0.32,
+       "total_%_1x": -17.3,
+       "trades_per_week": 7.06,
+       "avg_trade_%": -0.0117
+      },
+      {
+       "steps": 600000,
+       "sharpe": -0.31,
+       "total_%_1x": -16.1,
+       "trades_per_week": 6.43,
+       "avg_trade_%": -0.012
+      },
+      {
+       "steps": 700000,
+       "sharpe": -0.15,
+       "total_%_1x": -8.1,
+       "trades_per_week": 6.59,
+       "avg_trade_%": -0.0059
+      },
+      {
+       "steps": 800000,
+       "sharpe": -0.13,
+       "total_%_1x": -6.6,
+       "trades_per_week": 6.52,
+       "avg_trade_%": -0.0049
+      },
+      {
+       "steps": 900000,
+       "sharpe": 0.0,
+       "total_%_1x": 0.1,
+       "trades_per_week": 6.76,
+       "avg_trade_%": 0.0001
+      },
+      {
+       "steps": 1000000,
+       "sharpe": -0.29,
+       "total_%_1x": -15.9,
+       "trades_per_week": 6.78,
+       "avg_trade_%": -0.0113
+      },
+      {
+       "steps": 1100000,
+       "sharpe": -0.32,
+       "total_%_1x": -17.7,
+       "trades_per_week": 7.57,
+       "avg_trade_%": -0.0113
+      },
+      {
+       "steps": 1200000,
+       "sharpe": -0.27,
+       "total_%_1x": -14.5,
+       "trades_per_week": 6.93,
+       "avg_trade_%": -0.0102
+      },
+      {
+       "steps": 1300000,
+       "sharpe": 0.0,
+       "total_%_1x": 0.2,
+       "trades_per_week": 7.81,
+       "avg_trade_%": 0.0
+      },
+      {
+       "steps": 1400000,
+       "sharpe": 0.04,
+       "total_%_1x": 1.9,
+       "trades_per_week": 8.85,
+       "avg_trade_%": 0.0009
+      },
+      {
+       "steps": 1500000,
+       "sharpe": 0.05,
+       "total_%_1x": 2.5,
+       "trades_per_week": 8.48,
+       "avg_trade_%": 0.0012
+      }
+     ],
+     "train": {
+      "days": 3073,
+      "sharpe": -0.25,
+      "mean_day_%": -0.0163,
+      "sd_day_%": 1.054,
+      "total_%_1x": -50.0,
+      "max_dd_%_1x": 72.5,
+      "trades": 3309,
+      "trades_per_week": 5.29,
+      "avg_trade_%": -0.0151,
+      "win%": 52.6,
+      "kelly_leverage": -1.5,
+      "best_median_year_at_kelly": 0.03,
+      "long%": 75.5,
+      "short%": 4.9
+     },
+     "val": {
+      "days": 1032,
+      "sharpe": 0.3,
+      "mean_day_%": 0.0134,
+      "sd_day_%": 0.71,
+      "total_%_1x": 13.9,
+      "max_dd_%_1x": 22.6,
+      "trades": 1115,
+      "trades_per_week": 5.36,
+      "avg_trade_%": 0.0125,
+      "win%": 53.8,
+      "kelly_leverage": 2.7,
+      "best_median_year_at_kelly": 0.05,
+      "long%": 73.1,
+      "short%": 5.4
+     },
+     "test": {
+      "days": 1089,
+      "sharpe": 0.34,
+      "mean_day_%": 0.0157,
+      "sd_day_%": 0.744,
+      "total_%_1x": 17.1,
+      "max_dd_%_1x": 19.6,
+      "trades": 1180,
+      "trades_per_week": 5.38,
+      "avg_trade_%": 0.0146,
+      "win%": 54.6,
+      "kelly_leverage": 2.8,
+      "best_median_year_at_kelly": 0.06,
+      "long%": 74.6,
+      "short%": 5.3
+     },
+     "test_cost_x2": {
+      "days": 1089,
+      "sharpe": -0.17,
+      "mean_day_%": -0.0081,
+      "sd_day_%": 0.742,
+      "total_%_1x": -8.9,
+      "max_dd_%_1x": 34.8,
+      "trades": 1180,
+      "trades_per_week": 5.38,
+      "avg_trade_%": -0.0074,
+      "win%": 52.0,
+      "kelly_leverage": -1.5,
+      "best_median_year_at_kelly": 0.02,
+      "long%": 74.6,
+      "short%": 5.3
+     }
+    },
+    {
+     "seed": 1,
+     "steps": 1500000,
+     "minutes": 7.1,
+     "best_steps": 1300000,
+     "history": [
+      {
+       "steps": 100000,
+       "sharpe": -0.1,
+       "total_%_1x": -5.4,
+       "trades_per_week": 5.01,
+       "avg_trade_%": -0.0052
+      },
+      {
+       "steps": 200000,
+       "sharpe": -0.41,
+       "total_%_1x": -21.7,
+       "trades_per_week": 5.08,
+       "avg_trade_%": -0.0205
+      },
+      {
+       "steps": 300000,
+       "sharpe": -0.46,
+       "total_%_1x": -24.4,
+       "trades_per_week": 5.15,
+       "avg_trade_%": -0.0228
+      },
+      {
+       "steps": 400000,
+       "sharpe": -0.51,
+       "total_%_1x": -27.1,
+       "trades_per_week": 5.22,
+       "avg_trade_%": -0.0249
+      },
+      {
+       "steps": 500000,
+       "sharpe": -0.18,
+       "total_%_1x": -9.7,
+       "trades_per_week": 5.19,
+       "avg_trade_%": -0.0089
+      },
+      {
+       "steps": 600000,
+       "sharpe": 0.01,
+       "total_%_1x": 0.5,
+       "trades_per_week": 5.38,
+       "avg_trade_%": 0.0003
+      },
+      {
+       "steps": 700000,
+       "sharpe": -0.1,
+       "total_%_1x": -5.4,
+       "trades_per_week": 4.99,
+       "avg_trade_%": -0.0053
+      },
+      {
+       "steps": 800000,
+       "sharpe": -0.3,
+       "total_%_1x": -15.9,
+       "trades_per_week": 5.01,
+       "avg_trade_%": -0.0152
+      },
+      {
+       "steps": 900000,
+       "sharpe": -0.27,
+       "total_%_1x": -14.3,
+       "trades_per_week": 5.17,
+       "avg_trade_%": -0.0134
+      },
+      {
+       "steps": 1000000,
+       "sharpe": -0.2,
+       "total_%_1x": -10.8,
+       "trades_per_week": 5.35,
+       "avg_trade_%": -0.0098
+      },
+      {
+       "steps": 1100000,
+       "sharpe": -0.13,
+       "total_%_1x": -6.9,
+       "trades_per_week": 5.22,
+       "avg_trade_%": -0.0065
+      },
+      {
+       "steps": 1200000,
+       "sharpe": 0.02,
+       "total_%_1x": 1.3,
+       "trades_per_week": 5.46,
+       "avg_trade_%": 0.001
+      },
+      {
+       "steps": 1300000,
+       "sharpe": 0.03,
+       "total_%_1x": 1.6,
+       "trades_per_week": 5.71,
+       "avg_trade_%": 0.0012
+      },
+      {
+       "steps": 1400000,
+       "sharpe": -0.47,
+       "total_%_1x": -24.7,
+       "trades_per_week": 7.15,
+       "avg_trade_%": -0.0166
+      },
+      {
+       "steps": 1500000,
+       "sharpe": -0.72,
+       "total_%_1x": -37.6,
+       "trades_per_week": 7.43,
+       "avg_trade_%": -0.0243
+      }
+     ],
+     "train": {
+      "days": 3073,
+      "sharpe": 0.38,
+      "mean_day_%": 0.0283,
+      "sd_day_%": 1.173,
+      "total_%_1x": 87.0,
+      "max_dd_%_1x": 51.1,
+      "trades": 3560,
+      "trades_per_week": 5.69,
+      "avg_trade_%": 0.0244,
+      "win%": 47.9,
+      "kelly_leverage": 2.1,
+      "best_median_year_at_kelly": 0.08,
+      "long%": 60.2,
+      "short%": 38.3
+     },
+     "val": {
+      "days": 1032,
+      "sharpe": 0.03,
+      "mean_day_%": 0.0015,
+      "sd_day_%": 0.81,
+      "total_%_1x": 1.6,
+      "max_dd_%_1x": 23.8,
+      "trades": 1188,
+      "trades_per_week": 5.71,
+      "avg_trade_%": 0.0012,
+      "win%": 47.6,
+      "kelly_leverage": 0.2,
+      "best_median_year_at_kelly": 0.0,
+      "long%": 64.0,
+      "short%": 34.3
+     },
+     "test": {
+      "days": 1089,
+      "sharpe": 0.34,
+      "mean_day_%": 0.0183,
+      "sd_day_%": 0.844,
+      "total_%_1x": 20.0,
+      "max_dd_%_1x": 20.4,
+      "trades": 1226,
+      "trades_per_week": 5.59,
+      "avg_trade_%": 0.0166,
+      "win%": 48.5,
+      "kelly_leverage": 2.6,
+      "best_median_year_at_kelly": 0.06,
+      "long%": 61.8,
+      "short%": 36.7
+     },
+     "test_cost_x2": {
+      "days": 1089,
+      "sharpe": -0.12,
+      "mean_day_%": -0.0064,
+      "sd_day_%": 0.844,
+      "total_%_1x": -7.0,
+      "max_dd_%_1x": 34.2,
+      "trades": 1226,
+      "trades_per_week": 5.59,
+      "avg_trade_%": -0.0054,
+      "win%": 47.2,
+      "kelly_leverage": -0.9,
+      "best_median_year_at_kelly": 0.01,
+      "long%": 61.8,
+      "short%": 36.7
+     }
+    },
+    {
+     "seed": 2,
+     "steps": 1500000,
+     "minutes": 7.0,
+     "best_steps": 500000,
+     "history": [
+      {
+       "steps": 100000,
+       "sharpe": -0.8,
+       "total_%_1x": -42.2,
+       "trades_per_week": 5.49,
+       "avg_trade_%": -0.0369
+      },
+      {
+       "steps": 200000,
+       "sharpe": -0.34,
+       "total_%_1x": -17.8,
+       "trades_per_week": 5.07,
+       "avg_trade_%": -0.0166
+      },
+      {
+       "steps": 300000,
+       "sharpe": -0.16,
+       "total_%_1x": -8.6,
+       "trades_per_week": 4.97,
+       "avg_trade_%": -0.008
+      },
+      {
+       "steps": 400000,
+       "sharpe": -0.14,
+       "total_%_1x": -7.4,
+       "trades_per_week": 5.14,
+       "avg_trade_%": -0.0069
+      },
+      {
+       "steps": 500000,
+       "sharpe": 0.28,
+       "total_%_1x": 14.7,
+       "trades_per_week": 5.22,
+       "avg_trade_%": 0.0137
+      },
+      {
+       "steps": 600000,
+       "sharpe": -0.01,
+       "total_%_1x": -0.6,
+       "trades_per_week": 5.83,
+       "avg_trade_%": -0.0005
+      },
+      {
+       "steps": 700000,
+       "sharpe": -0.32,
+       "total_%_1x": -17.5,
+       "trades_per_week": 6.11,
+       "avg_trade_%": -0.0137
+      },
+      {
+       "steps": 800000,
+       "sharpe": -0.39,
+       "total_%_1x": -21.0,
+       "trades_per_week": 6.38,
+       "avg_trade_%": -0.016
+      },
+      {
+       "steps": 900000,
+       "sharpe": -0.24,
+       "total_%_1x": -13.0,
+       "trades_per_week": 6.47,
+       "avg_trade_%": -0.0098
+      },
+      {
+       "steps": 1000000,
+       "sharpe": -0.16,
+       "total_%_1x": -8.7,
+       "trades_per_week": 6.44,
+       "avg_trade_%": -0.0067
+      },
+      {
+       "steps": 1100000,
+       "sharpe": -0.05,
+       "total_%_1x": -2.7,
+       "trades_per_week": 6.05,
+       "avg_trade_%": -0.0023
+      },
+      {
+       "steps": 1200000,
+       "sharpe": -0.08,
+       "total_%_1x": -4.3,
+       "trades_per_week": 6.16,
+       "avg_trade_%": -0.0035
+      },
+      {
+       "steps": 1300000,
+       "sharpe": -0.34,
+       "total_%_1x": -18.9,
+       "trades_per_week": 7.08,
+       "avg_trade_%": -0.013
+      },
+      {
+       "steps": 1400000,
+       "sharpe": -0.21,
+       "total_%_1x": -11.7,
+       "trades_per_week": 6.49,
+       "avg_trade_%": -0.0088
+      },
+      {
+       "steps": 1500000,
+       "sharpe": -0.34,
+       "total_%_1x": -18.2,
+       "trades_per_week": 7.22,
+       "avg_trade_%": -0.0123
+      }
+     ],
+     "train": {
+      "days": 3073,
+      "sharpe": -0.08,
+      "mean_day_%": -0.0065,
+      "sd_day_%": 1.222,
+      "total_%_1x": -20.0,
+      "max_dd_%_1x": 91.3,
+      "trades": 3252,
+      "trades_per_week": 5.2,
+      "avg_trade_%": -0.0062,
+      "win%": 48.5,
+      "kelly_leverage": -0.4,
+      "best_median_year_at_kelly": 0.0,
+      "long%": 88.4,
+      "short%": 10.4
+     },
+     "val": {
+      "days": 1032,
+      "sharpe": 0.28,
+      "mean_day_%": 0.0142,
+      "sd_day_%": 0.815,
+      "total_%_1x": 14.7,
+      "max_dd_%_1x": 18.6,
+      "trades": 1087,
+      "trades_per_week": 5.22,
+      "avg_trade_%": 0.0137,
+      "win%": 51.2,
+      "kelly_leverage": 2.1,
+      "best_median_year_at_kelly": 0.04,
+      "long%": 90.6,
+      "short%": 8.3
+     },
+     "test": {
+      "days": 1089,
+      "sharpe": 0.12,
+      "mean_day_%": 0.0066,
+      "sd_day_%": 0.878,
+      "total_%_1x": 7.2,
+      "max_dd_%_1x": 39.2,
+      "trades": 1151,
+      "trades_per_week": 5.25,
+      "avg_trade_%": 0.0064,
+      "win%": 49.8,
+      "kelly_leverage": 0.9,
+      "best_median_year_at_kelly": 0.01,
+      "long%": 90.1,
+      "short%": 8.7
+     },
+     "test_cost_x2": {
+      "days": 1089,
+      "sharpe": -0.3,
+      "mean_day_%": -0.0167,
+      "sd_day_%": 0.879,
+      "total_%_1x": -18.2,
+      "max_dd_%_1x": 54.7,
+      "trades": 1151,
+      "trades_per_week": 5.25,
+      "avg_trade_%": -0.0156,
+      "win%": 48.2,
+      "kelly_leverage": -2.2,
+      "best_median_year_at_kelly": 0.05,
+      "long%": 90.1,
+      "short%": 8.7
+     }
+    }
+   ]
+  },
+  "A2": {
+   "every": 4,
+   "train_cost": 2.0,
+   "steps": 2000000,
+   "runs": [
+    {
+     "seed": 0,
+     "steps": 2000000,
+     "minutes": 5.3,
+     "best_steps": 200000,
+     "history": [
+      {
+       "steps": 100000,
+       "sharpe": -0.39,
+       "total_%_1x": -19.7,
+       "trades_per_week": 6.61,
+       "avg_trade_%": -0.0143
+      },
+      {
+       "steps": 200000,
+       "sharpe": 0.24,
+       "total_%_1x": 12.5,
+       "trades_per_week": 6.2,
+       "avg_trade_%": 0.0098
+      },
+      {
+       "steps": 300000,
+       "sharpe": -0.01,
+       "total_%_1x": -0.6,
+       "trades_per_week": 5.48,
+       "avg_trade_%": -0.0005
+      },
+      {
+       "steps": 400000,
+       "sharpe": -0.74,
+       "total_%_1x": -39.4,
+       "trades_per_week": 6.15,
+       "avg_trade_%": -0.0308
+      },
+      {
+       "steps": 500000,
+       "sharpe": -0.39,
+       "total_%_1x": -19.8,
+       "trades_per_week": 6.36,
+       "avg_trade_%": -0.0149
+      },
+      {
+       "steps": 600000,
+       "sharpe": -0.3,
+       "total_%_1x": -15.2,
+       "trades_per_week": 6.6,
+       "avg_trade_%": -0.011
+      },
+      {
+       "steps": 700000,
+       "sharpe": -0.24,
+       "total_%_1x": -11.9,
+       "trades_per_week": 6.83,
+       "avg_trade_%": -0.0083
+      },
+      {
+       "steps": 800000,
+       "sharpe": -0.38,
+       "total_%_1x": -19.2,
+       "trades_per_week": 7.08,
+       "avg_trade_%": -0.0129
+      },
+      {
+       "steps": 900000,
+       "sharpe": -0.17,
+       "total_%_1x": -8.5,
+       "trades_per_week": 7.47,
+       "avg_trade_%": -0.0054
+      },
+      {
+       "steps": 1000000,
+       "sharpe": -0.33,
+       "total_%_1x": -17.5,
+       "trades_per_week": 7.62,
+       "avg_trade_%": -0.0109
+      },
+      {
+       "steps": 1100000,
+       "sharpe": -0.06,
+       "total_%_1x": -3.2,
+       "trades_per_week": 7.28,
+       "avg_trade_%": -0.002
+      },
+      {
+       "steps": 1200000,
+       "sharpe": 0.01,
+       "total_%_1x": 0.5,
+       "trades_per_week": 7.31,
+       "avg_trade_%": 0.0004
+      },
+      {
+       "steps": 1300000,
+       "sharpe": -0.15,
+       "total_%_1x": -7.6,
+       "trades_per_week": 7.46,
+       "avg_trade_%": -0.0048
+      },
+      {
+       "steps": 1400000,
+       "sharpe": -0.04,
+       "total_%_1x": -1.8,
+       "trades_per_week": 7.34,
+       "avg_trade_%": -0.001
+      },
+      {
+       "steps": 1500000,
+       "sharpe": -0.25,
+       "total_%_1x": -13.0,
+       "trades_per_week": 7.37,
+       "avg_trade_%": -0.0083
+      },
+      {
+       "steps": 1600000,
+       "sharpe": -0.53,
+       "total_%_1x": -28.3,
+       "trades_per_week": 7.23,
+       "avg_trade_%": -0.0186
+      },
+      {
+       "steps": 1700000,
+       "sharpe": -0.15,
+       "total_%_1x": -7.7,
+       "trades_per_week": 7.02,
+       "avg_trade_%": -0.0051
+      },
+      {
+       "steps": 1800000,
+       "sharpe": -0.29,
+       "total_%_1x": -15.2,
+       "trades_per_week": 7.0,
+       "avg_trade_%": -0.0103
+      },
+      {
+       "steps": 1900000,
+       "sharpe": -0.4,
+       "total_%_1x": -21.7,
+       "trades_per_week": 6.76,
+       "avg_trade_%": -0.0152
+      },
+      {
+       "steps": 2000000,
+       "sharpe": -0.4,
+       "total_%_1x": -20.9,
+       "trades_per_week": 6.85,
+       "avg_trade_%": -0.0146
+      }
+     ],
+     "train": {
+      "days": 3073,
+      "sharpe": 0.5,
+      "mean_day_%": 0.0371,
+      "sd_day_%": 1.172,
+      "total_%_1x": 113.9,
+      "max_dd_%_1x": 38.4,
+      "trades": 3959,
+      "trades_per_week": 6.33,
+      "avg_trade_%": 0.0287,
+      "win%": 45.2,
+      "kelly_leverage": 2.7,
+      "best_median_year_at_kelly": 0.13,
+      "long%": 64.9,
+      "short%": 31.6
+     },
+     "val": {
+      "days": 1032,
+      "sharpe": 0.24,
+      "mean_day_%": 0.0121,
+      "sd_day_%": 0.789,
+      "total_%_1x": 12.5,
+      "max_dd_%_1x": 21.9,
+      "trades": 1290,
+      "trades_per_week": 6.2,
+      "avg_trade_%": 0.0098,
+      "win%": 44.6,
+      "kelly_leverage": 1.9,
+      "best_median_year_at_kelly": 0.03,
+      "long%": 66.8,
+      "short%": 29.6
+     },
+     "test": {
+      "days": 1089,
+      "sharpe": 0.33,
+      "mean_day_%": 0.0181,
+      "sd_day_%": 0.859,
+      "total_%_1x": 19.7,
+      "max_dd_%_1x": 28.5,
+      "trades": 1390,
+      "trades_per_week": 6.33,
+      "avg_trade_%": 0.0142,
+      "win%": 45.5,
+      "kelly_leverage": 2.5,
+      "best_median_year_at_kelly": 0.06,
+      "long%": 66.0,
+      "short%": 30.2
+     },
+     "test_cost_x2": {
+      "days": 1089,
+      "sharpe": -0.18,
+      "mean_day_%": -0.0099,
+      "sd_day_%": 0.865,
+      "total_%_1x": -10.8,
+      "max_dd_%_1x": 39.1,
+      "trades": 1390,
+      "trades_per_week": 6.33,
+      "avg_trade_%": -0.0078,
+      "win%": 44.2,
+      "kelly_leverage": -1.3,
+      "best_median_year_at_kelly": 0.02,
+      "long%": 66.0,
+      "short%": 30.2
+     }
+    },
+    {
+     "seed": 1,
+     "steps": 2000000,
+     "minutes": 4.9,
+     "best_steps": 100000,
+     "history": [
+      {
+       "steps": 100000,
+       "sharpe": 0.46,
+       "total_%_1x": 20.9,
+       "trades_per_week": 4.06,
+       "avg_trade_%": 0.0245
+      },
+      {
+       "steps": 200000,
+       "sharpe": 0.19,
+       "total_%_1x": 9.6,
+       "trades_per_week": 4.91,
+       "avg_trade_%": 0.0093
+      },
+      {
+       "steps": 300000,
+       "sharpe": 0.13,
+       "total_%_1x": 7.0,
+       "trades_per_week": 4.99,
+       "avg_trade_%": 0.007
+      },
+      {
+       "steps": 400000,
+       "sharpe": 0.17,
+       "total_%_1x": 8.8,
+       "trades_per_week": 4.99,
+       "avg_trade_%": 0.0086
+      },
+      {
+       "steps": 500000,
+       "sharpe": -0.15,
+       "total_%_1x": -7.7,
+       "trades_per_week": 5.39,
+       "avg_trade_%": -0.0068
+      },
+      {
+       "steps": 600000,
+       "sharpe": -0.2,
+       "total_%_1x": -10.6,
+       "trades_per_week": 5.66,
+       "avg_trade_%": -0.0088
+      },
+      {
+       "steps": 700000,
+       "sharpe": -0.1,
+       "total_%_1x": -4.7,
+       "trades_per_week": 5.84,
+       "avg_trade_%": -0.0038
+      },
+      {
+       "steps": 800000,
+       "sharpe": -0.08,
+       "total_%_1x": -4.0,
+       "trades_per_week": 5.81,
+       "avg_trade_%": -0.0031
+      },
+      {
+       "steps": 900000,
+       "sharpe": -0.19,
+       "total_%_1x": -9.7,
+       "trades_per_week": 5.93,
+       "avg_trade_%": -0.0077
+      },
+      {
+       "steps": 1000000,
+       "sharpe": -0.21,
+       "total_%_1x": -10.3,
+       "trades_per_week": 5.62,
+       "avg_trade_%": -0.0087
+      },
+      {
+       "steps": 1100000,
+       "sharpe": -0.56,
+       "total_%_1x": -27.0,
+       "trades_per_week": 5.65,
+       "avg_trade_%": -0.0228
+      },
+      {
+       "steps": 1200000,
+       "sharpe": -0.53,
+       "total_%_1x": -26.0,
+       "trades_per_week": 5.61,
+       "avg_trade_%": -0.0222
+      },
+      {
+       "steps": 1300000,
+       "sharpe": -0.58,
+       "total_%_1x": -28.9,
+       "trades_per_week": 5.8,
+       "avg_trade_%": -0.0238
+      },
+      {
+       "steps": 1400000,
+       "sharpe": -0.36,
+       "total_%_1x": -17.7,
+       "trades_per_week": 5.66,
+       "avg_trade_%": -0.015
+      },
+      {
+       "steps": 1500000,
+       "sharpe": -0.36,
+       "total_%_1x": -17.6,
+       "trades_per_week": 5.9,
+       "avg_trade_%": -0.0142
+      },
+      {
+       "steps": 1600000,
+       "sharpe": -0.42,
+       "total_%_1x": -20.5,
+       "trades_per_week": 5.62,
+       "avg_trade_%": -0.0174
+      },
+      {
+       "steps": 1700000,
+       "sharpe": -0.35,
+       "total_%_1x": -17.4,
+       "trades_per_week": 5.81,
+       "avg_trade_%": -0.0143
+      },
+      {
+       "steps": 1800000,
+       "sharpe": -0.45,
+       "total_%_1x": -21.8,
+       "trades_per_week": 5.85,
+       "avg_trade_%": -0.0178
+      },
+      {
+       "steps": 1900000,
+       "sharpe": -0.3,
+       "total_%_1x": -14.5,
+       "trades_per_week": 5.93,
+       "avg_trade_%": -0.0117
+      },
+      {
+       "steps": 2000000,
+       "sharpe": -0.13,
+       "total_%_1x": -6.6,
+       "trades_per_week": 5.84,
+       "avg_trade_%": -0.0053
+      }
+     ],
+     "train": {
+      "days": 3073,
+      "sharpe": -0.01,
+      "mean_day_%": -0.001,
+      "sd_day_%": 1.069,
+      "total_%_1x": -3.1,
+      "max_dd_%_1x": 68.5,
+      "trades": 2624,
+      "trades_per_week": 4.2,
+      "avg_trade_%": -0.0013,
+      "win%": 49.0,
+      "kelly_leverage": -0.1,
+      "best_median_year_at_kelly": 0.0,
+      "long%": 72.9,
+      "short%": 5.6
+     },
+     "val": {
+      "days": 1032,
+      "sharpe": 0.46,
+      "mean_day_%": 0.0203,
+      "sd_day_%": 0.696,
+      "total_%_1x": 20.9,
+      "max_dd_%_1x": 25.4,
+      "trades": 845,
+      "trades_per_week": 4.06,
+      "avg_trade_%": 0.0245,
+      "win%": 50.9,
+      "kelly_leverage": 4.2,
+      "best_median_year_at_kelly": 0.11,
+      "long%": 69.2,
+      "short%": 4.2
+     },
+     "test": {
+      "days": 1089,
+      "sharpe": 0.67,
+      "mean_day_%": 0.0317,
+      "sd_day_%": 0.745,
+      "total_%_1x": 34.5,
+      "max_dd_%_1x": 16.5,
+      "trades": 896,
+      "trades_per_week": 4.08,
+      "avg_trade_%": 0.0385,
+      "win%": 51.2,
+      "kelly_leverage": 5.7,
+      "best_median_year_at_kelly": 0.26,
+      "long%": 69.9,
+      "short%": 5.1
+     },
+     "test_cost_x2": {
+      "days": 1089,
+      "sharpe": 0.29,
+      "mean_day_%": 0.0136,
+      "sd_day_%": 0.744,
+      "total_%_1x": 14.8,
+      "max_dd_%_1x": 19.9,
+      "trades": 896,
+      "trades_per_week": 4.08,
+      "avg_trade_%": 0.0165,
+      "win%": 49.0,
+      "kelly_leverage": 2.4,
+      "best_median_year_at_kelly": 0.04,
+      "long%": 69.9,
+      "short%": 5.1
+     }
+    },
+    {
+     "seed": 2,
+     "steps": 2000000,
+     "minutes": 5.1,
+     "best_steps": 300000,
+     "history": [
+      {
+       "steps": 100000,
+       "sharpe": -0.11,
+       "total_%_1x": -4.9,
+       "trades_per_week": 5.17,
+       "avg_trade_%": -0.0045
+      },
+      {
+       "steps": 200000,
+       "sharpe": 0.0,
+       "total_%_1x": 0.1,
+       "trades_per_week": 5.95,
+       "avg_trade_%": 0.0001
+      },
+      {
+       "steps": 300000,
+       "sharpe": 0.21,
+       "total_%_1x": 10.5,
+       "trades_per_week": 6.01,
+       "avg_trade_%": 0.0085
+      },
+      {
+       "steps": 400000,
+       "sharpe": -0.03,
+       "total_%_1x": -1.5,
+       "trades_per_week": 6.01,
+       "avg_trade_%": -0.0013
+      },
+      {
+       "steps": 500000,
+       "sharpe": 0.01,
+       "total_%_1x": 0.5,
+       "trades_per_week": 5.86,
+       "avg_trade_%": 0.0005
+      },
+      {
+       "steps": 600000,
+       "sharpe": -0.0,
+       "total_%_1x": -0.2,
+       "trades_per_week": 5.83,
+       "avg_trade_%": -0.0
+      },
+      {
+       "steps": 700000,
+       "sharpe": -0.04,
+       "total_%_1x": -2.2,
+       "trades_per_week": 6.08,
+       "avg_trade_%": -0.0015
+      },
+      {
+       "steps": 800000,
+       "sharpe": -0.19,
+       "total_%_1x": -9.1,
+       "trades_per_week": 6.03,
+       "avg_trade_%": -0.0071
+      },
+      {
+       "steps": 900000,
+       "sharpe": 0.0,
+       "total_%_1x": 0.0,
+       "trades_per_week": 5.84,
+       "avg_trade_%": 0.0
+      },
+      {
+       "steps": 1000000,
+       "sharpe": -0.43,
+       "total_%_1x": -22.0,
+       "trades_per_week": 5.76,
+       "avg_trade_%": -0.0184
+      },
+      {
+       "steps": 1100000,
+       "sharpe": -0.27,
+       "total_%_1x": -13.6,
+       "trades_per_week": 5.97,
+       "avg_trade_%": -0.0109
+      },
+      {
+       "steps": 1200000,
+       "sharpe": -0.34,
+       "total_%_1x": -17.0,
+       "trades_per_week": 5.92,
+       "avg_trade_%": -0.0138
+      },
+      {
+       "steps": 1300000,
+       "sharpe": -0.21,
+       "total_%_1x": -10.5,
+       "trades_per_week": 5.98,
+       "avg_trade_%": -0.0084
+      },
+      {
+       "steps": 1400000,
+       "sharpe": -0.28,
+       "total_%_1x": -13.9,
+       "trades_per_week": 5.98,
+       "avg_trade_%": -0.0111
+      },
+      {
+       "steps": 1500000,
+       "sharpe": -0.31,
+       "total_%_1x": -14.9,
+       "trades_per_week": 6.0,
+       "avg_trade_%": -0.0119
+      },
+      {
+       "steps": 1600000,
+       "sharpe": -0.18,
+       "total_%_1x": -8.8,
+       "trades_per_week": 5.87,
+       "avg_trade_%": -0.0072
+      },
+      {
+       "steps": 1700000,
+       "sharpe": -0.18,
+       "total_%_1x": -8.6,
+       "trades_per_week": 5.86,
+       "avg_trade_%": -0.007
+      },
+      {
+       "steps": 1800000,
+       "sharpe": -0.32,
+       "total_%_1x": -15.5,
+       "trades_per_week": 5.91,
+       "avg_trade_%": -0.0126
+      },
+      {
+       "steps": 1900000,
+       "sharpe": -0.21,
+       "total_%_1x": -9.7,
+       "trades_per_week": 5.89,
+       "avg_trade_%": -0.0078
+      },
+      {
+       "steps": 2000000,
+       "sharpe": 0.06,
+       "total_%_1x": 2.9,
+       "trades_per_week": 5.95,
+       "avg_trade_%": 0.0024
+      }
+     ],
+     "train": {
+      "days": 3073,
+      "sharpe": 0.49,
+      "mean_day_%": 0.0366,
+      "sd_day_%": 1.181,
+      "total_%_1x": 112.5,
+      "max_dd_%_1x": 44.7,
+      "trades": 3719,
+      "trades_per_week": 5.95,
+      "avg_trade_%": 0.0302,
+      "win%": 47.4,
+      "kelly_leverage": 2.6,
+      "best_median_year_at_kelly": 0.13,
+      "long%": 58.4,
+      "short%": 36.5
+     },
+     "val": {
+      "days": 1032,
+      "sharpe": 0.21,
+      "mean_day_%": 0.0102,
+      "sd_day_%": 0.779,
+      "total_%_1x": 10.5,
+      "max_dd_%_1x": 34.2,
+      "trades": 1250,
+      "trades_per_week": 6.01,
+      "avg_trade_%": 0.0085,
+      "win%": 46.2,
+      "kelly_leverage": 1.7,
+      "best_median_year_at_kelly": 0.02,
+      "long%": 60.2,
+      "short%": 35.1
+     },
+     "test": {
+      "days": 1089,
+      "sharpe": 0.2,
+      "mean_day_%": 0.0108,
+      "sd_day_%": 0.871,
+      "total_%_1x": 11.8,
+      "max_dd_%_1x": 24.6,
+      "trades": 1317,
+      "trades_per_week": 6.0,
+      "avg_trade_%": 0.0091,
+      "win%": 47.3,
+      "kelly_leverage": 1.4,
+      "best_median_year_at_kelly": 0.02,
+      "long%": 58.1,
+      "short%": 37.2
+     },
+     "test_cost_x2": {
+      "days": 1089,
+      "sharpe": -0.29,
+      "mean_day_%": -0.0158,
+      "sd_day_%": 0.875,
+      "total_%_1x": -17.2,
+      "max_dd_%_1x": 41.3,
+      "trades": 1317,
+      "trades_per_week": 6.0,
+      "avg_trade_%": -0.0129,
+      "win%": 45.6,
+      "kelly_leverage": -2.1,
+      "best_median_year_at_kelly": 0.04,
+      "long%": 58.1,
+      "short%": 37.2
+     }
+    }
+   ]
+  }
+ },
+ "long_every_session": {
+  "train": {
+   "days": 3073,
+   "sharpe": -0.14,
+   "mean_day_%": -0.0103,
+   "sd_day_%": 1.194,
+   "total_%_1x": -31.6,
+   "max_dd_%_1x": 103.1,
+   "trades": 3073,
+   "trades_per_week": 4.91,
+   "avg_trade_%": -0.0103,
+   "win%": 50.1,
+   "kelly_leverage": -0.7,
+   "best_median_year_at_kelly": 0.01
+  },
+  "val": {
+   "days": 1032,
+   "sharpe": 0.03,
+   "mean_day_%": 0.0017,
+   "sd_day_%": 0.82,
+   "total_%_1x": 1.7,
+   "max_dd_%_1x": 26.2,
+   "trades": 1032,
+   "trades_per_week": 4.96,
+   "avg_trade_%": 0.0017,
+   "win%": 52.6,
+   "kelly_leverage": 0.2,
+   "best_median_year_at_kelly": 0.0
+  },
+  "test": {
+   "days": 1089,
+   "sharpe": 0.14,
+   "mean_day_%": 0.0078,
+   "sd_day_%": 0.873,
+   "total_%_1x": 8.5,
+   "max_dd_%_1x": 33.9,
+   "trades": 1089,
+   "trades_per_week": 4.96,
+   "avg_trade_%": 0.0078,
+   "win%": 51.3,
+   "kelly_leverage": 1.0,
+   "best_median_year_at_kelly": 0.01
+  }
+ }
+}

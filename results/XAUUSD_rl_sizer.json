@@ -1,0 +1,1744 @@
+{
+ "how": "Candidate trades = every stop-order fill of the 積極模式 entry on the 18-hour channel, WITHOUT the\nsqueeze filter (so the agent can take more trades than the mode if it finds them worth it). Each\ncandidate is simulated alone with the live exits (stop 2 ATR, trail 5 ATR, day mode, costs).\n\nAt each candidate the agent sees the 33 market features of research/rl_agent.py at the signal bar,\nwhether the squeeze filter would pass, the direction, the stop distance, how many positions are\nopen, the account's drawdown and the last three results (closed trades only: a trade still open\nat the signal bar is not in them), and picks a size: skip, 0.5x, 1x or 2x\nof the base risk F0 = 5 % of the account (the risk at which 積極模式's median year is +100 %).\nAt most two positions, same direction (as the mode). Reward = log growth of the account,\nlog(1 + F0 x size x R): maximising it is maximising the compounded return.",
+ "F0": 0.05,
+ "n_candidates": 2385,
+ "variants": {
+  "B1": {
+   "sizes": [
+    0.0,
+    0.5,
+    1.0,
+    2.0
+   ],
+   "baselines": {
+    "all candidates 1x": {
+     "train": {
+      "trades": 566,
+      "per_week": 0.9,
+      "avgR": 0.564,
+      "avg_size": 1.0,
+      "cagr": 1.679,
+      "max_dd": 0.538,
+      "median_year": 1.212,
+      "worst_year": 0.375,
+      "years": {
+       "2005": 2.16,
+       "2006": 1.287,
+       "2007": 1.304,
+       "2008": 2.573,
+       "2009": 0.375,
+       "2010": 0.747,
+       "2011": 1.136,
+       "2012": 0.402,
+       "2013": 18.61,
+       "2014": 6.471,
+       "2015": 0.461,
+       "2016": 0.489
+      }
+     },
+     "val": {
+      "trades": 233,
+      "per_week": 1.12,
+      "avgR": 0.233,
+      "avg_size": 1.0,
+      "cagr": 0.533,
+      "max_dd": 0.809,
+      "median_year": 1.533,
+      "worst_year": -0.597,
+      "years": {
+       "2017": 3.512,
+       "2018": -0.597,
+       "2019": -0.447,
+       "2020": 4.492
+      }
+     },
+     "test": {
+      "trades": 267,
+      "per_week": 1.21,
+      "avgR": 0.34,
+      "avg_size": 1.0,
+      "cagr": 1.18,
+      "max_dd": 0.625,
+      "median_year": 0.912,
+      "worst_year": 0.321,
+      "years": {
+       "2021": 2.405,
+       "2022": 0.321,
+       "2023": 1.141,
+       "2024": 0.912,
+       "2025": 0.452
+      }
+     }
+    },
+    "all candidates 2x": {
+     "train": {
+      "trades": 566,
+      "per_week": 0.9,
+      "avgR": 0.564,
+      "avg_size": 2.0,
+      "cagr": 3.601,
+      "max_dd": 0.803,
+      "median_year": 2.386,
+      "worst_year": 0.289,
+      "years": {
+       "2005": 5.872,
+       "2006": 3.164,
+       "2007": 2.227,
+       "2008": 8.16,
+       "2009": 0.41,
+       "2010": 1.474,
+       "2011": 2.546,
+       "2012": 0.37,
+       "2013": 130.683,
+       "2014": 18.276,
+       "2015": 0.289,
+       "2016": 0.909
+      }
+     },
+     "val": {
+      "trades": 233,
+      "per_week": 1.12,
+      "avgR": 0.233,
+      "avg_size": 2.0,
+      "cagr": 0.603,
+      "max_dd": 0.976,
+      "median_year": 6.101,
+      "worst_year": -0.876,
+      "years": {
+       "2017": 13.209,
+       "2018": -0.876,
+       "2019": -0.731,
+       "2020": 12.933
+      }
+     },
+     "test": {
+      "trades": 267,
+      "per_week": 1.21,
+      "avgR": 0.34,
+      "avg_size": 2.0,
+      "cagr": 2.037,
+      "max_dd": 0.883,
+      "median_year": 1.138,
+      "worst_year": 0.217,
+      "years": {
+       "2021": 6.289,
+       "2022": 0.217,
+       "2023": 2.105,
+       "2024": 1.138,
+       "2025": 0.838
+      }
+     }
+    },
+    "squeeze passes 1x (= 積極模式)": {
+     "train": {
+      "trades": 435,
+      "per_week": 0.69,
+      "avgR": 0.694,
+      "avg_size": 1.0,
+      "cagr": 1.546,
+      "max_dd": 0.596,
+      "median_year": 1.029,
+      "worst_year": 0.275,
+      "years": {
+       "2005": 1.932,
+       "2006": 0.275,
+       "2007": 1.471,
+       "2008": 1.704,
+       "2009": 1.036,
+       "2010": 0.712,
+       "2011": 1.023,
+       "2012": 0.547,
+       "2013": 9.964,
+       "2014": 8.351,
+       "2015": 0.825,
+       "2016": 0.454
+      }
+     },
+     "val": {
+      "trades": 200,
+      "per_week": 0.96,
+      "avgR": 0.217,
+      "avg_size": 1.0,
+      "cagr": 0.379,
+      "max_dd": 0.741,
+      "median_year": 0.693,
+      "worst_year": -0.454,
+      "years": {
+       "2017": 2.697,
+       "2018": -0.454,
+       "2019": -0.345,
+       "2020": 1.73
+      }
+     },
+     "test": {
+      "trades": 210,
+      "per_week": 0.95,
+      "avgR": 0.399,
+      "avg_size": 1.0,
+      "cagr": 1.104,
+      "max_dd": 0.593,
+      "median_year": 0.645,
+      "worst_year": -0.069,
+      "years": {
+       "2021": 2.833,
+       "2022": -0.069,
+       "2023": 1.7,
+       "2024": 0.645,
+       "2025": 0.452
+      }
+     }
+    },
+    "squeeze passes 1.5x": {
+     "train": {
+      "trades": 435,
+      "per_week": 0.69,
+      "avgR": 0.694,
+      "avg_size": 1.5,
+      "cagr": 2.442,
+      "max_dd": 0.747,
+      "median_year": 1.62,
+      "worst_year": 0.352,
+      "years": {
+       "2005": 3.399,
+       "2006": 0.352,
+       "2007": 2.214,
+       "2008": 2.954,
+       "2009": 1.607,
+       "2010": 1.08,
+       "2011": 1.633,
+       "2012": 0.674,
+       "2013": 23.422,
+       "2014": 17.459,
+       "2015": 1.034,
+       "2016": 0.665
+      }
+     },
+     "val": {
+      "trades": 200,
+      "per_week": 0.96,
+      "avgR": 0.217,
+      "avg_size": 1.5,
+      "cagr": 0.421,
+      "max_dd": 0.883,
+      "median_year": 0.989,
+      "worst_year": -0.627,
+      "years": {
+       "2017": 5.199,
+       "2018": -0.627,
+       "2019": -0.493,
+       "2020": 2.471
+      }
+     },
+     "test": {
+      "trades": 210,
+      "per_week": 0.95,
+      "avgR": 0.399,
+      "avg_size": 1.5,
+      "cagr": 1.632,
+      "max_dd": 0.752,
+      "median_year": 0.818,
+      "worst_year": -0.194,
+      "years": {
+       "2021": 5.34,
+       "2022": -0.194,
+       "2023": 2.84,
+       "2024": 0.818,
+       "2025": 0.658
+      }
+     }
+    },
+    "squeeze passes 2x": {
+     "train": {
+      "trades": 435,
+      "per_week": 0.69,
+      "avgR": 0.694,
+      "avg_size": 2.0,
+      "cagr": 3.311,
+      "max_dd": 0.844,
+      "median_year": 2.209,
+      "worst_year": 0.38,
+      "years": {
+       "2005": 5.199,
+       "2006": 0.38,
+       "2007": 2.822,
+       "2008": 4.427,
+       "2009": 2.147,
+       "2010": 1.421,
+       "2011": 2.271,
+       "2012": 0.679,
+       "2013": 46.132,
+       "2014": 29.639,
+       "2015": 1.067,
+       "2016": 0.852
+      }
+     },
+     "val": {
+      "trades": 200,
+      "per_week": 0.96,
+      "avgR": 0.217,
+      "avg_size": 2.0,
+      "cagr": 0.369,
+      "max_dd": 0.951,
+      "median_year": 1.142,
+      "worst_year": -0.756,
+      "years": {
+       "2017": 8.65,
+       "2018": -0.756,
+       "2019": -0.618,
+       "2020": 2.901
+      }
+     },
+     "test": {
+      "trades": 210,
+      "per_week": 0.95,
+      "avgR": 0.399,
+      "avg_size": 2.0,
+      "cagr": 2.049,
+      "max_dd": 0.861,
+      "median_year": 0.87,
+      "worst_year": -0.345,
+      "years": {
+       "2021": 8.633,
+       "2022": -0.345,
+       "2023": 4.075,
+       "2024": 0.87,
+       "2025": 0.838
+      }
+     }
+    },
+    "squeeze 2x, others 0.5x": {
+     "train": {
+      "trades": 566,
+      "per_week": 0.9,
+      "avgR": 0.564,
+      "avg_size": 1.58,
+      "cagr": 3.378,
+      "max_dd": 0.818,
+      "median_year": 1.97,
+      "worst_year": 0.182,
+      "years": {
+       "2005": 5.479,
+       "2006": 0.571,
+       "2007": 3.224,
+       "2008": 5.442,
+       "2009": 1.596,
+       "2010": 1.705,
+       "2011": 2.236,
+       "2012": 0.663,
+       "2013": 66.79,
+       "2014": 28.677,
+       "2015": 0.984,
+       "2016": 0.182
+      }
+     },
+     "val": {
+      "trades": 233,
+      "per_week": 1.12,
+      "avgR": 0.233,
+      "avg_size": 1.61,
+      "cagr": 0.231,
+      "max_dd": 0.934,
+      "median_year": 0.419,
+      "worst_year": -0.82,
+      "years": {
+       "2017": 10.168,
+       "2018": -0.82,
+       "2019": -0.515,
+       "2020": 1.353
+      }
+     },
+     "test": {
+      "trades": 267,
+      "per_week": 1.21,
+      "avgR": 0.34,
+      "avg_size": 1.6,
+      "cagr": 2.222,
+      "max_dd": 0.764,
+      "median_year": 0.838,
+      "worst_year": 0.213,
+      "years": {
+       "2021": 6.545,
+       "2022": 0.213,
+       "2023": 3.919,
+       "2024": 0.678,
+       "2025": 0.838
+      }
+     }
+    }
+   },
+   "runs": [
+    {
+     "seed": 0,
+     "minutes": 1.3,
+     "best_steps": 250000,
+     "history": [
+      {
+       "steps": 50000,
+       "val_cagr": 0.132,
+       "val_dd": 0.762,
+       "val_per_week": 0.4
+      },
+      {
+       "steps": 100000,
+       "val_cagr": -0.229,
+       "val_dd": 0.908,
+       "val_per_week": 0.44
+      },
+      {
+       "steps": 150000,
+       "val_cagr": -0.136,
+       "val_dd": 0.875,
+       "val_per_week": 0.47
+      },
+      {
+       "steps": 200000,
+       "val_cagr": 0.487,
+       "val_dd": 0.911,
+       "val_per_week": 0.9
+      },
+      {
+       "steps": 250000,
+       "val_cagr": 0.652,
+       "val_dd": 0.968,
+       "val_per_week": 1.09
+      },
+      {
+       "steps": 300000,
+       "val_cagr": 0.449,
+       "val_dd": 0.973,
+       "val_per_week": 1.09
+      },
+      {
+       "steps": 350000,
+       "val_cagr": 0.562,
+       "val_dd": 0.974,
+       "val_per_week": 1.08
+      },
+      {
+       "steps": 400000,
+       "val_cagr": 0.392,
+       "val_dd": 0.939,
+       "val_per_week": 0.84
+      },
+      {
+       "steps": 450000,
+       "val_cagr": 0.193,
+       "val_dd": 0.953,
+       "val_per_week": 0.88
+      },
+      {
+       "steps": 500000,
+       "val_cagr": 0.175,
+       "val_dd": 0.931,
+       "val_per_week": 0.71
+      },
+      {
+       "steps": 550000,
+       "val_cagr": 0.336,
+       "val_dd": 0.919,
+       "val_per_week": 0.87
+      },
+      {
+       "steps": 600000,
+       "val_cagr": 0.468,
+       "val_dd": 0.909,
+       "val_per_week": 0.86
+      }
+     ],
+     "train": {
+      "trades": 525,
+      "per_week": 0.84,
+      "avgR": 0.606,
+      "avg_size": 1.78,
+      "cagr": 4.048,
+      "max_dd": 0.82,
+      "median_year": 2.38,
+      "worst_year": 0.949,
+      "years": {
+       "2005": 6.64,
+       "2006": 5.019,
+       "2007": 1.343,
+       "2008": 6.354,
+       "2009": 1.21,
+       "2010": 2.626,
+       "2011": 2.133,
+       "2012": 1.099,
+       "2013": 72.215,
+       "2014": 22.011,
+       "2015": 0.949,
+       "2016": 0.989
+      }
+     },
+     "val": {
+      "trades": 227,
+      "per_week": 1.09,
+      "avgR": 0.243,
+      "avg_size": 1.88,
+      "cagr": 0.652,
+      "max_dd": 0.968,
+      "median_year": 4.956,
+      "worst_year": -0.819,
+      "years": {
+       "2017": 12.4,
+       "2018": -0.819,
+       "2019": -0.737,
+       "2020": 10.649
+      }
+     },
+     "test": {
+      "trades": 251,
+      "per_week": 1.14,
+      "avgR": 0.344,
+      "avg_size": 1.74,
+      "cagr": 1.837,
+      "max_dd": 0.753,
+      "median_year": 1.313,
+      "worst_year": 0.298,
+      "years": {
+       "2021": 2.646,
+       "2022": 0.298,
+       "2023": 4.385,
+       "2024": 0.378,
+       "2025": 1.313
+      }
+     }
+    },
+    {
+     "seed": 1,
+     "minutes": 1.3,
+     "best_steps": 150000,
+     "history": [
+      {
+       "steps": 50000,
+       "val_cagr": 0.763,
+       "val_dd": 0.941,
+       "val_per_week": 1.1
+      },
+      {
+       "steps": 100000,
+       "val_cagr": 0.338,
+       "val_dd": 0.942,
+       "val_per_week": 0.62
+      },
+      {
+       "steps": 150000,
+       "val_cagr": 0.991,
+       "val_dd": 0.961,
+       "val_per_week": 1.03
+      },
+      {
+       "steps": 200000,
+       "val_cagr": 0.67,
+       "val_dd": 0.962,
+       "val_per_week": 1.01
+      },
+      {
+       "steps": 250000,
+       "val_cagr": 0.633,
+       "val_dd": 0.963,
+       "val_per_week": 1.03
+      },
+      {
+       "steps": 300000,
+       "val_cagr": 0.909,
+       "val_dd": 0.958,
+       "val_per_week": 0.99
+      },
+      {
+       "steps": 350000,
+       "val_cagr": 0.774,
+       "val_dd": 0.957,
+       "val_per_week": 1.08
+      },
+      {
+       "steps": 400000,
+       "val_cagr": 0.575,
+       "val_dd": 0.956,
+       "val_per_week": 1.05
+      },
+      {
+       "steps": 450000,
+       "val_cagr": 0.604,
+       "val_dd": 0.964,
+       "val_per_week": 1.06
+      },
+      {
+       "steps": 500000,
+       "val_cagr": 0.443,
+       "val_dd": 0.917,
+       "val_per_week": 0.85
+      },
+      {
+       "steps": 550000,
+       "val_cagr": 0.46,
+       "val_dd": 0.966,
+       "val_per_week": 0.97
+      },
+      {
+       "steps": 600000,
+       "val_cagr": 0.498,
+       "val_dd": 0.967,
+       "val_per_week": 1.05
+      }
+     ],
+     "train": {
+      "trades": 479,
+      "per_week": 0.77,
+      "avgR": 0.634,
+      "avg_size": 1.91,
+      "cagr": 3.231,
+      "max_dd": 0.812,
+      "median_year": 2.148,
+      "worst_year": 0.247,
+      "years": {
+       "2005": 3.77,
+       "2006": 2.026,
+       "2007": 2.499,
+       "2008": 6.059,
+       "2009": 0.662,
+       "2010": 1.899,
+       "2011": 2.27,
+       "2012": 0.496,
+       "2013": 102.944,
+       "2014": 21.191,
+       "2015": 0.247,
+       "2016": 0.358
+      }
+     },
+     "val": {
+      "trades": 215,
+      "per_week": 1.03,
+      "avgR": 0.274,
+      "avg_size": 1.96,
+      "cagr": 0.991,
+      "max_dd": 0.961,
+      "median_year": 6.224,
+      "worst_year": -0.778,
+      "years": {
+       "2017": 13.172,
+       "2018": -0.778,
+       "2019": -0.724,
+       "2020": 17.055
+      }
+     },
+     "test": {
+      "trades": 227,
+      "per_week": 1.03,
+      "avgR": 0.31,
+      "avg_size": 1.93,
+      "cagr": 1.285,
+      "max_dd": 0.9,
+      "median_year": 0.737,
+      "worst_year": -0.169,
+      "years": {
+       "2021": 7.414,
+       "2022": -0.169,
+       "2023": 1.89,
+       "2024": 0.737,
+       "2025": -0.071
+      }
+     }
+    },
+    {
+     "seed": 2,
+     "minutes": 1.3,
+     "best_steps": 600000,
+     "history": [
+      {
+       "steps": 50000,
+       "val_cagr": 0.755,
+       "val_dd": 0.914,
+       "val_per_week": 1.12
+      },
+      {
+       "steps": 100000,
+       "val_cagr": 0.274,
+       "val_dd": 0.866,
+       "val_per_week": 0.55
+      },
+      {
+       "steps": 150000,
+       "val_cagr": 0.524,
+       "val_dd": 0.966,
+       "val_per_week": 1.07
+      },
+      {
+       "steps": 200000,
+       "val_cagr": 0.551,
+       "val_dd": 0.965,
+       "val_per_week": 1.12
+      },
+      {
+       "steps": 250000,
+       "val_cagr": 0.791,
+       "val_dd": 0.96,
+       "val_per_week": 1.09
+      },
+      {
+       "steps": 300000,
+       "val_cagr": 0.773,
+       "val_dd": 0.948,
+       "val_per_week": 1.12
+      },
+      {
+       "steps": 350000,
+       "val_cagr": 0.485,
+       "val_dd": 0.967,
+       "val_per_week": 1.12
+      },
+      {
+       "steps": 400000,
+       "val_cagr": 0.615,
+       "val_dd": 0.955,
+       "val_per_week": 1.12
+      },
+      {
+       "steps": 450000,
+       "val_cagr": 0.422,
+       "val_dd": 0.962,
+       "val_per_week": 1.12
+      },
+      {
+       "steps": 500000,
+       "val_cagr": 0.526,
+       "val_dd": 0.956,
+       "val_per_week": 1.12
+      },
+      {
+       "steps": 550000,
+       "val_cagr": 0.68,
+       "val_dd": 0.95,
+       "val_per_week": 1.12
+      },
+      {
+       "steps": 600000,
+       "val_cagr": 0.946,
+       "val_dd": 0.937,
+       "val_per_week": 1.12
+      }
+     ],
+     "train": {
+      "trades": 566,
+      "per_week": 0.9,
+      "avgR": 0.564,
+      "avg_size": 1.47,
+      "cagr": 4.683,
+      "max_dd": 0.68,
+      "median_year": 4.261,
+      "worst_year": 1.399,
+      "years": {
+       "2005": 5.448,
+       "2006": 6.433,
+       "2007": 4.764,
+       "2008": 7.656,
+       "2009": 2.107,
+       "2010": 2.112,
+       "2011": 3.758,
+       "2012": 1.543,
+       "2013": 28.11,
+       "2014": 20.453,
+       "2015": 1.399,
+       "2016": 1.692
+      }
+     },
+     "val": {
+      "trades": 233,
+      "per_week": 1.12,
+      "avgR": 0.234,
+      "avg_size": 1.59,
+      "cagr": 0.946,
+      "max_dd": 0.937,
+      "median_year": 4.467,
+      "worst_year": -0.699,
+      "years": {
+       "2017": 9.594,
+       "2018": -0.699,
+       "2019": -0.661,
+       "2020": 12.247
+      }
+     },
+     "test": {
+      "trades": 267,
+      "per_week": 1.21,
+      "avgR": 0.337,
+      "avg_size": 1.48,
+      "cagr": 0.835,
+      "max_dd": 0.927,
+      "median_year": 0.321,
+      "worst_year": -0.222,
+      "years": {
+       "2021": 3.12,
+       "2022": -0.222,
+       "2023": 1.65,
+       "2024": 0.321,
+       "2025": 0.152
+      }
+     }
+    }
+   ]
+  },
+  "B2": {
+   "lam": 1.0,
+   "sizes": [
+    0.0,
+    0.5,
+    1.0,
+    1.5,
+    2.0,
+    3.0
+   ],
+   "baselines": {
+    "all candidates 1x": {
+     "train": {
+      "trades": 566,
+      "per_week": 0.9,
+      "avgR": 0.564,
+      "avg_size": 1.0,
+      "cagr": 1.679,
+      "max_dd": 0.538,
+      "median_year": 1.212,
+      "worst_year": 0.375,
+      "objective": -0.035,
+      "years": {
+       "2005": 2.16,
+       "2006": 1.287,
+       "2007": 1.304,
+       "2008": 2.573,
+       "2009": 0.375,
+       "2010": 0.747,
+       "2011": 1.136,
+       "2012": 0.402,
+       "2013": 18.61,
+       "2014": 6.471,
+       "2015": 0.461,
+       "2016": 0.489
+      }
+     },
+     "val": {
+      "trades": 233,
+      "per_week": 1.12,
+      "avgR": 0.233,
+      "avg_size": 1.0,
+      "cagr": 0.533,
+      "max_dd": 0.809,
+      "median_year": 1.533,
+      "worst_year": -0.597,
+      "objective": -1.042,
+      "years": {
+       "2017": 3.512,
+       "2018": -0.597,
+       "2019": -0.447,
+       "2020": 4.492
+      }
+     },
+     "test": {
+      "trades": 267,
+      "per_week": 1.21,
+      "avgR": 0.34,
+      "avg_size": 1.0,
+      "cagr": 1.18,
+      "max_dd": 0.625,
+      "median_year": 0.912,
+      "worst_year": 0.321,
+      "objective": -0.74,
+      "years": {
+       "2021": 2.405,
+       "2022": 0.321,
+       "2023": 1.141,
+       "2024": 0.912,
+       "2025": 0.452
+      }
+     }
+    },
+    "all candidates 2x": {
+     "train": {
+      "trades": 566,
+      "per_week": 0.9,
+      "avgR": 0.564,
+      "avg_size": 2.0,
+      "cagr": 3.601,
+      "max_dd": 0.803,
+      "median_year": 2.386,
+      "worst_year": 0.289,
+      "objective": -0.564,
+      "years": {
+       "2005": 5.872,
+       "2006": 3.164,
+       "2007": 2.227,
+       "2008": 8.16,
+       "2009": 0.41,
+       "2010": 1.474,
+       "2011": 2.546,
+       "2012": 0.37,
+       "2013": 130.683,
+       "2014": 18.276,
+       "2015": 0.289,
+       "2016": 0.909
+      }
+     },
+     "val": {
+      "trades": 233,
+      "per_week": 1.12,
+      "avgR": 0.233,
+      "avg_size": 2.0,
+      "cagr": 0.603,
+      "max_dd": 0.976,
+      "median_year": 6.101,
+      "worst_year": -0.876,
+      "objective": -2.54,
+      "years": {
+       "2017": 13.209,
+       "2018": -0.876,
+       "2019": -0.731,
+       "2020": 12.933
+      }
+     },
+     "test": {
+      "trades": 267,
+      "per_week": 1.21,
+      "avgR": 0.34,
+      "avg_size": 2.0,
+      "cagr": 2.037,
+      "max_dd": 0.883,
+      "median_year": 1.138,
+      "worst_year": 0.217,
+      "objective": -2.004,
+      "years": {
+       "2021": 6.289,
+       "2022": 0.217,
+       "2023": 2.105,
+       "2024": 1.138,
+       "2025": 0.838
+      }
+     }
+    },
+    "squeeze passes 1x (= 積極模式)": {
+     "train": {
+      "trades": 435,
+      "per_week": 0.69,
+      "avgR": 0.694,
+      "avg_size": 1.0,
+      "cagr": 1.546,
+      "max_dd": 0.596,
+      "median_year": 1.029,
+      "worst_year": 0.275,
+      "objective": 0.097,
+      "years": {
+       "2005": 1.932,
+       "2006": 0.275,
+       "2007": 1.471,
+       "2008": 1.704,
+       "2009": 1.036,
+       "2010": 0.712,
+       "2011": 1.023,
+       "2012": 0.547,
+       "2013": 9.964,
+       "2014": 8.351,
+       "2015": 0.825,
+       "2016": 0.454
+      }
+     },
+     "val": {
+      "trades": 200,
+      "per_week": 0.96,
+      "avgR": 0.217,
+      "avg_size": 1.0,
+      "cagr": 0.379,
+      "max_dd": 0.741,
+      "median_year": 0.693,
+      "worst_year": -0.454,
+      "objective": -0.927,
+      "years": {
+       "2017": 2.697,
+       "2018": -0.454,
+       "2019": -0.345,
+       "2020": 1.73
+      }
+     },
+     "test": {
+      "trades": 210,
+      "per_week": 0.95,
+      "avgR": 0.399,
+      "avg_size": 1.0,
+      "cagr": 1.104,
+      "max_dd": 0.593,
+      "median_year": 0.645,
+      "worst_year": -0.069,
+      "objective": -0.425,
+      "years": {
+       "2021": 2.833,
+       "2022": -0.069,
+       "2023": 1.7,
+       "2024": 0.645,
+       "2025": 0.452
+      }
+     }
+    },
+    "squeeze passes 1.5x": {
+     "train": {
+      "trades": 435,
+      "per_week": 0.69,
+      "avgR": 0.694,
+      "avg_size": 1.5,
+      "cagr": 2.442,
+      "max_dd": 0.747,
+      "median_year": 1.62,
+      "worst_year": 0.352,
+      "objective": -0.036,
+      "years": {
+       "2005": 3.399,
+       "2006": 0.352,
+       "2007": 2.214,
+       "2008": 2.954,
+       "2009": 1.607,
+       "2010": 1.08,
+       "2011": 1.633,
+       "2012": 0.674,
+       "2013": 23.422,
+       "2014": 17.459,
+       "2015": 1.034,
+       "2016": 0.665
+      }
+     },
+     "val": {
+      "trades": 200,
+      "per_week": 0.96,
+      "avgR": 0.217,
+      "avg_size": 1.5,
+      "cagr": 0.421,
+      "max_dd": 0.883,
+      "median_year": 0.989,
+      "worst_year": -0.627,
+      "objective": -1.544,
+      "years": {
+       "2017": 5.199,
+       "2018": -0.627,
+       "2019": -0.493,
+       "2020": 2.471
+      }
+     },
+     "test": {
+      "trades": 210,
+      "per_week": 0.95,
+      "avgR": 0.399,
+      "avg_size": 1.5,
+      "cagr": 1.632,
+      "max_dd": 0.752,
+      "median_year": 0.818,
+      "worst_year": -0.194,
+      "objective": -0.806,
+      "years": {
+       "2021": 5.34,
+       "2022": -0.194,
+       "2023": 2.84,
+       "2024": 0.818,
+       "2025": 0.658
+      }
+     }
+    },
+    "squeeze passes 2x": {
+     "train": {
+      "trades": 435,
+      "per_week": 0.69,
+      "avgR": 0.694,
+      "avg_size": 2.0,
+      "cagr": 3.311,
+      "max_dd": 0.844,
+      "median_year": 2.209,
+      "worst_year": 0.38,
+      "objective": -0.256,
+      "years": {
+       "2005": 5.199,
+       "2006": 0.38,
+       "2007": 2.822,
+       "2008": 4.427,
+       "2009": 2.147,
+       "2010": 1.421,
+       "2011": 2.271,
+       "2012": 0.679,
+       "2013": 46.132,
+       "2014": 29.639,
+       "2015": 1.067,
+       "2016": 0.852
+      }
+     },
+     "val": {
+      "trades": 200,
+      "per_week": 0.96,
+      "avgR": 0.217,
+      "avg_size": 2.0,
+      "cagr": 0.369,
+      "max_dd": 0.951,
+      "median_year": 1.142,
+      "worst_year": -0.756,
+      "objective": -2.245,
+      "years": {
+       "2017": 8.65,
+       "2018": -0.756,
+       "2019": -0.618,
+       "2020": 2.901
+      }
+     },
+     "test": {
+      "trades": 210,
+      "per_week": 0.95,
+      "avgR": 0.399,
+      "avg_size": 2.0,
+      "cagr": 2.049,
+      "max_dd": 0.861,
+      "median_year": 0.87,
+      "worst_year": -0.345,
+      "objective": -1.28,
+      "years": {
+       "2021": 8.633,
+       "2022": -0.345,
+       "2023": 4.075,
+       "2024": 0.87,
+       "2025": 0.838
+      }
+     }
+    },
+    "squeeze 2x, others 0.5x": {
+     "train": {
+      "trades": 566,
+      "per_week": 0.9,
+      "avgR": 0.564,
+      "avg_size": 1.58,
+      "cagr": 3.378,
+      "max_dd": 0.818,
+      "median_year": 1.97,
+      "worst_year": 0.182,
+      "objective": -0.256,
+      "years": {
+       "2005": 5.479,
+       "2006": 0.571,
+       "2007": 3.224,
+       "2008": 5.442,
+       "2009": 1.596,
+       "2010": 1.705,
+       "2011": 2.236,
+       "2012": 0.663,
+       "2013": 66.79,
+       "2014": 28.677,
+       "2015": 0.984,
+       "2016": 0.182
+      }
+     },
+     "val": {
+      "trades": 233,
+      "per_week": 1.12,
+      "avgR": 0.233,
+      "avg_size": 1.61,
+      "cagr": 0.231,
+      "max_dd": 0.934,
+      "median_year": 0.419,
+      "worst_year": -0.82,
+      "objective": -2.23,
+      "years": {
+       "2017": 10.168,
+       "2018": -0.82,
+       "2019": -0.515,
+       "2020": 1.353
+      }
+     },
+     "test": {
+      "trades": 267,
+      "per_week": 1.21,
+      "avgR": 0.34,
+      "avg_size": 1.6,
+      "cagr": 2.222,
+      "max_dd": 0.764,
+      "median_year": 0.838,
+      "worst_year": 0.213,
+      "objective": -1.274,
+      "years": {
+       "2021": 6.545,
+       "2022": 0.213,
+       "2023": 3.919,
+       "2024": 0.678,
+       "2025": 0.838
+      }
+     }
+    },
+    "all candidates 3x": {
+     "train": {
+      "trades": 566,
+      "per_week": 0.9,
+      "avgR": 0.564,
+      "avg_size": 3.0,
+      "cagr": 4.926,
+      "max_dd": 0.924,
+      "median_year": 3.055,
+      "worst_year": -0.194,
+      "objective": -1.434,
+      "years": {
+       "2005": 10.693,
+       "2006": 5.248,
+       "2007": 2.245,
+       "2008": 17.27,
+       "2009": 0.15,
+       "2010": 1.941,
+       "2011": 3.865,
+       "2012": 0.02,
+       "2013": 515.446,
+       "2014": 27.361,
+       "2015": -0.194,
+       "2016": 1.177
+      }
+     },
+     "val": {
+      "trades": 233,
+      "per_week": 1.12,
+      "avgR": 0.233,
+      "avg_size": 3.0,
+      "cagr": 0.26,
+      "max_dd": 0.998,
+      "median_year": 9.611,
+      "worst_year": -0.97,
+      "objective": -4.404,
+      "years": {
+       "2017": 32.999,
+       "2018": -0.97,
+       "2019": -0.883,
+       "2020": 20.104
+      }
+     },
+     "test": {
+      "trades": 267,
+      "per_week": 1.21,
+      "avgR": 0.34,
+      "avg_size": 3.0,
+      "cagr": 2.041,
+      "max_dd": 0.975,
+      "median_year": 1.096,
+      "worst_year": -0.17,
+      "objective": -3.683,
+      "years": {
+       "2021": 10.167,
+       "2022": -0.17,
+       "2023": 2.399,
+       "2024": 0.648,
+       "2025": 1.096
+      }
+     }
+    },
+    "squeeze passes 3x": {
+     "train": {
+      "trades": 435,
+      "per_week": 0.69,
+      "avgR": 0.694,
+      "avg_size": 3.0,
+      "cagr": 4.638,
+      "max_dd": 0.951,
+      "median_year": 3.154,
+      "worst_year": 0.294,
+      "objective": -0.912,
+      "years": {
+       "2005": 9.632,
+       "2006": 0.294,
+       "2007": 3.36,
+       "2008": 7.695,
+       "2009": 2.949,
+       "2010": 1.919,
+       "2011": 3.483,
+       "2012": 0.395,
+       "2013": 128.769,
+       "2014": 57.136,
+       "2015": 0.706,
+       "2016": 1.121
+      }
+     },
+     "val": {
+      "trades": 200,
+      "per_week": 0.96,
+      "avgR": 0.217,
+      "avg_size": 3.0,
+      "cagr": 0.069,
+      "max_dd": 0.993,
+      "median_year": 0.936,
+      "worst_year": -0.909,
+      "objective": -3.871,
+      "years": {
+       "2017": 18.342,
+       "2018": -0.909,
+       "2019": -0.799,
+       "2020": 2.671
+      }
+     },
+     "test": {
+      "trades": 210,
+      "per_week": 0.95,
+      "avgR": 0.399,
+      "avg_size": 3.0,
+      "cagr": 2.371,
+      "max_dd": 0.968,
+      "median_year": 1.096,
+      "worst_year": -0.637,
+      "objective": -2.47,
+      "years": {
+       "2021": 17.03,
+       "2022": -0.637,
+       "2023": 6.405,
+       "2024": 0.655,
+       "2025": 1.096
+      }
+     }
+    }
+   },
+   "runs": [
+    {
+     "seed": 0,
+     "minutes": 1.4,
+     "best_steps": 300000,
+     "history": [
+      {
+       "steps": 50000,
+       "val_cagr": 0.003,
+       "val_dd": 0.635,
+       "val_per_week": 0.33,
+       "val_objective": -0.516
+      },
+      {
+       "steps": 100000,
+       "val_cagr": -0.143,
+       "val_dd": 0.828,
+       "val_per_week": 0.33,
+       "val_objective": -0.894
+      },
+      {
+       "steps": 150000,
+       "val_cagr": -0.119,
+       "val_dd": 0.78,
+       "val_per_week": 0.33,
+       "val_objective": -0.784
+      },
+      {
+       "steps": 200000,
+       "val_cagr": -0.161,
+       "val_dd": 0.698,
+       "val_per_week": 0.34,
+       "val_objective": -0.661
+      },
+      {
+       "steps": 250000,
+       "val_cagr": -0.037,
+       "val_dd": 0.814,
+       "val_per_week": 0.35,
+       "val_objective": -0.687
+      },
+      {
+       "steps": 300000,
+       "val_cagr": 0.286,
+       "val_dd": 0.822,
+       "val_per_week": 0.4,
+       "val_objective": -0.474
+      },
+      {
+       "steps": 350000,
+       "val_cagr": -0.038,
+       "val_dd": 0.933,
+       "val_per_week": 0.45,
+       "val_objective": -1.012
+      },
+      {
+       "steps": 400000,
+       "val_cagr": 0.06,
+       "val_dd": 0.918,
+       "val_per_week": 0.43,
+       "val_objective": -0.88
+      },
+      {
+       "steps": 450000,
+       "val_cagr": -0.032,
+       "val_dd": 0.931,
+       "val_per_week": 0.46,
+       "val_objective": -1.053
+      },
+      {
+       "steps": 500000,
+       "val_cagr": -0.106,
+       "val_dd": 0.951,
+       "val_per_week": 0.45,
+       "val_objective": -1.214
+      },
+      {
+       "steps": 550000,
+       "val_cagr": -0.477,
+       "val_dd": 0.982,
+       "val_per_week": 0.56,
+       "val_objective": -2.327
+      },
+      {
+       "steps": 600000,
+       "val_cagr": -0.526,
+       "val_dd": 0.981,
+       "val_per_week": 0.6,
+       "val_objective": -2.584
+      }
+     ],
+     "train": {
+      "trades": 261,
+      "per_week": 0.42,
+      "avgR": 0.726,
+      "avg_size": 0.92,
+      "cagr": 0.938,
+      "max_dd": 0.688,
+      "median_year": 0.244,
+      "worst_year": -0.327,
+      "objective": 0.225,
+      "years": {
+       "2005": 3.515,
+       "2006": -0.236,
+       "2007": -0.327,
+       "2008": -0.165,
+       "2009": 0.551,
+       "2010": 0.045,
+       "2011": 2.166,
+       "2012": 0.432,
+       "2013": 8.375,
+       "2014": 18.15,
+       "2015": 0.057,
+       "2016": 0.037
+      }
+     },
+     "val": {
+      "trades": 84,
+      "per_week": 0.4,
+      "avgR": 0.427,
+      "avg_size": 1.31,
+      "cagr": 0.286,
+      "max_dd": 0.822,
+      "median_year": -0.359,
+      "worst_year": -0.533,
+      "objective": -0.474,
+      "years": {
+       "2017": -0.29,
+       "2018": -0.533,
+       "2019": -0.428,
+       "2020": 13.396
+      }
+     },
+     "test": {
+      "trades": 118,
+      "per_week": 0.54,
+      "avgR": 0.351,
+      "avg_size": 1.19,
+      "cagr": 0.495,
+      "max_dd": 0.715,
+      "median_year": 0.165,
+      "worst_year": -0.176,
+      "objective": -0.37,
+      "years": {
+       "2021": 1.2,
+       "2022": -0.176,
+       "2023": 1.658,
+       "2024": -0.03,
+       "2025": 0.165
+      }
+     }
+    },
+    {
+     "seed": 1,
+     "minutes": 1.5,
+     "best_steps": 300000,
+     "history": [
+      {
+       "steps": 50000,
+       "val_cagr": 0.317,
+       "val_dd": 0.983,
+       "val_per_week": 1.1,
+       "val_objective": -2.735
+      },
+      {
+       "steps": 100000,
+       "val_cagr": -0.144,
+       "val_dd": 0.982,
+       "val_per_week": 0.67,
+       "val_objective": -2.189
+      },
+      {
+       "steps": 150000,
+       "val_cagr": 0.082,
+       "val_dd": 0.944,
+       "val_per_week": 0.81,
+       "val_objective": -1.687
+      },
+      {
+       "steps": 200000,
+       "val_cagr": -0.001,
+       "val_dd": 0.957,
+       "val_per_week": 0.64,
+       "val_objective": -1.465
+      },
+      {
+       "steps": 250000,
+       "val_cagr": -0.218,
+       "val_dd": 0.969,
+       "val_per_week": 0.46,
+       "val_objective": -1.676
+      },
+      {
+       "steps": 300000,
+       "val_cagr": -0.01,
+       "val_dd": 0.9,
+       "val_per_week": 0.42,
+       "val_objective": -0.993
+      },
+      {
+       "steps": 350000,
+       "val_cagr": -0.136,
+       "val_dd": 0.942,
+       "val_per_week": 0.47,
+       "val_objective": -1.325
+      },
+      {
+       "steps": 400000,
+       "val_cagr": -0.19,
+       "val_dd": 0.955,
+       "val_per_week": 0.45,
+       "val_objective": -1.32
+      },
+      {
+       "steps": 450000,
+       "val_cagr": -0.086,
+       "val_dd": 0.928,
+       "val_per_week": 0.44,
+       "val_objective": -1.154
+      },
+      {
+       "steps": 500000,
+       "val_cagr": -0.327,
+       "val_dd": 0.976,
+       "val_per_week": 0.46,
+       "val_objective": -1.766
+      },
+      {
+       "steps": 550000,
+       "val_cagr": -0.413,
+       "val_dd": 0.973,
+       "val_per_week": 0.57,
+       "val_objective": -2.338
+      },
+      {
+       "steps": 600000,
+       "val_cagr": -0.178,
+       "val_dd": 0.953,
+       "val_per_week": 0.52,
+       "val_objective": -1.665
+      }
+     ],
+     "train": {
+      "trades": 277,
+      "per_week": 0.44,
+      "avgR": 0.784,
+      "avg_size": 1.13,
+      "cagr": 1.411,
+      "max_dd": 0.677,
+      "median_year": 1.738,
+      "worst_year": -0.298,
+      "objective": 0.325,
+      "years": {
+       "2005": 3.539,
+       "2006": -0.159,
+       "2007": 1.33,
+       "2008": 2.145,
+       "2009": -0.297,
+       "2010": -0.298,
+       "2011": 3.101,
+       "2012": 2.742,
+       "2013": 12.47,
+       "2014": 16.01,
+       "2015": -0.147,
+       "2016": -0.069
+      }
+     },
+     "val": {
+      "trades": 88,
+      "per_week": 0.42,
+      "avgR": 0.325,
+      "avg_size": 1.5,
+      "cagr": -0.01,
+      "max_dd": 0.9,
+      "median_year": -0.435,
+      "worst_year": -0.575,
+      "objective": -0.993,
+      "years": {
+       "2017": -0.407,
+       "2018": -0.463,
+       "2019": -0.575,
+       "2020": 6.118
+      }
+     },
+     "test": {
+      "trades": 123,
+      "per_week": 0.56,
+      "avgR": 0.347,
+      "avg_size": 1.48,
+      "cagr": 0.426,
+      "max_dd": 0.829,
+      "median_year": 0.322,
+      "worst_year": -0.328,
+      "objective": -0.624,
+      "years": {
+       "2021": 1.662,
+       "2022": -0.328,
+       "2023": 0.951,
+       "2024": -0.03,
+       "2025": 0.322
+      }
+     }
+    },
+    {
+     "seed": 2,
+     "minutes": 1.8,
+     "best_steps": 450000,
+     "history": [
+      {
+       "steps": 50000,
+       "val_cagr": 0.144,
+       "val_dd": 0.982,
+       "val_per_week": 1.12,
+       "val_objective": -2.388
+      },
+      {
+       "steps": 100000,
+       "val_cagr": -0.103,
+       "val_dd": 0.921,
+       "val_per_week": 0.68,
+       "val_objective": -1.381
+      },
+      {
+       "steps": 150000,
+       "val_cagr": -0.096,
+       "val_dd": 0.763,
+       "val_per_week": 0.34,
+       "val_objective": -0.886
+      },
+      {
+       "steps": 200000,
+       "val_cagr": -0.149,
+       "val_dd": 0.795,
+       "val_per_week": 0.34,
+       "val_objective": -0.891
+      },
+      {
+       "steps": 250000,
+       "val_cagr": -0.2,
+       "val_dd": 0.817,
+       "val_per_week": 0.35,
+       "val_objective": -1.027
+      },
+      {
+       "steps": 300000,
+       "val_cagr": -0.092,
+       "val_dd": 0.84,
+       "val_per_week": 0.36,
+       "val_objective": -0.923
+      },
+      {
+       "steps": 350000,
+       "val_cagr": -0.149,
+       "val_dd": 0.96,
+       "val_per_week": 0.45,
+       "val_objective": -1.303
+      },
+      {
+       "steps": 400000,
+       "val_cagr": -0.022,
+       "val_dd": 0.954,
+       "val_per_week": 0.43,
+       "val_objective": -1.193
+      },
+      {
+       "steps": 450000,
+       "val_cagr": 0.122,
+       "val_dd": 0.877,
+       "val_per_week": 0.41,
+       "val_objective": -0.789
+      },
+      {
+       "steps": 500000,
+       "val_cagr": -0.182,
+       "val_dd": 0.917,
+       "val_per_week": 0.51,
+       "val_objective": -1.642
+      },
+      {
+       "steps": 550000,
+       "val_cagr": -0.308,
+       "val_dd": 0.953,
+       "val_per_week": 0.5,
+       "val_objective": -1.913
+      },
+      {
+       "steps": 600000,
+       "val_cagr": -0.298,
+       "val_dd": 0.949,
+       "val_per_week": 0.51,
+       "val_objective": -1.91
+      }
+     ],
+     "train": {
+      "trades": 271,
+      "per_week": 0.43,
+      "avgR": 0.773,
+      "avg_size": 1.18,
+      "cagr": 1.382,
+      "max_dd": 0.623,
+      "median_year": 0.478,
+      "worst_year": -0.323,
+      "objective": 0.277,
+      "years": {
+       "2005": 3.103,
+       "2006": -0.323,
+       "2007": 0.391,
+       "2008": 2.73,
+       "2009": -0.195,
+       "2010": -0.238,
+       "2011": 2.469,
+       "2012": 0.566,
+       "2013": 19.649,
+       "2014": 26.2,
+       "2015": 0.272,
+       "2016": -0.03
+      }
+     },
+     "val": {
+      "trades": 86,
+      "per_week": 0.41,
+      "avgR": 0.3,
+      "avg_size": 1.42,
+      "cagr": 0.122,
+      "max_dd": 0.877,
+      "median_year": -0.195,
+      "worst_year": -0.681,
+      "objective": -0.789,
+      "years": {
+       "2017": 0.149,
+       "2018": -0.681,
+       "2019": -0.539,
+       "2020": 8.379
+      }
+     },
+     "test": {
+      "trades": 117,
+      "per_week": 0.53,
+      "avgR": 0.351,
+      "avg_size": 1.21,
+      "cagr": 0.707,
+      "max_dd": 0.6,
+      "median_year": 1.032,
+      "worst_year": -0.06,
+      "objective": -0.209,
+      "years": {
+       "2021": 1.81,
+       "2022": 0.253,
+       "2023": 1.88,
+       "2024": -0.06
+      }
+     }
+    }
+   ]
+  }
+ }
+}

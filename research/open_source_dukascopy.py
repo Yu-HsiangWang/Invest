@@ -1,5 +1,5 @@
 """Second-vendor check of the open-source triggers that passed on gold 2005-2025 (docs/RESEARCH.md
-section 13): fed into the SECOND position of 高效積極模式, on Dukascopy 15m gold AND silver
+section 12.0): fed into the SECOND position of 高效積極模式, on Dukascopy 15m gold AND silver
 2013/7-2026/10 (run in the browser, like research/efficient_dukascopy.py).
 
 Finalists (chosen on the broker gold data before this check): the Turtle 55-bar 1h breakout and the
